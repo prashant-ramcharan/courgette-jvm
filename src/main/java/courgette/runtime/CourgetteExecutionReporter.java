@@ -2,6 +2,7 @@ package courgette.runtime;
 
 import courgette.runtime.utils.FileUtils;
 
+import java.io.File;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
@@ -41,6 +42,13 @@ public class CourgetteExecutionReporter {
 
         executionLog.append(String.format("\nExecution time: %s", elapsedTime));
 
+        final File targetDir = new File("target");
+
+        if (!targetDir.exists()) {
+            if (!targetDir.mkdir()) {
+                System.err.println("Unable to create the '/target' directory");
+            }
+        }
         FileUtils.writeFile("target/courgette-execution-report.txt", executionLog.toString());
     }
 }
