@@ -69,4 +69,4 @@ task runRegression(type: Test) {
 ````
 
 ## Submitting Issues
-For any issues or requests, please file a GitHub issue.
+For any issues or requests, please submit [here](https://github.com/prashant-ramcharan/courgette-jvm/issues/new)
