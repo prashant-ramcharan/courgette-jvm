@@ -16,6 +16,8 @@ public class CourgetteReporter {
 
     public CourgetteReporter(String reportFile, Map<String, CopyOnWriteArrayList<String>> reports) {
         this.reportFile = reportFile;
+
+        reports.values().removeIf(t -> t.contains(null) || t.contains("null") || t.contains("[]") || t.contains(""));
         this.reports = reports;
     }
 

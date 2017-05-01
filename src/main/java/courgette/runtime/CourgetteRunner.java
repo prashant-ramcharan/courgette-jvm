@@ -125,10 +125,6 @@ public class CourgetteRunner {
     }
 
     public void createReport() {
-        if (reports.values().stream().allMatch(t -> t.contains(null) || t.contains("null"))) {
-            return;
-        }
-
         final List<String> reportFiles = defaultRuntimeOptions.getReportJsFiles();
 
         reportFiles.forEach(reportFile -> {
