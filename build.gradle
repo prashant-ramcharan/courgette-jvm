@@ -2,6 +2,7 @@ group 'info.saisoft'
 version '1.0.0'
 
 apply plugin: 'java'
+apply plugin: 'maven-publish'
 
 compileJava {
     sourceCompatibility = 1.8
@@ -15,6 +16,7 @@ repositories {
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
     compile 'info.cukes:cucumber-core:1.2.5'
+    compile 'info.cukes:cucumber-java:1.2.5'
     compile 'info.cukes:cucumber-junit:1.2.5'
 }
 
@@ -25,4 +27,13 @@ task buildJar(type: Jar, dependsOn: classes) {
 
 artifacts {
     archives buildJar
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact buildJar
+        }
+    }
 }
