@@ -1,4 +1,4 @@
-group 'info.saisoft'
+group 'io.github.prashant-ramcharan'
 version '1.0.0'
 
 apply plugin: 'java'
