@@ -1,2 +1,71 @@
-# courgette-jvm
-Multithread Cucumber-JVM Feature Runner
+
+[![Build Status](https://travis-ci.org/prashant-ramcharan/courgette-jvm.svg?branch=master)](https://travis-ci.org/prashant-ramcharan/courgette-jvm)
+
+# Courgette-JVM #
+
+Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run cucumber features files in parallel** and to **automatically re-run failed scenarios**.
+
+## Key Features
+- **All feature files** are executed in parallel on independent threads.
+- **Automatic re-run** of failed scenarios.
+- **Single report generation** for all executed features including embedded files (Json and Html reports)
+- Can be used with **Gradle** or **Maven**.
+- Includes a clear and concise **Courgette-JVM Execution Report**.
+
+## Requirements
+- Java 8
+
+## Usage
+Courgette-JVM uses Junit to run cucumber features. A runner class must be annotated with **@RunWith(Courgette.class)** and must include **@CourgetteOptions**
+
+* **threads** : The number of concurrent threads to run cucumber features. 
+
+    * _Example: If you have 10 cucumber features and you use 6 threads, 6 features would first run in parallel then the following 4 features would run in parallel_.
+
+    
+* **rerunFailedScenarios** : If set to true, any failed scenario will be immediately re-run in the same thread. If the re-run succeeds, the initial failure will be ignored and not cause the build to fail.
+
+    
+* **cucumberOptions** : The standard cucumber options for specifying feature paths, glue, tags etc..
+
+### Additional
+
+* At the end of the test run, a **single report** ( _if included in the cucumberOptions_ ) listing all executed features and scenarios will be created in the specified report path. All embedded images will be placed in the images folder in the specified report path.
+
+* A **courgette-rerun.txt** file listing all failed scenarios will be created in the specified rerun plugin path or the target folder ( _default_ )
+
+* A Courgette-JVM execution report will be created in the target folder.
+
+````java
+@RunWith(Courgette.class)
+@CourgetteOptions(
+        threads = 10,
+        rerunFailedScenarios = true,
+        cucumberOptions = @CucumberOptions(
+                features = "src/test/resources/features",
+                glue = "steps",
+                tags = {"@regression"},
+                plugin = {
+                        "pretty",
+                        "json:target/courgette-report/courgette.json",
+                        "html:target/courgette-report/courgette.html"}
+        ))
+public class RegressionTestSuite {
+}
+````
+
+## Gradle Task
+
+````groovy
+task runRegression(type: Test) {
+    systemProperty('property-name', 'property-value')
+
+    test {
+        include '**/RegressionTestSuite.class'
+    }
+    outputs.upToDateWhen { false }
+}
+````
+
+## Submitting Issues
+For any issues or requests, please file a GitHub issue.
