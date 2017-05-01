@@ -2,7 +2,6 @@ package courgette.runtime;
 
 import courgette.api.cli.Main;
 import courgette.runtime.utils.FileUtils;
-import cucumber.runtime.junit.FeatureRunner;
 import cucumber.runtime.model.CucumberFeature;
 import gherkin.deps.com.google.gson.Gson;
 import gherkin.deps.com.google.gson.GsonBuilder;
@@ -29,18 +28,18 @@ public class CourgetteRunner {
     private final AtomicInteger featuresRerun = new AtomicInteger(0);
     private final AtomicInteger featuresRerunPassed = new AtomicInteger(0);
 
-    private final List<FeatureRunner> featureRunners;
+    private final List<CucumberFeature> cucumberFeatures;
     private final CourgetteProperties courgetteProperties;
     private final CourgetteRuntimeOptions defaultRuntimeOptions;
     private final Boolean rerunFailedScenarios;
 
     private final StringBuilder executionLog = new StringBuilder();
 
-    public CourgetteRunner(List<FeatureRunner> featureRunners, CourgetteProperties courgetteProperties) {
-        this.featureRunners = featureRunners;
+    public CourgetteRunner(List<CucumberFeature> cucumberFeatures, CourgetteProperties courgetteProperties) {
+        this.cucumberFeatures = cucumberFeatures;
         this.courgetteProperties = courgetteProperties;
         this.rerunFailedScenarios = courgetteProperties.getCourgetteOptions().rerunFailedScenarios();
-        this.totalFeatures = featureRunners.size();
+        this.totalFeatures = cucumberFeatures.size();
         this.defaultRuntimeOptions = new CourgetteRuntimeOptions(courgetteProperties);
     }
 
@@ -48,17 +47,16 @@ public class CourgetteRunner {
         final ExecutorService executor = Executors.newFixedThreadPool(courgetteProperties.getMaxThreads());
 
         do {
-            List<FeatureRunner> featureRunners = new ArrayList<>(this.featureRunners);
+            List<CucumberFeature> cucumberFeatures = new ArrayList<>(this.cucumberFeatures);
 
-            featureRunners.forEach(featureRunner -> {
-                CucumberFeature cucumberFeature = new CourgetteFeature(featureRunner).getCucumberFeature();
+            cucumberFeatures.forEach(cucumberFeature -> {
                 final String featureName = cucumberFeature.getGherkinFeature().getName();
 
                 final CourgetteRuntimeOptions runtimeOptions = new CourgetteRuntimeOptions(courgetteProperties, cucumberFeature);
 
                 final String[] cucumberArgs = runtimeOptions.getRuntimeOptions();
 
-                this.featureRunners.remove(featureRunner);
+                this.cucumberFeatures.remove(cucumberFeature);
 
                 features.add(() -> {
                     try {
@@ -115,7 +113,7 @@ public class CourgetteRunner {
                     return Boolean.FALSE;
                 });
             });
-        } while (this.featureRunners.size() > 0);
+        } while (this.cucumberFeatures.size() > 0);
 
         try {
             executor.invokeAll(features);

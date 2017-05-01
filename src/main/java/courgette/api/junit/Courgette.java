@@ -2,11 +2,11 @@ package courgette.api.junit;
 
 import courgette.api.CourgetteOptions;
 import courgette.runtime.CourgetteException;
+import courgette.runtime.CourgetteFeatureLoader;
 import courgette.runtime.CourgetteProperties;
 import courgette.runtime.CourgetteRunner;
-import courgette.runtime.CourgetteRunnerFilter;
 import cucumber.api.junit.Cucumber;
-import cucumber.runtime.junit.FeatureRunner;
+import cucumber.runtime.model.CucumberFeature;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
 
@@ -24,17 +24,13 @@ public class Courgette extends Cucumber {
     }
 
     @Override
-    public List<FeatureRunner> getChildren() {
-        return getFilteredChildren();
-    }
-
-    @Override
     public void run(RunNotifier notifier) {
-        final CourgetteProperties properties = new CourgetteProperties(courgetteOptions, createSessionId(), getMaxThreads());
+        final CourgetteProperties courgetteProperties = new CourgetteProperties(courgetteOptions, createSessionId(), getMaxThreads());
 
-        final CourgetteRunner courgetteRunner = new CourgetteRunner(getChildren(), properties);
+        final List<CucumberFeature> cucumberFeatures = new CourgetteFeatureLoader(courgetteProperties).getCucumberFeatures();
+
+        final CourgetteRunner courgetteRunner = new CourgetteRunner(cucumberFeatures, courgetteProperties);
         courgetteRunner.run();
-
         courgetteRunner.createReport();
         courgetteRunner.createExecutionReport();
 
@@ -64,9 +60,5 @@ public class Courgette extends Cucumber {
                 : courgetteOptions.threads() < 1
                 ? 1
                 : courgetteOptions.threads();
-    }
-
-    private List<FeatureRunner> getFilteredChildren() {
-        return CourgetteRunnerFilter.filter(super.getChildren(), courgetteOptions.cucumberOptions().tags());
     }
 }

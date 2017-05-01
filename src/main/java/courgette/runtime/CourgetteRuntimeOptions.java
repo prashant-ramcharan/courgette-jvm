@@ -1,6 +1,8 @@
 package courgette.runtime;
 
 import cucumber.api.CucumberOptions;
+import cucumber.runtime.io.MultiLoader;
+import cucumber.runtime.io.Resource;
 import cucumber.runtime.model.CucumberFeature;
 
 import java.util.*;
@@ -107,7 +109,7 @@ public class CourgetteRuntimeOptions {
         runtimeOptions.put("--name", optionParser.apply("--name", cucumberOptions.name()));
         runtimeOptions.put("--junit", optionParser.apply("--junit", cucumberOptions.junit()));
         runtimeOptions.put("--snippets", optionParser.apply("--snippets", cucumberOptions.snippets()));
-        runtimeOptions.put(null, feature == null ? optionParser.apply(null, cucumberOptions.features()) : featureParser.apply(feature.getPath(), cucumberOptions.features()));
+        runtimeOptions.put(null, featureParser.apply(feature == null ? null : feature.getPath(), cucumberOptions.features()));
         runtimeOptions.values().removeIf(Objects::isNull);
 
         return runtimeOptions;
@@ -188,25 +190,35 @@ public class CourgetteRuntimeOptions {
                         runOptions.add(value.trim().replace("[", "").replace("]", ""));
                     });
         } else {
-            runOptions.add(name);
+            if (name != null) {
+                runOptions.add(name);
+            }
             runOptions.add(options.toString());
         }
-
         return runOptions;
     };
 
-    private BiFunction<String, String[], List<String>> featureParser = (featurePath, features) -> {
-        if (featurePath != null) {
-            final String fullFeaturePath = Arrays.stream(features)
-                    .filter(f -> f.indexOf(featurePath.substring(0, featurePath.indexOf("/"))) > 0)
-                    .findFirst().orElse("") + featurePath.substring(featurePath.indexOf("/"));
+    private Function<String, String> resourcePathFinder = (resource) -> {
+        final String base = "src";
+        final MultiLoader resourceLoader = new MultiLoader(Thread.currentThread().getContextClassLoader());
 
-            return new ArrayList<String>() {
-                {
-                    add(fullFeaturePath);
-                }
-            };
+        final Iterator<Resource> resourceIterator = resourceLoader.resources(base, resource).iterator();
+        if (resourceIterator.hasNext()) {
+            return String.format("%s/%s", base, resourceIterator.next().getPath());
         }
         return null;
+    };
+
+    private BiFunction<String, String[], List<String>> featureParser = (featurePath, features) -> {
+        final List<String> featurePaths = new ArrayList<>();
+
+        if (featurePath != null) {
+            final String fullFeaturePath = resourcePathFinder.apply(featurePath);
+            featurePaths.add(fullFeaturePath != null ? fullFeaturePath : featurePath);
+            return featurePaths;
+        }
+
+        Arrays.asList(features).forEach(featurePaths::add);
+        return featurePaths;
     };
 }
