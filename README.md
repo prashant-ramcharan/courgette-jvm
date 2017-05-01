@@ -16,6 +16,25 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 ## Requirements
 - Java 8
 
+## Installation
+
+<a href='https://bintray.com/prashantr/Courgette-JVM/courgette-jvm?source=watch' alt='Get automatic notifications about new "courgette-jvm" versions'><img src='https://www.bintray.com/docs/images/bintray_badge_color.png'></a>
+
+Maven
+````markdown
+<dependency>
+  <groupId>io.github.prashant-ramcharan</groupId>
+  <artifactId>courgette-jvm</artifactId>
+  <version>1.0.0</version>
+  <type>pom</type>
+</dependency>
+````
+
+Gradle
+````markdown
+compile 'io.github.prashant-ramcharan:courgette-jvm:1.0.0'
+````
+
 ## Usage
 Courgette-JVM uses Junit to run cucumber features. A runner class must be annotated with **@RunWith(Courgette.class)** and must include **@CourgetteOptions**
 
