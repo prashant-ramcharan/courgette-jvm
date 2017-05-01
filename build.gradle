@@ -1,4 +1,4 @@
-group 'saisoft'
+group 'info.saisoft'
 version '1.0.0'
 
 apply plugin: 'java'
