@@ -9,6 +9,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 ## Key Features
 - **All feature files** are executed in parallel on independent threads.
 - **Automatic re-run** of failed scenarios.
+- **Requires only 1 annotated class** to run all feature files in parallel.
 - **Single report generation** for all executed features including embedded files (Json and Html reports)
 - Can be used with **Gradle** or **Maven**.
 - Includes a clear and concise **Courgette-JVM Execution Report**.
