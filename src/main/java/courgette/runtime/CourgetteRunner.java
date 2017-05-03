@@ -44,7 +44,7 @@ public class CourgetteRunner {
     }
 
     public void run() {
-        final ExecutorService executor = Executors.newFixedThreadPool(courgetteProperties.getMaxThreads());
+        final ExecutorService executor = Executors.newFixedThreadPool(optimizedThreadCount());
 
         do {
             List<CucumberFeature> cucumberFeatures = new ArrayList<>(this.cucumberFeatures);
@@ -192,5 +192,13 @@ public class CourgetteRunner {
     private String prettyJson(String json) {
         final Object jsonObject = new Gson().fromJson(json, Object.class);
         return new GsonBuilder().setPrettyPrinting().create().toJson(jsonObject);
+    }
+
+    private Integer optimizedThreadCount() {
+        return courgetteProperties.getMaxThreads() > cucumberFeatures.size()
+                ? cucumberFeatures.size()
+                : courgetteProperties.getMaxThreads() < 1
+                ? 1
+                : courgetteProperties.getMaxThreads();
     }
 }

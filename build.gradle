@@ -1,5 +1,5 @@
 group 'io.github.prashant-ramcharan'
-version '1.0.0'
+version '1.1.0'
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'
@@ -17,6 +17,7 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
     compile 'info.cukes:cucumber-core:1.2.5'
     compile 'info.cukes:cucumber-java:1.2.5'
+    compile 'info.cukes:cucumber-java8:1.2.5'
     compile 'info.cukes:cucumber-junit:1.2.5'
 }
 

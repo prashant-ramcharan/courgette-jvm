@@ -27,15 +27,22 @@ Maven
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
   <type>pom</type>
 </dependency>
 ````
 
 Gradle
 ````markdown
-compile 'io.github.prashant-ramcharan:courgette-jvm:1.0.0'
+compile 'io.github.prashant-ramcharan:courgette-jvm:1.1.0'
 ````
+
+##### Included Dependencies
+* cucumber-core 1.2.5
+* cucumber-java 1.2.5
+* cucumber-java8 1.2.5
+* cucumber-junit 1.2.5
+
 
 ## Usage
 Courgette-JVM uses JUnit to run cucumber features. A runner class must be annotated with **@RunWith(Courgette.class)** and must include **@CourgetteOptions**
@@ -90,8 +97,8 @@ task runRegression(type: Test) {
 ````
 ## Limitations
 
-* Running features in parallel using the built in JUnit test runner in the IDE
-  * Each feature is run using the Cucumber CLI and as a result JUnit is not notified off the test result. The workaround to this is the Courgette-JVM Execution report which lists all test passes, failures and re-runs.
+* JUnit test notifier is not updated when using the built in IDE during parallel test execution
+   * _Each feature is run using the Cucumber CLI and because of this JUnit is not notified off the test result. The workaround to this is the Courgette-JVM Execution report which lists all test passes, failures and re-runs. Alternatively, you can review the Cucumber reports or the results from the build tool_.
 
 
 ## Submitting Issues

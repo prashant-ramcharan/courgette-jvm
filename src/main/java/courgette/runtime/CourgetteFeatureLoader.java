@@ -30,4 +30,9 @@ public class CourgetteFeatureLoader {
             return new ArrayList<>();
         }
     }
+
+    public RuntimeOptions getRuntimeOptions() {
+        final CourgetteRuntimeOptions courgetteRuntimeOptions = new CourgetteRuntimeOptions(courgetteProperties);
+        return new RuntimeOptions(Arrays.asList(courgetteRuntimeOptions.getRuntimeOptions()));
+    }
 }
