@@ -37,7 +37,7 @@ compile 'io.github.prashant-ramcharan:courgette-jvm:1.0.0'
 ````
 
 ## Usage
-Courgette-JVM uses Junit to run cucumber features. A runner class must be annotated with **@RunWith(Courgette.class)** and must include **@CourgetteOptions**
+Courgette-JVM uses JUnit to run cucumber features. A runner class must be annotated with **@RunWith(Courgette.class)** and must include **@CourgetteOptions**
 
 * **threads** : The number of concurrent threads to run cucumber features. 
 
@@ -87,6 +87,11 @@ task runRegression(type: Test) {
     outputs.upToDateWhen { false }
 }
 ````
+## Limitations
+
+* Running features in parallel using the built in JUnit test runner in the IDE
+  * Each feature is run using the Cucumber CLI and as a result JUnit is not notified off the test result. The workaround to this is the Courgette-JVM Execution report which lists all test passes, failures and re-runs.
+
 
 ## Submitting Issues
 For any issues or requests, please submit [here](https://github.com/prashant-ramcharan/courgette-jvm/issues/new)
