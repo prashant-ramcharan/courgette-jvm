@@ -27,14 +27,14 @@ Maven
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>1.1.0</version>
+  <version>1.1.1</version>
   <type>pom</type>
 </dependency>
 ````
 
 Gradle
 ````markdown
-compile 'io.github.prashant-ramcharan:courgette-jvm:1.1.0'
+compile 'io.github.prashant-ramcharan:courgette-jvm:1.1.1'
 ````
 
 ##### Included Dependencies
