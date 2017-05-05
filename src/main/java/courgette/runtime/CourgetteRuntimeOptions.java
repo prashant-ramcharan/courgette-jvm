@@ -43,7 +43,11 @@ public class CourgetteRuntimeOptions {
         return copyOf(runtimeOptions.toArray(), runtimeOptions.size(), String[].class);
     }
 
-    public String[] getRerunRuntimeOptions(String rerunFeatureScenario) {
+    public Map<String, List<String>> getRuntimeOptionsMap() {
+        return createRuntimeOptions(cucumberOptions, cucumberFeature);
+    }
+
+    public Map<String, List<String>> getRerunRuntimeOptionsMap(String rerunFeatureScenario) {
         Map<String, List<String>> runtimeOptionMap = createRuntimeOptions(cucumberOptions, cucumberFeature);
 
         List<String> plugins = runtimeOptionMap.getOrDefault("--plugin", new ArrayList<>());
@@ -63,10 +67,7 @@ public class CourgetteRuntimeOptions {
             }
         });
 
-        final List<String> runtimeOptions = new ArrayList<>();
-        runtimeOptionMap.entrySet().forEach(entry -> runtimeOptions.addAll(entry.getValue()));
-
-        return copyOf(runtimeOptions.toArray(), runtimeOptions.size(), String[].class);
+        return runtimeOptionMap;
     }
 
     public String getRerunFile() {

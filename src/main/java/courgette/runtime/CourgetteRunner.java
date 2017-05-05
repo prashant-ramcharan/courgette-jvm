@@ -1,6 +1,5 @@
 package courgette.runtime;
 
-import courgette.api.cli.Main;
 import courgette.runtime.utils.FileUtils;
 import cucumber.runtime.model.CucumberFeature;
 import gherkin.deps.com.google.gson.Gson;
@@ -54,7 +53,7 @@ public class CourgetteRunner {
 
                 final CourgetteRuntimeOptions runtimeOptions = new CourgetteRuntimeOptions(courgetteProperties, cucumberFeature);
 
-                final String[] cucumberArgs = runtimeOptions.getRuntimeOptions();
+                final Map<String, List<String>> cucumberArgs = runtimeOptions.getRuntimeOptionsMap();
 
                 this.cucumberFeatures.remove(cucumberFeature);
 
@@ -73,7 +72,7 @@ public class CourgetteRunner {
                         String rerunFeature = FileUtils.readFile(rerunFile, Boolean.FALSE);
 
                         if (rerunFailedScenarios && rerunFeature != null) {
-                            String[] rerunCucumberArgs = runtimeOptions.getRerunRuntimeOptions(rerunFeature);
+                            final Map<String, List<String>> rerunCucumberArgs = runtimeOptions.getRerunRuntimeOptionsMap(rerunFeature);
 
                             isPassed = runFeature("Re-running failed scenario", rerunFeature, rerunCucumberArgs);
 
@@ -172,9 +171,9 @@ public class CourgetteRunner {
         return featuresFailed.get() == 0;
     }
 
-    private Boolean runFeature(String msg, String feature, String[] args) throws IOException {
+    private Boolean runFeature(String msg, String feature, Map<String, List<String>> args) throws IOException {
         try {
-            final Boolean result = (0x0 == Main.run(args));
+            final Boolean result = 0 == new CourgetteFeatureRunner(args).run();
 
             executionLog.append(String.format("\n[THREAD-%s] %s: '%s' -> %s",
                     Thread.currentThread().getId(),
