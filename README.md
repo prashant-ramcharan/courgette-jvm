@@ -20,7 +20,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 
 ## Installation
 
-#### Repository: JCenter
+#### Repository: [jcenter](https://bintray.com/bintray/jcenter?filterByPkgName=courgette-jvm)
 
 <a href='https://bintray.com/prashantr/Courgette-JVM/courgette-jvm?source=watch' alt='Get automatic notifications about new "courgette-jvm" versions'><img src='https://www.bintray.com/docs/images/bintray_badge_color.png'></a>
 
