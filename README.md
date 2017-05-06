@@ -27,14 +27,14 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>1.1.1</version>
+  <version>1.2.0</version>
   <type>pom</type>
 </dependency>
 ````
 
 #### Gradle
 ````markdown
-compile 'io.github.prashant-ramcharan:courgette-jvm:1.1.1'
+compile 'io.github.prashant-ramcharan:courgette-jvm:1.2.0'
 ````
 
 #### Included Dependencies
@@ -97,7 +97,7 @@ task runRegression(type: Test) {
 ````
 ## Limitations
 
-* JUnit test notifier is not updated when using the built in IDE during parallel test execution.
+* JUnit test notifier is not updated when running features in the IDE during parallel test execution.
    * _Each feature is run using the Cucumber CLI and because of this JUnit is not notified off the test result. The workaround to this is the Courgette-JVM Execution report which lists all test passes, failures and re-runs. Alternatively, you can review the Cucumber reports or the results from the build tool_.
 
 
