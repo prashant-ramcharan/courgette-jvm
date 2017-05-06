@@ -21,6 +21,11 @@ public @interface CourgetteOptions {
     boolean rerunFailedScenarios() default false;
 
     /**
+     * @return true to show test output
+     */
+    boolean showTestOutput() default false;
+
+    /**
      * @return the Cucumber options
      */
     CucumberOptions cucumberOptions();

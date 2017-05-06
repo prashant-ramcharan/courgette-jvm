@@ -20,6 +20,8 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 
 ## Installation
 
+#### Repository: JCenter
+
 <a href='https://bintray.com/prashantr/Courgette-JVM/courgette-jvm?source=watch' alt='Get automatic notifications about new "courgette-jvm" versions'><img src='https://www.bintray.com/docs/images/bintray_badge_color.png'></a>
 
 #### Maven
@@ -54,6 +56,7 @@ Courgette-JVM uses JUnit to run cucumber features. A runner class must be annota
     
 * **rerunFailedScenarios** : If set to true, any failed scenario will be immediately re-run in the same thread. If the re-run succeeds, the initial failure will be ignored and not cause the build to fail.
 
+* **showTestOutput** : If set to true, the output for each feature will be redirected to the current I/O source or destination.
     
 * **cucumberOptions** : The standard cucumber options for specifying feature paths, glue, tags etc..
 
@@ -70,6 +73,7 @@ Courgette-JVM uses JUnit to run cucumber features. A runner class must be annota
 @CourgetteOptions(
         threads = 10,
         rerunFailedScenarios = true,
+        showTestOutput = true,
         cucumberOptions = @CucumberOptions(
                 features = "src/test/resources/features",
                 glue = "steps",

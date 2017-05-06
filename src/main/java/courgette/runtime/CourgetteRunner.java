@@ -90,8 +90,6 @@ public class CourgetteRunner {
                             final CopyOnWriteArrayList<String> rerun = new CopyOnWriteArrayList<>();
                             rerun.add(rerunFeature);
                             reruns.put(featureName, rerun);
-                        } else {
-                            System.err.println("Something went wrong. Unable to read from re-run file.");
                         }
                     } finally {
                         runtimeOptions.getReportJsFiles().forEach(reportFile -> {
@@ -173,7 +171,9 @@ public class CourgetteRunner {
 
     private Boolean runFeature(String msg, String feature, Map<String, List<String>> args) throws IOException {
         try {
-            final Boolean result = 0 == new CourgetteFeatureRunner(args).run();
+            final Boolean showTestOutput = courgetteProperties.getCourgetteOptions().showTestOutput();
+
+            final Boolean result = 0 == new CourgetteFeatureRunner(args, showTestOutput).run();
 
             executionLog.append(String.format("\n[THREAD-%s] %s: '%s' -> %s",
                     Thread.currentThread().getId(),
