@@ -1,15 +1,12 @@
 package courgette.runtime;
 
+import courgette.api.RunScope;
 import courgette.runtime.utils.FileUtils;
-import cucumber.runtime.model.CucumberFeature;
 import gherkin.deps.com.google.gson.Gson;
 import gherkin.deps.com.google.gson.GsonBuilder;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
@@ -17,103 +14,95 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class CourgetteRunner {
-    private final List<Callable<Boolean>> features = new ArrayList<>();
-    private final Map<String, CopyOnWriteArrayList<String>> reruns = new LinkedHashMap<>();
+    private final List<Callable<Boolean>> runners = new ArrayList<>();
+    private final CopyOnWriteArrayList<String> reruns = new CopyOnWriteArrayList<>();
     private final Map<String, CopyOnWriteArrayList<String>> reports = new LinkedHashMap<>();
 
-    private final Integer totalFeatures;
-    private final AtomicInteger featuresPassed = new AtomicInteger(0);
-    private final AtomicInteger featuresFailed = new AtomicInteger(0);
-    private final AtomicInteger featuresRerun = new AtomicInteger(0);
-    private final AtomicInteger featuresRerunPassed = new AtomicInteger(0);
+    private final Integer total;
+    private final AtomicInteger passed = new AtomicInteger(0);
+    private final AtomicInteger failed = new AtomicInteger(0);
+    private final AtomicInteger rerun = new AtomicInteger(0);
+    private final AtomicInteger rerunPassed = new AtomicInteger(0);
 
-    private final List<CucumberFeature> cucumberFeatures;
+    private final List<CourgetteRunnerInfo> runnerInfoList;
     private final CourgetteProperties courgetteProperties;
     private final CourgetteRuntimeOptions defaultRuntimeOptions;
     private final Boolean rerunFailedScenarios;
 
     private final StringBuilder executionLog = new StringBuilder();
 
-    public CourgetteRunner(List<CucumberFeature> cucumberFeatures, CourgetteProperties courgetteProperties) {
-        this.cucumberFeatures = cucumberFeatures;
+    public CourgetteRunner(List<CourgetteRunnerInfo> runnerInfoList, CourgetteProperties courgetteProperties) {
+        this.runnerInfoList = runnerInfoList;
         this.courgetteProperties = courgetteProperties;
         this.rerunFailedScenarios = courgetteProperties.getCourgetteOptions().rerunFailedScenarios();
-        this.totalFeatures = cucumberFeatures.size();
+        this.total = runnerInfoList.size();
         this.defaultRuntimeOptions = new CourgetteRuntimeOptions(courgetteProperties);
     }
 
     public void run() {
         final ExecutorService executor = Executors.newFixedThreadPool(optimizedThreadCount());
 
-        do {
-            List<CucumberFeature> cucumberFeatures = new ArrayList<>(this.cucumberFeatures);
+        final Queue<CourgetteRunnerInfo> runnerQueue = new ArrayDeque<>(runnerInfoList);
 
-            cucumberFeatures.forEach(cucumberFeature -> {
-                final String featureName = cucumberFeature.getGherkinFeature().getName();
+        while (!runnerQueue.isEmpty()) {
+            final CourgetteRunnerInfo runnerInfo = runnerQueue.poll();
 
-                final CourgetteRuntimeOptions runtimeOptions = new CourgetteRuntimeOptions(courgetteProperties, cucumberFeature);
+            final String featureName = runnerInfo.getCucumberFeature().getGherkinFeature().getName();
 
-                final Map<String, List<String>> cucumberArgs = runtimeOptions.getRuntimeOptionsMap();
+            final Map<String, List<String>> cucumberArgs = runnerInfo.getRuntimeOptions();
 
-                this.cucumberFeatures.remove(cucumberFeature);
+            this.runners.add(() -> {
+                try {
+                    Boolean isPassed = runFeature("Running feature", runnerInfo, cucumberArgs);
 
-                features.add(() -> {
-                    try {
-                        Boolean isPassed = runFeature("Running feature", featureName, cucumberArgs);
+                    if (isPassed) {
+                        passed.incrementAndGet();
+                        return Boolean.TRUE;
+                    }
+
+                    failed.incrementAndGet();
+
+                    String rerunFile = runnerInfo.getRerunFile();
+                    String rerun = FileUtils.readFile(rerunFile, Boolean.FALSE);
+
+                    if (rerunFailedScenarios && rerun != null) {
+                        final Map<String, List<String>> rerunCucumberArgs = runnerInfo.getReruntimeOptions(rerun);
+
+                        isPassed = runFeature(String.format("Re-running failed scenario '%s'", rerun), null, rerunCucumberArgs);
+
+                        this.rerun.incrementAndGet();
 
                         if (isPassed) {
-                            featuresPassed.incrementAndGet();
+                            failed.decrementAndGet();
+                            passed.incrementAndGet();
+                            rerunPassed.incrementAndGet();
                             return Boolean.TRUE;
                         }
 
-                        featuresFailed.incrementAndGet();
-
-                        String rerunFile = runtimeOptions.getRerunFile();
-                        String rerunFeature = FileUtils.readFile(rerunFile, Boolean.FALSE);
-
-                        if (rerunFailedScenarios && rerunFeature != null) {
-                            final Map<String, List<String>> rerunCucumberArgs = runtimeOptions.getRerunRuntimeOptionsMap(rerunFeature);
-
-                            isPassed = runFeature("Re-running failed scenario", rerunFeature, rerunCucumberArgs);
-
-                            featuresRerun.incrementAndGet();
-
-                            if (isPassed) {
-                                featuresFailed.decrementAndGet();
-                                featuresPassed.incrementAndGet();
-                                featuresRerunPassed.incrementAndGet();
-                                return Boolean.TRUE;
-                            }
-                        }
-
-                        if (rerunFeature != null) {
-                            final CopyOnWriteArrayList<String> rerun = new CopyOnWriteArrayList<>();
-                            rerun.add(rerunFeature);
-                            reruns.put(featureName, rerun);
-                        }
-                    } finally {
-                        runtimeOptions.getReportJsFiles().forEach(reportFile -> {
-                            if (reportFile.contains(courgetteProperties.getSessionId())) {
-                                Boolean isJson = reportFile.endsWith(".json");
-
-                                String report = isJson
-                                        ? prettyJson(FileUtils.readFile(reportFile, Boolean.TRUE))
-                                        : FileUtils.readFile(reportFile, Boolean.TRUE);
-
-                                final CopyOnWriteArrayList<String> reportDetails = new CopyOnWriteArrayList<>();
-                                reportDetails.add(report);
-
-                                reports.put(reportFile, reportDetails);
-                            }
-                        });
+                        reruns.add(rerun);
                     }
-                    return Boolean.FALSE;
-                });
+                } finally {
+                    runnerInfo.getReportFiles().forEach(reportFile -> {
+                        if (reportFile.contains(courgetteProperties.getSessionId())) {
+                            Boolean isJson = reportFile.endsWith(".json");
+
+                            String report = isJson
+                                    ? prettyJson(FileUtils.readFile(reportFile, Boolean.TRUE))
+                                    : FileUtils.readFile(reportFile, Boolean.TRUE);
+
+                            final CopyOnWriteArrayList<String> reportDetails = new CopyOnWriteArrayList<>();
+                            reportDetails.add(report);
+
+                            reports.put(reportFile, reportDetails);
+                        }
+                    });
+                }
+                return Boolean.FALSE;
             });
-        } while (this.cucumberFeatures.size() > 0);
+        }
 
         try {
-            executor.invokeAll(features);
+            executor.invokeAll(runners);
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
@@ -131,20 +120,10 @@ public class CourgetteRunner {
     }
 
     public void createRerunFile() {
-        final Map<String, CopyOnWriteArrayList<String>> sortedReruns = new LinkedHashMap<>();
-
-        reruns.entrySet().stream()
-                .sorted(Map.Entry.comparingByKey())
-                .forEachOrdered(x -> sortedReruns.put(x.getKey(), x.getValue()));
-
         final List<String> rerun = new ArrayList<>();
-        sortedReruns.values().forEach(rerunFeature -> {
-            try {
-                rerun.add(rerunFeature.get(0));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
+
+        reruns.sort(String::compareTo);
+        reruns.forEach(rerun::add);
 
         final String rerunFile = defaultRuntimeOptions.getCucumberRerunFile();
 
@@ -154,33 +133,28 @@ public class CourgetteRunner {
     }
 
     public void createExecutionReport() {
-        final CourgetteExecutionReporter executionReporter = new CourgetteExecutionReporter(executionLog);
+        final CourgetteExecutionReporter executionReporter = new CourgetteExecutionReporter(executionLog, courgetteProperties.getCourgetteOptions().runScope());
 
         executionReporter.createReport(
-                totalFeatures,
-                featuresPassed.get(),
-                featuresFailed.get(),
-                featuresRerun.get(),
-                featuresRerunPassed.get(),
+                total,
+                passed.get(),
+                failed.get(),
+                rerun.get(),
+                rerunPassed.get(),
                 courgetteProperties.getSessionStartTime());
     }
 
     public Boolean allFeaturesPassed() {
-        return featuresFailed.get() == 0;
+        return failed.get() == 0;
     }
 
-    private Boolean runFeature(String msg, String feature, Map<String, List<String>> args) throws IOException {
+    private Boolean runFeature(String msg, CourgetteRunnerInfo runnerInfo, Map<String, List<String>> args) throws IOException {
         try {
             final Boolean showTestOutput = courgetteProperties.getCourgetteOptions().showTestOutput();
 
             final Boolean result = 0 == new CourgetteFeatureRunner(args, showTestOutput).run();
 
-            executionLog.append(String.format("\n[THREAD-%s] %s: '%s' -> %s",
-                    Thread.currentThread().getId(),
-                    msg,
-                    feature,
-                    result ? "PASSED" : "FAILED"));
-
+            addResultToExecutionLog(msg, runnerInfo, result);
             return result;
         } catch (Throwable throwable) {
             throwable.printStackTrace();
@@ -194,10 +168,35 @@ public class CourgetteRunner {
     }
 
     private Integer optimizedThreadCount() {
-        return courgetteProperties.getMaxThreads() > cucumberFeatures.size()
-                ? cucumberFeatures.size()
+        return courgetteProperties.getMaxThreads() > runnerInfoList.size()
+                ? runnerInfoList.size()
                 : courgetteProperties.getMaxThreads() < 1
                 ? 1
                 : courgetteProperties.getMaxThreads();
+    }
+
+    private void addResultToExecutionLog(String msg, CourgetteRunnerInfo runnerInfo, Boolean result) {
+        if (runnerInfo == null) {
+            executionLog.append(String.format("\n[THREAD-%s] %s -> %s",
+                    Thread.currentThread().getId(),
+                    msg,
+                    result ? "PASSED" : "FAILED"));
+            return;
+        }
+
+        if (runnerInfo.getRunScope().equals(RunScope.FEATURE_SCOPE)) {
+            executionLog.append(String.format("\n[THREAD-%s] %s: '%s' -> %s",
+                    Thread.currentThread().getId(),
+                    msg,
+                    runnerInfo.getCucumberFeature().getGherkinFeature().getName(),
+                    result ? "PASSED" : "FAILED"));
+        } else {
+            executionLog.append(String.format("\n[THREAD-%s] %s: '%s' at scenario line number '%s' -> %s",
+                    Thread.currentThread().getId(),
+                    msg,
+                    runnerInfo.getCucumberFeature().getGherkinFeature().getName(),
+                    runnerInfo.getLineId(),
+                    result ? "PASSED" : "FAILED"));
+        }
     }
 }

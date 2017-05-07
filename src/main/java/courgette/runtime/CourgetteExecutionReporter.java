@@ -1,5 +1,6 @@
 package courgette.runtime;
 
+import courgette.api.RunScope;
 import courgette.runtime.utils.FileUtils;
 
 import java.io.File;
@@ -9,28 +10,36 @@ import java.util.concurrent.TimeUnit;
 
 public class CourgetteExecutionReporter {
     private final StringBuilder executionLog;
+    private final RunScope runScope;
 
-    public CourgetteExecutionReporter(StringBuilder executionLog) {
+    public CourgetteExecutionReporter(StringBuilder executionLog, RunScope runScope) {
         this.executionLog = executionLog;
+        this.runScope = runScope;
     }
 
-    public void createReport(Integer totalFeatures,
-                             Integer featuresPassed,
-                             Integer featuresFailed,
-                             Integer featuresRerun,
-                             Integer featuresRerunPassed,
+    public void createReport(Integer total,
+                             Integer passed,
+                             Integer failed,
+                             Integer rerun,
+                             Integer rerunPassed,
                              Instant sessionStart) {
 
         executionLog.insert(0, "Courgette-JVM Execution Report\n==============================\n");
 
         executionLog.insert(executionLog.length(), "\n\nReport Summary\n--------------\n");
-        executionLog.append(String.format("Total Features: %s\n", totalFeatures));
-        executionLog.append(String.format("Passed: %s\n", featuresPassed));
-        executionLog.append(String.format("Failed: %s\n", featuresFailed));
 
-        if (featuresRerun > 0) {
-            executionLog.append(String.format("Rerun: %s\n", featuresRerun));
-            executionLog.append(String.format("Passed After Rerun: %s\n", featuresRerunPassed));
+        if (runScope.equals(RunScope.FEATURE_SCOPE)) {
+            executionLog.append(String.format("Total Features: %s\n", total));
+        } else {
+            executionLog.append(String.format("Total Scenarios: %s\n", total));
+        }
+
+        executionLog.append(String.format("Passed: %s\n", passed));
+        executionLog.append(String.format("Failed: %s\n", failed));
+
+        if (rerun > 0) {
+            executionLog.append(String.format("Rerun: %s\n", rerun));
+            executionLog.append(String.format("Passed After Rerun: %s\n", rerunPassed));
         }
 
         final long elapsedMill = (Instant.now().minus(sessionStart.toEpochMilli(), ChronoUnit.MILLIS)).toEpochMilli();

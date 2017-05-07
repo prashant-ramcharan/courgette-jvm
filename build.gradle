@@ -15,6 +15,9 @@ repositories {
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
+    testCompile group: 'org.seleniumhq.selenium', name: 'selenium-chrome-driver', version: '3.3.1'
+    testCompile group: 'org.seleniumhq.selenium', name: 'selenium-firefox-driver', version: '3.3.1'
+
     compile 'info.cukes:cucumber-core:1.2.5'
     compile 'info.cukes:cucumber-java:1.2.5'
     compile 'info.cukes:cucumber-java8:1.2.5'

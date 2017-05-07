@@ -16,6 +16,11 @@ public @interface CourgetteOptions {
     int threads() default 5;
 
     /**
+     * @return the runScope
+     */
+    RunScope runScope() default RunScope.SCENARIO_SCOPE;
+
+    /**
      * @return true to re-run failed scenarios
      */
     boolean rerunFailedScenarios() default false;

@@ -1,10 +1,8 @@
 package courgette.api.junit;
 
 import courgette.api.CourgetteOptions;
-import courgette.runtime.CourgetteException;
-import courgette.runtime.CourgetteFeatureLoader;
-import courgette.runtime.CourgetteProperties;
-import courgette.runtime.CourgetteRunner;
+import courgette.api.RunScope;
+import courgette.runtime.*;
 import cucumber.runtime.ClassFinder;
 import cucumber.runtime.Runtime;
 import cucumber.runtime.RuntimeOptions;
@@ -21,14 +19,12 @@ import org.junit.runners.ParentRunner;
 import org.junit.runners.model.InitializationError;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class Courgette extends ParentRunner<FeatureRunner> {
     private final CourgetteProperties courgetteProperties;
     private final List<CucumberFeature> cucumberFeatures;
+    private final List<CourgetteRunnerInfo> runnerInfoList;
     private final ClassLoader classLoader;
     private final RuntimeOptions runtimeOptions;
 
@@ -42,7 +38,18 @@ public class Courgette extends ParentRunner<FeatureRunner> {
         final CourgetteFeatureLoader courgetteFeatureLoader = new CourgetteFeatureLoader(courgetteProperties);
         cucumberFeatures = courgetteFeatureLoader.getCucumberFeatures();
 
-        runtimeOptions = courgetteFeatureLoader.getRuntimeOptions();
+        runtimeOptions = courgetteFeatureLoader.getCucumberRuntimeOptions();
+
+        runnerInfoList = new ArrayList<>();
+
+        if (courgetteOptions.runScope().equals(RunScope.FEATURE_SCOPE)) {
+            cucumberFeatures.forEach(feature -> runnerInfoList.add(new CourgetteRunnerInfo(courgetteProperties, feature, null)));
+        } else {
+            final Map<CucumberFeature, Integer> scenarios = courgetteFeatureLoader.getCucumberScenarios();
+            scenarios
+                    .keySet()
+                    .forEach(scenario -> runnerInfoList.add(new CourgetteRunnerInfo(courgetteProperties, scenario, scenarios.get(scenario))));
+        }
     }
 
     @Override
@@ -51,7 +58,7 @@ public class Courgette extends ParentRunner<FeatureRunner> {
         final JUnitReporter jUnitReporter = new JUnitReporter(runtimeOptions.reporter(classLoader), runtimeOptions.formatter(classLoader), runtimeOptions.isStrict(), new JUnitOptions(runtimeOptions.getJunitOptions()));
 
         final List<FeatureRunner> children = new ArrayList<>();
-        cucumberFeatures.forEach(cucumberFeature -> {
+        this.cucumberFeatures.forEach(cucumberFeature -> {
             try {
                 children.add(new FeatureRunner(cucumberFeature, runtime, jUnitReporter));
             } catch (InitializationError error) {
@@ -73,7 +80,7 @@ public class Courgette extends ParentRunner<FeatureRunner> {
 
     @Override
     public void run(RunNotifier notifier) {
-        final CourgetteRunner courgetteRunner = new CourgetteRunner(cucumberFeatures, courgetteProperties);
+        final CourgetteRunner courgetteRunner = new CourgetteRunner(runnerInfoList, courgetteProperties);
         courgetteRunner.run();
         courgetteRunner.createReport();
         courgetteRunner.createExecutionReport();
