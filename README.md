@@ -87,18 +87,18 @@ public class RegressionTestSuite {
 }
 ````
 
-## Gradle Task
+## Build Task
 
-````groovy
-task runRegression(type: Test) {
-    systemProperty('property-name', 'property-value')
-
-    test {
-        include '**/RegressionTestSuite.class'
-    }
-    outputs.upToDateWhen { false }
-}
+Gradle
 ````
+gradle -Dtest.single=RegressionTestSuite test
+````
+
+Maven
+````
+mvn -Dtest=RegressionTestSuite test
+````
+
 ## Limitations
 
 * JUnit test notifier is not updated when running features in the IDE during parallel test execution.
