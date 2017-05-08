@@ -4,7 +4,6 @@ import cucumber.api.CucumberOptions;
 import cucumber.runtime.model.CucumberFeature;
 
 import java.net.URL;
-import java.time.Instant;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -22,7 +21,7 @@ public class CourgetteRuntimeOptions {
     private String rerunFile;
     private String cucumberResourcePath;
 
-    private final Integer instanceId = Instant.now().hashCode();
+    private final int instanceId = UUID.randomUUID().hashCode();
     private final String tmpDir = System.getProperty("java.io.tmpdir");
 
     public CourgetteRuntimeOptions(CourgetteProperties courgetteProperties, CucumberFeature cucumberFeature) {
@@ -48,29 +47,6 @@ public class CourgetteRuntimeOptions {
 
     public Map<String, List<String>> mapRuntimeOptions() {
         return createRuntimeOptions(cucumberOptions, cucumberResourcePath);
-    }
-
-    public Map<String, List<String>> mapReruntimeOptions(String rerunFeatureScenario) {
-        final Map<String, List<String>> runtimeOptionMap = createRuntimeOptions(cucumberOptions, cucumberFeature.getPath());
-
-        List<String> plugins = runtimeOptionMap.getOrDefault("--plugin", new ArrayList<>());
-
-        final int rerunPluginIndex = plugins.indexOf(plugins.stream().filter(p -> p.startsWith("rerun")).findFirst().orElse(null));
-        if (rerunPluginIndex > 0) {
-            plugins.remove(rerunPluginIndex);
-            plugins.remove(rerunPluginIndex - 1);
-        }
-
-        runtimeOptionMap.put("--plugin", plugins);
-
-        runtimeOptionMap.remove("--tags");
-        runtimeOptionMap.put(null, new ArrayList<String>() {
-            {
-                add(rerunFeatureScenario);
-            }
-        });
-
-        return runtimeOptionMap;
     }
 
     public String getRerunFile() {
@@ -125,7 +101,6 @@ public class CourgetteRuntimeOptions {
     private String getMultiThreadReportFile() {
         return tmpDir + courgetteProperties.getSessionId() + "_thread_report_" + cucumberFeature.getGherkinFeature().getId() + instanceId;
     }
-
 
     private Function<CourgetteProperties, String> cucumberRerunPlugin = (courgetteProperties) -> {
         final String rerunPlugin = Arrays.stream(courgetteProperties.getCourgetteOptions()
@@ -206,7 +181,7 @@ public class CourgetteRuntimeOptions {
         final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         final String[] resourceFolders = resourcePath.split("/");
 
-        if (resourcePath.equals(featurePath)){
+        if (resourcePath.equals(featurePath)) {
             return resourcePath;
         }
 

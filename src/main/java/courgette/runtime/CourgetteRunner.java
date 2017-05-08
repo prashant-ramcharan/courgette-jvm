@@ -1,6 +1,6 @@
 package courgette.runtime;
 
-import courgette.api.RunScope;
+import courgette.api.CourgetteRunLevel;
 import courgette.runtime.utils.FileUtils;
 import gherkin.deps.com.google.gson.Gson;
 import gherkin.deps.com.google.gson.GsonBuilder;
@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class CourgetteRunner {
     private final List<Callable<Boolean>> runners = new ArrayList<>();
     private final CopyOnWriteArrayList<String> reruns = new CopyOnWriteArrayList<>();
-    private final Map<String, CopyOnWriteArrayList<String>> reports = new LinkedHashMap<>();
+    private final Map<String, CopyOnWriteArrayList<String>> reports = new HashMap<>();
 
     private final Integer total;
     private final AtomicInteger passed = new AtomicInteger(0);
@@ -47,8 +47,6 @@ public class CourgetteRunner {
         while (!runnerQueue.isEmpty()) {
             final CourgetteRunnerInfo runnerInfo = runnerQueue.poll();
 
-            final String featureName = runnerInfo.getCucumberFeature().getGherkinFeature().getName();
-
             final Map<String, List<String>> cucumberArgs = runnerInfo.getRuntimeOptions();
 
             this.runners.add(() -> {
@@ -66,7 +64,7 @@ public class CourgetteRunner {
                     String rerun = FileUtils.readFile(rerunFile, Boolean.FALSE);
 
                     if (rerunFailedScenarios && rerun != null) {
-                        final Map<String, List<String>> rerunCucumberArgs = runnerInfo.getReruntimeOptions(rerun);
+                        final Map<String, List<String>> rerunCucumberArgs = runnerInfo.getRerunRuntimeOptions(rerun);
 
                         isPassed = runFeature(String.format("Re-running failed scenario '%s'", rerun), null, rerunCucumberArgs);
 
@@ -78,7 +76,8 @@ public class CourgetteRunner {
                             rerunPassed.incrementAndGet();
                             return Boolean.TRUE;
                         }
-
+                    }
+                    if (rerun != null) {
                         reruns.add(rerun);
                     }
                 } finally {
@@ -133,7 +132,7 @@ public class CourgetteRunner {
     }
 
     public void createExecutionReport() {
-        final CourgetteExecutionReporter executionReporter = new CourgetteExecutionReporter(executionLog, courgetteProperties.getCourgetteOptions().runScope());
+        final CourgetteExecutionReporter executionReporter = new CourgetteExecutionReporter(executionLog, courgetteProperties.getCourgetteOptions().runLevel());
 
         executionReporter.createReport(
                 total,
@@ -184,7 +183,7 @@ public class CourgetteRunner {
             return;
         }
 
-        if (runnerInfo.getRunScope().equals(RunScope.FEATURE_SCOPE)) {
+        if (runnerInfo.getCourgetteRunLevel().equals(CourgetteRunLevel.FEATURE)) {
             executionLog.append(String.format("\n[THREAD-%s] %s: '%s' -> %s",
                     Thread.currentThread().getId(),
                     msg,

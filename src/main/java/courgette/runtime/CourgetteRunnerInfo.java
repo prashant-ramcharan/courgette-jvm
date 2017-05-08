@@ -1,6 +1,6 @@
 package courgette.runtime;
 
-import courgette.api.RunScope;
+import courgette.api.CourgetteRunLevel;
 import cucumber.runtime.model.CucumberFeature;
 
 import java.util.ArrayList;
@@ -8,18 +8,16 @@ import java.util.List;
 import java.util.Map;
 
 public class CourgetteRunnerInfo {
-    private final CourgetteProperties courgetteProperties;
-    private CourgetteRuntimeOptions courgetteRuntimeOptions;
+    private final CourgetteRuntimeOptions courgetteRuntimeOptions;
     private final CucumberFeature cucumberFeature;
     private final Integer lineId;
-    private final RunScope runScope;
+    private final CourgetteRunLevel courgetteRunLevel;
 
     public CourgetteRunnerInfo(CourgetteProperties courgetteProperties, CucumberFeature cucumberFeature, Integer lineId) {
-        this.courgetteProperties = courgetteProperties;
         this.cucumberFeature = cucumberFeature;
         this.courgetteRuntimeOptions = new CourgetteRuntimeOptions(courgetteProperties, cucumberFeature);
         this.lineId = lineId;
-        this.runScope = courgetteProperties.getCourgetteOptions().runScope();
+        this.courgetteRunLevel = courgetteProperties.getCourgetteOptions().runLevel();
     }
 
     public CucumberFeature getCucumberFeature() {
@@ -29,7 +27,7 @@ public class CourgetteRunnerInfo {
     public Map<String, List<String>> getRuntimeOptions() {
         Map<String, List<String>> runtimeOptions = courgetteRuntimeOptions.mapRuntimeOptions();
 
-        if (runScope.equals(RunScope.SCENARIO_SCOPE) && lineId != null) {
+        if (courgetteRunLevel.equals(CourgetteRunLevel.SCENARIO) && lineId != null) {
             final String featurePath = runtimeOptions.get(null).get(0);
 
             final List<String> scenarioPath = new ArrayList<>();
@@ -41,8 +39,14 @@ public class CourgetteRunnerInfo {
         return runtimeOptions;
     }
 
-    public Map<String, List<String>> getReruntimeOptions(String rerun) {
-        return new CourgetteRuntimeOptions(courgetteProperties, cucumberFeature).mapReruntimeOptions(rerun);
+    public Map<String, List<String>> getRerunRuntimeOptions(String rerun) {
+        final Map<String, List<String>> rerunRuntimeOptions = getRuntimeOptions();
+
+        final List<String> scenarioPath = new ArrayList<>();
+        scenarioPath.add(rerun);
+        rerunRuntimeOptions.put(null, scenarioPath);
+
+        return rerunRuntimeOptions;
     }
 
     public String getRerunFile() {
@@ -57,7 +61,7 @@ public class CourgetteRunnerInfo {
         return lineId;
     }
 
-    public RunScope getRunScope() {
-        return runScope;
+    public CourgetteRunLevel getCourgetteRunLevel() {
+        return courgetteRunLevel;
     }
 }

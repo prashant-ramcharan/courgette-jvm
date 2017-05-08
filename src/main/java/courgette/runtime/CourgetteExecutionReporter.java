@@ -1,6 +1,6 @@
 package courgette.runtime;
 
-import courgette.api.RunScope;
+import courgette.api.CourgetteRunLevel;
 import courgette.runtime.utils.FileUtils;
 
 import java.io.File;
@@ -10,11 +10,11 @@ import java.util.concurrent.TimeUnit;
 
 public class CourgetteExecutionReporter {
     private final StringBuilder executionLog;
-    private final RunScope runScope;
+    private final CourgetteRunLevel courgetteRunLevel;
 
-    public CourgetteExecutionReporter(StringBuilder executionLog, RunScope runScope) {
+    public CourgetteExecutionReporter(StringBuilder executionLog, CourgetteRunLevel courgetteRunLevel) {
         this.executionLog = executionLog;
-        this.runScope = runScope;
+        this.courgetteRunLevel = courgetteRunLevel;
     }
 
     public void createReport(Integer total,
@@ -28,7 +28,7 @@ public class CourgetteExecutionReporter {
 
         executionLog.insert(executionLog.length(), "\n\nReport Summary\n--------------\n");
 
-        if (runScope.equals(RunScope.FEATURE_SCOPE)) {
+        if (courgetteRunLevel.equals(CourgetteRunLevel.FEATURE)) {
             executionLog.append(String.format("Total Features: %s\n", total));
         } else {
             executionLog.append(String.format("Total Scenarios: %s\n", total));

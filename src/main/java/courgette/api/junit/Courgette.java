@@ -1,7 +1,7 @@
 package courgette.api.junit;
 
 import courgette.api.CourgetteOptions;
-import courgette.api.RunScope;
+import courgette.api.CourgetteRunLevel;
 import courgette.runtime.*;
 import cucumber.runtime.ClassFinder;
 import cucumber.runtime.Runtime;
@@ -42,7 +42,7 @@ public class Courgette extends ParentRunner<FeatureRunner> {
 
         runnerInfoList = new ArrayList<>();
 
-        if (courgetteOptions.runScope().equals(RunScope.FEATURE_SCOPE)) {
+        if (courgetteOptions.runLevel().equals(CourgetteRunLevel.FEATURE)) {
             cucumberFeatures.forEach(feature -> runnerInfoList.add(new CourgetteRunnerInfo(courgetteProperties, feature, null)));
         } else {
             final Map<CucumberFeature, Integer> scenarios = courgetteFeatureLoader.getCucumberScenarios();
