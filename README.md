@@ -4,10 +4,11 @@
 
 # Courgette-JVM #
 
-Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run cucumber features files in parallel** and to **automatically re-run failed scenarios**.
+Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run cucumber tests in parallel on a feature level or on a scenario level**. It also provides an option to **automatically re-run failed scenarios**.
 
 ## Key Features
-- **All feature files** are executed in parallel on independent threads.
+- **All features** can be executed in parallel on independent threads.
+- **All scenarios** can be executed in parallel on independent threads.
 - **Automatic re-run** of failed scenarios.
 - **Requires only 1 annotated class** to run all feature files in parallel.
 - **Single report generation** for all executed features including embedded files (Json and Html reports)
@@ -29,14 +30,14 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>1.2.0</version>
+  <version>1.3.0</version>
   <type>pom</type>
 </dependency>
 ````
 
 #### Gradle
 ````markdown
-compile 'io.github.prashant-ramcharan:courgette-jvm:1.2.0'
+compile 'io.github.prashant-ramcharan:courgette-jvm:1.3.0'
 ````
 
 #### Included Dependencies
@@ -53,6 +54,9 @@ Courgette-JVM uses JUnit to run cucumber features. A runner class must be annota
 
     * _Example: If you have 10 cucumber features and you use 6 threads, 6 features would first run in parallel then the following 4 features would run in parallel_.
 
+* **runLevel** : Options are CourgetteRunLevel.FEATURE or CourgetteRunLevel.SCENARIO
+
+    * _If set to feature level, all features would run in parallel. If set to scenario level, all scenarios would be run in parallel._
     
 * **rerunFailedScenarios** : If set to true, any failed scenario will be immediately re-run in the same thread. If the re-run succeeds, the initial failure will be ignored and not cause the build to fail.
 
@@ -72,6 +76,7 @@ Courgette-JVM uses JUnit to run cucumber features. A runner class must be annota
 @RunWith(Courgette.class)
 @CourgetteOptions(
         threads = 10,
+        runLevel = CourgetteRunLevel.SCENARIO,
         rerunFailedScenarios = true,
         showTestOutput = true,
         cucumberOptions = @CucumberOptions(
@@ -89,7 +94,6 @@ public class RegressionTestSuite {
 
 ## Gradle Build Task
 
-Gradle
 ````gradle
 task regressionSuite(type: Test, dependsOn: testClasses) {
     systemProperty('name', 'value')
