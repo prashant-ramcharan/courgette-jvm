@@ -87,16 +87,17 @@ public class RegressionTestSuite {
 }
 ````
 
-## Build Task
+## Gradle Build Task
 
 Gradle
-````
-gradle -Dtest.single=RegressionTestSuite test
-````
-
-Maven
-````
-mvn -Dtest=RegressionTestSuite test
+````gradle
+task regressionSuite(type: Test, dependsOn: testClasses) {
+    systemProperty('name', 'value')
+    
+    include '**/RegressionTestSuite.class'
+    
+    outputs.upToDateWhen { false }
+}
 ````
 
 ## Limitations
