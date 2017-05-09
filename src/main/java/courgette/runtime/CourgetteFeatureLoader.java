@@ -7,6 +7,7 @@ import cucumber.runtime.model.CucumberFeature;
 import cucumber.runtime.model.CucumberScenarioOutline;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CourgetteFeatureLoader {
     private final CourgetteProperties courgetteProperties;
@@ -49,33 +50,37 @@ public class CourgetteFeatureLoader {
 
         if (cucumberFeatures != null) {
             cucumberFeatures.forEach(cucumberFeature -> cucumberFeature.getFeatureElements().forEach(featureElement -> {
+
+                final List<Integer> lineIds = new ArrayList<>();
+
                 if (featureElement instanceof CucumberScenarioOutline) {
                     ((CucumberScenarioOutline) featureElement).getCucumberExamplesList()
                             .forEach(c -> c.getExamples().getRows().stream().skip(1).forEach(row -> {
-                                final Integer lineId = row.getLine();
-
-                                runtimeOptions.getFeaturePaths().forEach(resourcePath -> {
-
-                                    final List<String> scenarioPath = new ArrayList<>();
-                                    addScenario(scenarioPath, cucumberFeature, resourcePath, lineId);
-
-                                    scenarios.put(
-                                            CucumberFeature.load(resourceLoader, scenarioPath, new ArrayList<>()).stream().findFirst().orElse(null),
-                                            lineId);
-                                });
+                                lineIds.add(row.getLine());
                             }));
                 } else {
-                    final Integer lineId = featureElement.getGherkinModel().getLine();
+                    lineIds.add(featureElement.getGherkinModel().getLine());
+                }
+
+                lineIds.forEach(lineId -> {
+                    final AtomicBoolean alreadyAdded = new AtomicBoolean(Boolean.FALSE);
 
                     runtimeOptions.getFeaturePaths().forEach(resourcePath -> {
-                        final List<String> scenarioPath = new ArrayList<>();
-                        addScenario(scenarioPath, cucumberFeature, resourcePath, lineId);
+                        if (!alreadyAdded.get()) {
+                            final List<String> scenarioPath = new ArrayList<>();
+                            addScenario(scenarioPath, cucumberFeature, resourcePath, lineId);
 
-                        scenarios.put(
-                                CucumberFeature.load(resourceLoader, scenarioPath, new ArrayList<>()).stream().findFirst().orElse(null),
-                                lineId);
+                            try {
+                                scenarios.put(
+                                        CucumberFeature.load(resourceLoader, scenarioPath, new ArrayList<>()).stream().findFirst().orElse(null),
+                                        lineId);
+                                alreadyAdded.set(Boolean.TRUE);
+                            } catch (IllegalArgumentException e) {
+                                alreadyAdded.set(Boolean.FALSE);
+                            }
+                        }
                     });
-                }
+                });
             }));
         }
         return scenarios;

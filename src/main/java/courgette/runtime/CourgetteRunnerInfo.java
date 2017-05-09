@@ -32,8 +32,8 @@ public class CourgetteRunnerInfo {
 
             final List<String> scenarioPath = new ArrayList<>();
             scenarioPath.add(String.format("%s:%s", featurePath, lineId));
-
             runtimeOptions.put(null, scenarioPath);
+
             runtimeOptions.remove("--tags");
         }
         return runtimeOptions;
@@ -41,6 +41,7 @@ public class CourgetteRunnerInfo {
 
     public Map<String, List<String>> getRerunRuntimeOptions(String rerun) {
         final Map<String, List<String>> rerunRuntimeOptions = getRuntimeOptions();
+        rerunRuntimeOptions.remove("--tags");
 
         final List<String> scenarioPath = new ArrayList<>();
         scenarioPath.add(rerun);
