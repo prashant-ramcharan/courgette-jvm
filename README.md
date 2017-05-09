@@ -20,7 +20,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 
 ## Installation
 
-#### Repository: JCenter
+#### Repository: [jcenter](https://bintray.com/bintray/jcenter?filterByPkgName=courgette-jvm)
 
 <a href='https://bintray.com/prashantr/Courgette-JVM/courgette-jvm?source=watch' alt='Get automatic notifications about new "courgette-jvm" versions'><img src='https://www.bintray.com/docs/images/bintray_badge_color.png'></a>
 
@@ -87,18 +87,19 @@ public class RegressionTestSuite {
 }
 ````
 
-## Gradle Task
+## Gradle Build Task
 
-````groovy
-task runRegression(type: Test) {
-    systemProperty('property-name', 'property-value')
-
-    test {
-        include '**/RegressionTestSuite.class'
-    }
+Gradle
+````gradle
+task regressionSuite(type: Test, dependsOn: testClasses) {
+    systemProperty('name', 'value')
+    
+    include '**/RegressionTestSuite.class'
+    
     outputs.upToDateWhen { false }
 }
 ````
+
 ## Limitations
 
 * JUnit test notifier is not updated when running features in the IDE during parallel test execution.
