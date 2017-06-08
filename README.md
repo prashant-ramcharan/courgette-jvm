@@ -37,6 +37,10 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 
 #### Gradle
 ````markdown
+repositories {
+    jcenter()
+}
+
 compile 'io.github.prashant-ramcharan:courgette-jvm:1.3.1'
 ````
 
@@ -49,6 +53,9 @@ compile 'io.github.prashant-ramcharan:courgette-jvm:1.3.1'
 
 
 ## Usage
+
+Example project: [Courgette-JVM Example](https://github.com/prashant-ramcharan/courgette-jvm-example)
+
 Courgette-JVM uses JUnit to run cucumber features. A runner class must be annotated with **@RunWith(Courgette.class)** and must include **@CourgetteOptions**
 
 * **threads** : The number of concurrent threads to run cucumber features. 
