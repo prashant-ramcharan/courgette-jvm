@@ -1,5 +1,5 @@
 group 'io.github.prashant-ramcharan'
-version '1.3.0'
+version '1.3.1'
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'
@@ -19,6 +19,7 @@ dependencies {
     compile 'info.cukes:cucumber-java:1.2.5'
     compile 'info.cukes:cucumber-java8:1.2.5'
     compile 'info.cukes:cucumber-junit:1.2.5'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.8.8'
 }
 
 task buildJar(type: Jar, dependsOn: classes) {

@@ -1,9 +1,8 @@
 package courgette.runtime;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import courgette.api.CourgetteRunLevel;
 import courgette.runtime.utils.FileUtils;
-import gherkin.deps.com.google.gson.Gson;
-import gherkin.deps.com.google.gson.GsonBuilder;
 
 import java.io.IOException;
 import java.util.*;
@@ -162,8 +161,14 @@ public class CourgetteRunner {
     }
 
     private String prettyJson(String json) {
-        final Object jsonObject = new Gson().fromJson(json, Object.class);
-        return new GsonBuilder().setPrettyPrinting().create().toJson(jsonObject);
+        final ObjectMapper mapper = new ObjectMapper();
+
+        try {
+            final Object jsonObject = mapper.readValue(json, Object.class);
+            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject);
+        } catch (IOException e) {
+            return json;
+        }
     }
 
     private Integer optimizedThreadCount() {
