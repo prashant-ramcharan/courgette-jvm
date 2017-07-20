@@ -3,6 +3,7 @@ package courgette.runtime;
 import cucumber.api.CucumberOptions;
 import cucumber.runtime.model.CucumberFeature;
 
+import java.io.File;
 import java.net.URL;
 import java.util.*;
 import java.util.function.BiFunction;
@@ -22,7 +23,6 @@ public class CourgetteRuntimeOptions {
     private String cucumberResourcePath;
 
     private final int instanceId = UUID.randomUUID().hashCode();
-    private final String tmpDir = System.getProperty("java.io.tmpdir");
 
     public CourgetteRuntimeOptions(CourgetteProperties courgetteProperties, CucumberFeature cucumberFeature) {
         this.courgetteProperties = courgetteProperties;
@@ -95,11 +95,11 @@ public class CourgetteRuntimeOptions {
     }
 
     private String getMultiThreadRerunFile() {
-        return tmpDir + courgetteProperties.getSessionId() + "_rerun_" + cucumberFeature.getGherkinFeature().getId() + instanceId + ".txt";
+        return getTempDirectory() + courgetteProperties.getSessionId() + "_rerun_" + cucumberFeature.getGherkinFeature().getId() + instanceId + ".txt";
     }
 
     private String getMultiThreadReportFile() {
-        return tmpDir + courgetteProperties.getSessionId() + "_thread_report_" + cucumberFeature.getGherkinFeature().getId() + instanceId;
+        return getTempDirectory() + courgetteProperties.getSessionId() + "_thread_report_" + cucumberFeature.getGherkinFeature().getId() + instanceId;
     }
 
     private Function<CourgetteProperties, String> cucumberRerunPlugin = (courgetteProperties) -> {
@@ -230,4 +230,14 @@ public class CourgetteRuntimeOptions {
         Arrays.asList(resourceFeaturePaths).forEach(featurePaths::add);
         return featurePaths;
     };
+
+    private String getTempDirectory() {
+        final String fileSeparator = File.separator;
+        final String tmpDir = System.getProperty("java.io.tmpdir");
+
+        if (!tmpDir.endsWith(fileSeparator)) {
+            return tmpDir + fileSeparator;
+        }
+        return tmpDir;
+    }
 }
