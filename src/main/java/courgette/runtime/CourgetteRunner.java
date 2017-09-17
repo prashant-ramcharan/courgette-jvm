@@ -3,6 +3,7 @@ package courgette.runtime;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import courgette.api.CourgetteRunLevel;
 import courgette.runtime.utils.FileUtils;
+import cucumber.runtime.model.CucumberFeature;
 
 import java.io.IOException;
 import java.util.*;
@@ -10,31 +11,23 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class CourgetteRunner {
     private final List<Callable<Boolean>> runners = new ArrayList<>();
     private final CopyOnWriteArrayList<String> reruns = new CopyOnWriteArrayList<>();
     private final Map<String, CopyOnWriteArrayList<String>> reports = new HashMap<>();
 
-    private final Integer total;
-    private final AtomicInteger passed = new AtomicInteger(0);
-    private final AtomicInteger failed = new AtomicInteger(0);
-    private final AtomicInteger rerun = new AtomicInteger(0);
-    private final AtomicInteger rerunPassed = new AtomicInteger(0);
-
     private final List<CourgetteRunnerInfo> runnerInfoList;
     private final CourgetteProperties courgetteProperties;
     private final CourgetteRuntimeOptions defaultRuntimeOptions;
     private final Boolean rerunFailedScenarios;
 
-    private final StringBuilder executionLog = new StringBuilder();
+    private final List<CourgetteRunResult> runResults = new ArrayList<>();
 
     public CourgetteRunner(List<CourgetteRunnerInfo> runnerInfoList, CourgetteProperties courgetteProperties) {
         this.runnerInfoList = runnerInfoList;
         this.courgetteProperties = courgetteProperties;
         this.rerunFailedScenarios = courgetteProperties.getCourgetteOptions().rerunFailedScenarios();
-        this.total = runnerInfoList.size();
         this.defaultRuntimeOptions = new CourgetteRuntimeOptions(courgetteProperties);
     }
 
@@ -50,14 +43,12 @@ public class CourgetteRunner {
 
             this.runners.add(() -> {
                 try {
-                    Boolean isPassed = runFeature("Running feature", runnerInfo, cucumberArgs);
+                    Boolean isPassed = runFeature(cucumberArgs);
 
                     if (isPassed) {
-                        passed.incrementAndGet();
+                        addRunResult(runnerInfo, CourgetteRunResult.Status.PASSED);
                         return Boolean.TRUE;
                     }
-
-                    failed.incrementAndGet();
 
                     String rerunFile = runnerInfo.getRerunFile();
                     String rerun = FileUtils.readFile(rerunFile, Boolean.FALSE);
@@ -65,17 +56,18 @@ public class CourgetteRunner {
                     if (rerunFailedScenarios && rerun != null) {
                         final Map<String, List<String>> rerunCucumberArgs = runnerInfo.getRerunRuntimeOptions(rerun);
 
-                        isPassed = runFeature(String.format("Re-running failed scenario '%s'", rerun), null, rerunCucumberArgs);
-
-                        this.rerun.incrementAndGet();
+                        isPassed = runFeature(rerunCucumberArgs);
 
                         if (isPassed) {
-                            failed.decrementAndGet();
-                            passed.incrementAndGet();
-                            rerunPassed.incrementAndGet();
+                            addRunResult(runnerInfo, CourgetteRunResult.Status.PASSED_AFTER_RERUN);
                             return Boolean.TRUE;
+                        } else {
+                            addRunResult(runnerInfo, CourgetteRunResult.Status.FAILED);
                         }
+                    } else {
+                        addRunResult(runnerInfo, CourgetteRunResult.Status.FAILED);
                     }
+
                     if (rerun != null) {
                         reruns.add(rerun);
                     }
@@ -130,30 +122,19 @@ public class CourgetteRunner {
         }
     }
 
-    public void createExecutionReport() {
-        final CourgetteExecutionReporter executionReporter = new CourgetteExecutionReporter(executionLog, courgetteProperties.getCourgetteOptions().runLevel());
-
-        executionReporter.createReport(
-                total,
-                passed.get(),
-                failed.get(),
-                rerun.get(),
-                rerunPassed.get(),
-                courgetteProperties.getSessionStartTime());
+    public void createCourgetteReport() {
+        final CourgetteHtmlReporter courgetteReport = new CourgetteHtmlReporter(courgetteProperties, runResults);
+        courgetteReport.create();
     }
 
     public Boolean allFeaturesPassed() {
-        return failed.get() == 0;
+        return runResults.stream().noneMatch(result -> result.getStatus() == CourgetteRunResult.Status.FAILED);
     }
 
-    private Boolean runFeature(String msg, CourgetteRunnerInfo runnerInfo, Map<String, List<String>> args) throws IOException {
+    private Boolean runFeature(Map<String, List<String>> args) throws IOException {
         try {
             final Boolean showTestOutput = courgetteProperties.getCourgetteOptions().showTestOutput();
-
-            final Boolean result = 0 == new CourgetteFeatureRunner(args, showTestOutput).run();
-
-            addResultToExecutionLog(msg, runnerInfo, result);
-            return result;
+            return 0 == new CourgetteFeatureRunner(args, showTestOutput).run();
         } catch (Throwable throwable) {
             throwable.printStackTrace();
             return Boolean.FALSE;
@@ -179,28 +160,14 @@ public class CourgetteRunner {
                 : courgetteProperties.getMaxThreads();
     }
 
-    private void addResultToExecutionLog(String msg, CourgetteRunnerInfo runnerInfo, Boolean result) {
-        if (runnerInfo == null) {
-            executionLog.append(String.format("\n[THREAD-%s] %s -> %s",
-                    Thread.currentThread().getId(),
-                    msg,
-                    result ? "PASSED" : "FAILED"));
-            return;
-        }
+    private void addRunResult(CourgetteRunnerInfo runInfo, CourgetteRunResult.Status status) {
+        final CucumberFeature cucumberFeature = runInfo.getCucumberFeature();
 
-        if (runnerInfo.getCourgetteRunLevel().equals(CourgetteRunLevel.FEATURE)) {
-            executionLog.append(String.format("\n[THREAD-%s] %s: '%s' -> %s",
-                    Thread.currentThread().getId(),
-                    msg,
-                    runnerInfo.getCucumberFeature().getGherkinFeature().getName(),
-                    result ? "PASSED" : "FAILED"));
+        if (courgetteProperties.getCourgetteOptions().runLevel() == CourgetteRunLevel.FEATURE) {
+            runResults.add(new CourgetteRunResult(cucumberFeature.getGherkinFeature().getName(), cucumberFeature.getGherkinFeature().getLine(), status));
         } else {
-            executionLog.append(String.format("\n[THREAD-%s] %s: '%s' at scenario line number '%s' -> %s",
-                    Thread.currentThread().getId(),
-                    msg,
-                    runnerInfo.getCucumberFeature().getGherkinFeature().getName(),
-                    runnerInfo.getLineId(),
-                    result ? "PASSED" : "FAILED"));
+            final String scenarioName = cucumberFeature.getFeatureElements().get(0).getGherkinModel().getName();
+            runResults.add(new CourgetteRunResult(scenarioName, runInfo.getLineId(), status));
         }
     }
 }

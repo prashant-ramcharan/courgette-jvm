@@ -83,7 +83,7 @@ public class Courgette extends ParentRunner<FeatureRunner> {
         final CourgetteRunner courgetteRunner = new CourgetteRunner(runnerInfoList, courgetteProperties);
         courgetteRunner.run();
         courgetteRunner.createReport();
-        courgetteRunner.createExecutionReport();
+        courgetteRunner.createCourgetteReport();
 
         if (courgetteRunner.allFeaturesPassed()) {
             System.exit(0x0);

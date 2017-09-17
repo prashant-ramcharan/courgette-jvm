@@ -14,7 +14,8 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 - **Single report generation** for all executed features including embedded files (Json and Html reports)
 - **Single re-run file** listing all failed scenarios that occured during parallel execution.
 - Can be used with **Gradle** or **Maven**.
-- Includes a clear and concise **Courgette-JVM Execution Report**.
+- Searchable and paginated **Courgette-JVM Html Report**.
+[![](https://s26.postimg.org/6yj655ae1/Screen_Shot_2017-09-17_at_17.11.33.png)](https://postimg.org/image/m793ix42d/)
 
 ## Requirements
 - Java 8
@@ -30,7 +31,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>1.3.2</version>
+  <version>1.4.0</version>
   <type>pom</type>
 </dependency>
 ````
@@ -41,7 +42,7 @@ repositories {
     jcenter()
 }
 
-compile 'io.github.prashant-ramcharan:courgette-jvm:1.3.2'
+compile 'io.github.prashant-ramcharan:courgette-jvm:1.4.0'
 ````
 
 #### Included Dependencies
@@ -93,8 +94,8 @@ Courgette-JVM uses JUnit to run cucumber features. A runner class must be annota
                 tags = {"@regression"},
                 plugin = {
                         "pretty",
-                        "json:target/courgette-report/courgette.json",
-                        "html:target/courgette-report/courgette.html"}
+                        "json:target/cucumber-report/cucumber.json",
+                        "html:target/cucumber-report/cucumber.html"}
         ))
 public class RegressionTestSuite {
 }
@@ -115,7 +116,7 @@ task regressionSuite(type: Test, dependsOn: testClasses) {
 ## Limitations
 
 * JUnit test notifier is not updated when running features in the IDE during parallel test execution.
-   * _Each feature is run using the Cucumber CLI and because of this JUnit is not notified off the test result. The workaround to this is the Courgette-JVM Execution report which lists all test passes, failures and re-runs. Alternatively, you can review the Cucumber reports or the results from the build tool_.
+   * _Each feature is run using the Cucumber CLI and because of this JUnit is not notified off the test result. The workaround to this is the Courgette-JVM html report which lists all test passes, failures and re-runs. Alternatively, you can review the Cucumber reports or the results from the build tool_.
 
 
 ## Submitting Issues

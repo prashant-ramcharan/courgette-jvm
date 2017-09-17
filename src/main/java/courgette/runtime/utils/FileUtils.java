@@ -1,9 +1,6 @@
 package courgette.runtime.utils;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.*;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -22,6 +19,15 @@ public final class FileUtils {
 
     public static void writeFile(String file, String contents) {
         fileStringWriter.accept(file, contents);
+    }
+
+    public static void readAndWriteFile(InputStream inputStream, String writePath) {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+
+        StringBuilder lines = new StringBuilder();
+        reader.lines().forEach(line -> lines.append(line).append("\n"));
+
+        writeFile(writePath, lines.toString());
     }
 
     public static List<File> getParentFiles(String path) {
