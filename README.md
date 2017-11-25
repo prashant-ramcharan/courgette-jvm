@@ -31,7 +31,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>1.4.0</version>
+  <version>1.4.1</version>
   <type>pom</type>
 </dependency>
 ````
@@ -42,7 +42,7 @@ repositories {
     jcenter()
 }
 
-compile 'io.github.prashant-ramcharan:courgette-jvm:1.4.0'
+compile 'io.github.prashant-ramcharan:courgette-jvm:1.4.1'
 ````
 
 #### Included Dependencies
@@ -104,19 +104,38 @@ public class RegressionTestSuite {
 ## Gradle Build Task
 
 ````gradle
-task regressionSuite(type: Test, dependsOn: testClasses) {
-    systemProperty('name', 'value')
-    
+tasks.withType(Test) {
+    systemProperties = System.getProperties()
+}
+
+task regressionSuite(type: Test) {
     include '**/RegressionTestSuite.class'
-    
+
     outputs.upToDateWhen { false }
 }
 ````
 
-## Limitations
+## Gradle Run Options
+
+To override the hard-coded cucumber options (_tags, glue, plugin, name, junit_) set in the runner class, you can provide comma separated system properties to the gradle task.
+
+````gradle
+
+gradle regressionSuite -Dcucumber.tags="@regression, ~@bug" -Dcucumber.glue="steps, hooks"
+
+````
+
+## Limitations and Known Issues
 
 * JUnit test notifier is not updated when running features in the IDE during parallel test execution.
    * _Each feature is run using the Cucumber CLI and because of this JUnit is not notified off the test result. The workaround to this is the Courgette-JVM html report which lists all test passes, failures and re-runs. Alternatively, you can review the Cucumber reports or the results from the build tool_.
+   
+   
+* When there's a failure in the feature and your runner is set to 'runLevel = CourgetteRunLevel.FEATURE' and 'rerunFailedScenarios = true', the re-run cucumber feature report will override the original cucumber feature report.
+
+    Tips: 
+    * Use CourgetteRunLevel.SCENARIO which resolves this issue and retains all results in the cucumber report.
+    * Use CourgetteRunLevel.FEATURE alongside the Courgette-JVM html report (_target folder_) which retains all results.
 
 
 ## Submitting Issues
