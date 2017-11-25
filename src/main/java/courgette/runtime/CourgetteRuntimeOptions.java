@@ -81,18 +81,31 @@ public class CourgetteRuntimeOptions {
     private Map<String, List<String>> createRuntimeOptions(CucumberOptions cucumberOptions, String path) {
         final Map<String, List<String>> runtimeOptions = new HashMap<>();
 
-        runtimeOptions.put("--glue", optionParser.apply("--glue", cucumberOptions.glue()));
-        runtimeOptions.put("--tags", optionParser.apply("--tags", cucumberOptions.tags()));
-        runtimeOptions.put("--plugin", optionParser.apply("--plugin", parsePlugins(cucumberOptions.plugin())));
-        runtimeOptions.put("--format", optionParser.apply("--format", parsePlugins(cucumberOptions.format())));
-        runtimeOptions.put("--name", optionParser.apply("--name", cucumberOptions.name()));
-        runtimeOptions.put("--junit", optionParser.apply("--junit", cucumberOptions.junit()));
+        runtimeOptions.put("--glue", optionParser.apply("--glue", envCucumberOptionParser.apply("glue", cucumberOptions.glue())));
+        runtimeOptions.put("--tags", optionParser.apply("--tags", envCucumberOptionParser.apply("tags", cucumberOptions.tags())));
+        runtimeOptions.put("--plugin", optionParser.apply("--plugin", parsePlugins(envCucumberOptionParser.apply("plugin", cucumberOptions.plugin()))));
+        runtimeOptions.put("--format", optionParser.apply("--format", parsePlugins(envCucumberOptionParser.apply("format", cucumberOptions.format()))));
+        runtimeOptions.put("--name", optionParser.apply("--name", envCucumberOptionParser.apply("name", cucumberOptions.name())));
+        runtimeOptions.put("--junit", optionParser.apply("--junit", envCucumberOptionParser.apply("junit", cucumberOptions.junit())));
         runtimeOptions.put("--snippets", optionParser.apply("--snippets", cucumberOptions.snippets()));
         runtimeOptions.put(null, featureParser.apply(cucumberOptions.features(), path == null ? null : path));
         runtimeOptions.values().removeIf(Objects::isNull);
 
         return runtimeOptions;
     }
+
+    private BiFunction<String, String[], String[]> envCucumberOptionParser = (systemPropertyName, cucumberOptions) -> {
+        String cucumberOption = System.getProperty("cucumber." + systemPropertyName);
+
+        if (cucumberOption != null) {
+            final List<String> options = new ArrayList<>();
+            Arrays.stream(cucumberOption.split(",")).forEach(t -> options.add(t.trim()));
+
+            String[] cucumberOptionArray = new String[options.size()];
+            return options.toArray(cucumberOptionArray);
+        }
+        return cucumberOptions;
+    };
 
     private String getMultiThreadRerunFile() {
         return getTempDirectory() + courgetteProperties.getSessionId() + "_rerun_" + cucumberFeature.getGherkinFeature().getId() + instanceId + ".txt";
