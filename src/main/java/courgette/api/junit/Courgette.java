@@ -81,9 +81,12 @@ public class Courgette extends ParentRunner<FeatureRunner> {
     @Override
     public void run(RunNotifier notifier) {
         final CourgetteRunner courgetteRunner = new CourgetteRunner(runnerInfoList, courgetteProperties);
-        courgetteRunner.run();
-        courgetteRunner.createReport();
-        courgetteRunner.createCourgetteReport();
+
+        if (courgetteRunner.canRunFeatures()) {
+            courgetteRunner.run();
+            courgetteRunner.createReport();
+            courgetteRunner.createCourgetteReport();
+        }
 
         if (courgetteRunner.allFeaturesPassed()) {
             System.exit(0x0);

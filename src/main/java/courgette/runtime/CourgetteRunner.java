@@ -24,8 +24,11 @@ public class CourgetteRunner {
 
     private final List<CourgetteRunResult> runResults = new ArrayList<>();
 
+    private final Boolean canRunFeatures;
+
     public CourgetteRunner(List<CourgetteRunnerInfo> runnerInfoList, CourgetteProperties courgetteProperties) {
         this.runnerInfoList = runnerInfoList;
+        this.canRunFeatures = runnerInfoList.size() > 0;
         this.courgetteProperties = courgetteProperties;
         this.rerunFailedScenarios = courgetteProperties.getCourgetteOptions().rerunFailedScenarios();
         this.defaultRuntimeOptions = new CourgetteRuntimeOptions(courgetteProperties);
@@ -129,6 +132,10 @@ public class CourgetteRunner {
 
     public Boolean allFeaturesPassed() {
         return runResults.stream().noneMatch(result -> result.getStatus() == CourgetteRunResult.Status.FAILED);
+    }
+
+    public Boolean canRunFeatures() {
+        return canRunFeatures;
     }
 
     private Boolean runFeature(Map<String, List<String>> args) throws IOException {

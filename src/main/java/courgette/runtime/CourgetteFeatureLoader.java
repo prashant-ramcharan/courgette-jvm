@@ -27,13 +27,9 @@ public class CourgetteFeatureLoader {
         final CourgetteRuntimeOptions courgetteRuntimeOptions = new CourgetteRuntimeOptions(courgetteProperties);
         final List<String> argv = Arrays.asList(courgetteRuntimeOptions.getRuntimeOptions());
 
-        try {
-            runtimeOptions = new RuntimeOptions(argv);
-            cucumberFeatures = runtimeOptions.cucumberFeatures(resourceLoader);
-            return cucumberFeatures;
-        } catch (Exception ignored) {
-            return new ArrayList<>();
-        }
+        runtimeOptions = new RuntimeOptions(argv);
+        cucumberFeatures = runtimeOptions.cucumberFeatures(resourceLoader);
+        return cucumberFeatures;
     }
 
     public Map<CucumberFeature, Integer> getCucumberScenarios() {
