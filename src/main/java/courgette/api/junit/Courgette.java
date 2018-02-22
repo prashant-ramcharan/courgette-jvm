@@ -32,7 +32,7 @@ public class Courgette extends ParentRunner<FeatureRunner> {
         super(clazz);
         classLoader = clazz.getClassLoader();
 
-        final CourgetteOptions courgetteOptions = getCourgetteOptions(clazz);
+        final CourgetteOptions courgetteOptions = new CourgetteRunOptions(clazz);
         courgetteProperties = new CourgetteProperties(courgetteOptions, createSessionId(), courgetteOptions.threads());
 
         final CourgetteFeatureLoader courgetteFeatureLoader = new CourgetteFeatureLoader(courgetteProperties);
@@ -98,14 +98,6 @@ public class Courgette extends ParentRunner<FeatureRunner> {
 
     private String createSessionId() {
         return UUID.randomUUID().toString().replaceAll("-", "");
-    }
-
-    private CourgetteOptions getCourgetteOptions(Class clazz) {
-        return (CourgetteOptions)
-                Arrays.stream(clazz.getDeclaredAnnotations())
-                        .filter(annotation -> annotation.annotationType().equals(CourgetteOptions.class))
-                        .findFirst()
-                        .orElseThrow(() -> new CourgetteException("Class is not annotated with @CourgetteOptions"));
     }
 
     private Runtime createRuntime(RuntimeOptions runtimeOptions) {

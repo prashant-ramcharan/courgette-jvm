@@ -24,6 +24,8 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 
 #### Repository: [jcenter](https://bintray.com/bintray/jcenter?filterByPkgName=courgette-jvm)
 
+#### Release notes: [1.5.0](https://bintray.com/package/release/prashantr/Courgette-JVM/courgette-jvm?source=watch#release)
+
 <a href='https://bintray.com/prashantr/Courgette-JVM/courgette-jvm?source=watch' alt='Get automatic notifications about new "courgette-jvm" versions'><img src='https://www.bintray.com/docs/images/bintray_badge_color.png'></a>
 
 #### Maven
@@ -31,7 +33,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>1.4.3</version>
+  <version>1.5.0</version>
   <type>pom</type>
 </dependency>
 ````
@@ -42,7 +44,7 @@ repositories {
     jcenter()
 }
 
-compile 'io.github.prashant-ramcharan:courgette-jvm:1.4.3'
+compile 'io.github.prashant-ramcharan:courgette-jvm:1.5.0'
 ````
 
 #### Included Dependencies
@@ -117,6 +119,14 @@ task regressionSuite(type: Test) {
 ````
 
 ## Gradle Run Options
+
+To override the hard-coded courgette options (_threads, runLevel, rerunFailedScenarios, showTestOutput_) set in the runner class, you can provide system properties to the gradle task.
+
+````gradle
+
+gradle regressionSuite -Dcourgette.threads=2 -Dcourgette.runLevel=FEATURE -Dcourgette.rerunFailedScenarios=false -DshowTestOutput=true
+
+````
 
 To override the hard-coded cucumber options (_tags, glue, plugin, name, junit_) set in the runner class, you can provide comma separated system properties to the gradle task.
 
