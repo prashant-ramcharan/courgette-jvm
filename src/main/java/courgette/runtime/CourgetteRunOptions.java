@@ -17,22 +17,22 @@ public class CourgetteRunOptions implements CourgetteOptions {
 
     @Override
     public int threads() {
-        return SystemPropertyUtils.getIntProperty("courgette.threads", courgetteOptions.threads());
+        return SystemPropertyUtils.getIntProperty(CourgetteSystemProperty.THREADS, courgetteOptions.threads());
     }
 
     @Override
     public CourgetteRunLevel runLevel() {
-        return SystemPropertyUtils.getEnumProperty("courgette.runLevel", CourgetteRunLevel.class, courgetteOptions.runLevel());
+        return SystemPropertyUtils.getEnumProperty(CourgetteSystemProperty.RUN_LEVEL, CourgetteRunLevel.class, courgetteOptions.runLevel());
     }
 
     @Override
     public boolean rerunFailedScenarios() {
-        return SystemPropertyUtils.getBoolProperty("courgette.rerunFailedScenarios", courgetteOptions.rerunFailedScenarios());
+        return SystemPropertyUtils.getBoolProperty(CourgetteSystemProperty.RERUN_FAILED_SCENARIOS, courgetteOptions.rerunFailedScenarios());
     }
 
     @Override
     public boolean showTestOutput() {
-        return SystemPropertyUtils.getBoolProperty("courgette.showTestOutput", courgetteOptions.showTestOutput());
+        return SystemPropertyUtils.getBoolProperty(CourgetteSystemProperty.SHOW_TEST_OUTPUT, courgetteOptions.showTestOutput());
     }
 
     @Override

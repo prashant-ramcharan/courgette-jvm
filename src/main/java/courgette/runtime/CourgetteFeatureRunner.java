@@ -9,6 +9,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static courgette.runtime.utils.SystemPropertyUtils.splitAndAddPropertyToList;
+
 public class CourgetteFeatureRunner {
     private Map<String, List<String>> runnerArgs;
     private Boolean output;
@@ -32,6 +34,7 @@ public class CourgetteFeatureRunner {
 
             final List<String> commands = new ArrayList<>();
             commands.add("java");
+            splitAndAddPropertyToList(CourgetteSystemProperty.VM_OPTIONS, commands);
             commands.add("-cp");
             commands.add("\"" + classpath + "\"");
             systemProperties.forEach(commands::add);

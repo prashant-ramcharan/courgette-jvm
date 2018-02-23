@@ -24,7 +24,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 
 #### Repository: [jcenter](https://bintray.com/bintray/jcenter?filterByPkgName=courgette-jvm)
 
-#### Release notes: [1.5.0](https://bintray.com/prashantr/Courgette-JVM/courgette-jvm#release)
+#### Release notes: [1.5.1](https://bintray.com/prashantr/Courgette-JVM/courgette-jvm#release)
 
 <a href='https://bintray.com/prashantr/Courgette-JVM/courgette-jvm?source=watch' alt='Get automatic notifications about new "courgette-jvm" versions'><img src='https://www.bintray.com/docs/images/bintray_badge_color.png'></a>
 
@@ -33,7 +33,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>1.5.0</version>
+  <version>1.5.1</version>
   <type>pom</type>
 </dependency>
 ````
@@ -44,7 +44,7 @@ repositories {
     jcenter()
 }
 
-compile 'io.github.prashant-ramcharan:courgette-jvm:1.5.0'
+compile 'io.github.prashant-ramcharan:courgette-jvm:1.5.1'
 ````
 
 #### Included Dependencies
@@ -133,6 +133,14 @@ To override the hard-coded cucumber options (_tags, glue, plugin, name, junit_) 
 ````gradle
 
 gradle regressionSuite -Dcucumber.tags="@regression, ~@bug" -Dcucumber.glue="steps, hooks"
+
+````
+
+To specify non standard VM options (_-X options_)
+
+````gradle
+
+gradle regressionSuite -Dcourgette.vmoptions="-Xms256m -Xmx512m"
 
 ````
 
