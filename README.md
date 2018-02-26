@@ -124,7 +124,7 @@ To override the hard-coded courgette options (_threads, runLevel, rerunFailedSce
 
 ````gradle
 
-gradle regressionSuite -Dcourgette.threads=2 -Dcourgette.runLevel=FEATURE -Dcourgette.rerunFailedScenarios=false -DshowTestOutput=true
+gradle regressionSuite -Dcourgette.threads=2 -Dcourgette.runLevel=FEATURE -Dcourgette.rerunFailedScenarios=false -Dcourgette.showTestOutput=true
 
 ````
 
