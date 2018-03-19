@@ -29,12 +29,18 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <a href='https://bintray.com/prashantr/Courgette-JVM/courgette-jvm?source=watch' alt='Get automatic notifications about new "courgette-jvm" versions'><img src='https://www.bintray.com/docs/images/bintray_badge_color.png'></a>
 
 #### Maven
-````markdown
+````xml
+<repositories>
+    <repository>
+      <id>jcenter</id>
+      <url>https://jcenter.bintray.com/</url>
+    </repository>
+</repositories>
+
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
   <version>1.5.1</version>
-  <type>pom</type>
 </dependency>
 ````
 
