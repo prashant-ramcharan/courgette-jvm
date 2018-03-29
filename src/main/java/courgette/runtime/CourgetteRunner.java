@@ -43,10 +43,11 @@ public class CourgetteRunner {
             final CourgetteRunnerInfo runnerInfo = runnerQueue.poll();
 
             final Map<String, List<String>> cucumberArgs = runnerInfo.getRuntimeOptions();
+            final CucumberFeature cucumberFeature = runnerInfo.getCucumberFeature();
 
             this.runners.add(() -> {
                 try {
-                    Boolean isPassed = runFeature(cucumberArgs);
+                    Boolean isPassed = runFeature(cucumberFeature, cucumberArgs);
 
                     if (isPassed) {
                         addRunResult(runnerInfo, CourgetteRunResult.Status.PASSED);
@@ -59,7 +60,7 @@ public class CourgetteRunner {
                     if (rerunFailedScenarios && rerun != null) {
                         final Map<String, List<String>> rerunCucumberArgs = runnerInfo.getRerunRuntimeOptions(rerun);
 
-                        isPassed = runFeature(rerunCucumberArgs);
+                        isPassed = runFeature(cucumberFeature, rerunCucumberArgs);
 
                         if (isPassed) {
                             addRunResult(runnerInfo, CourgetteRunResult.Status.PASSED_AFTER_RERUN);
@@ -138,10 +139,10 @@ public class CourgetteRunner {
         return canRunFeatures;
     }
 
-    private Boolean runFeature(Map<String, List<String>> args) throws IOException {
+    private Boolean runFeature(CucumberFeature cucumberFeature, Map<String, List<String>> args) throws IOException {
         try {
             final Boolean showTestOutput = courgetteProperties.getCourgetteOptions().showTestOutput();
-            return 0 == new CourgetteFeatureRunner(args, showTestOutput).run();
+            return 0 == new CourgetteFeatureRunner(cucumberFeature, args, showTestOutput).run();
         } catch (Throwable throwable) {
             throwable.printStackTrace();
             return Boolean.FALSE;
