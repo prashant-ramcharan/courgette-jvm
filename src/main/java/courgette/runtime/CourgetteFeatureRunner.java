@@ -1,5 +1,7 @@
 package courgette.runtime;
 
+import cucumber.runtime.model.CucumberFeature;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -8,16 +10,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static courgette.runtime.utils.SystemPropertyUtils.splitAndAddPropertyToList;
 
 public class CourgetteFeatureRunner {
+    private CucumberFeature cucumberFeature;
     private Map<String, List<String>> runnerArgs;
     private Boolean output;
     private static String classpath;
     private static List<String> systemProperties;
 
-    public CourgetteFeatureRunner(Map<String, List<String>> runnerArgs, Boolean output) {
+    public CourgetteFeatureRunner(CucumberFeature cucumberFeature, Map<String, List<String>> runnerArgs, Boolean output) {
+        this.cucumberFeature = cucumberFeature;
         this.runnerArgs = runnerArgs;
         this.output = output;
     }
@@ -32,9 +38,13 @@ public class CourgetteFeatureRunner {
             }
             builder.redirectErrorStream(Boolean.TRUE);
 
+            String featureLang = this.parseFeatureLanguage(cucumberFeature);
+            final String featureName = cucumberFeature.getGherkinFeature().getName();
             final List<String> commands = new ArrayList<>();
             commands.add("java");
             splitAndAddPropertyToList(CourgetteSystemProperty.VM_OPTIONS, commands);
+            commands.add("-DfeatureLang=" + featureLang);
+            commands.add("-DfeatureName=" + featureName);
             commands.add("-cp");
             commands.add("\"" + classpath + "\"");
             systemProperties.forEach(commands::add);
@@ -48,6 +58,24 @@ public class CourgetteFeatureRunner {
             e.printStackTrace();
         }
         return process != null ? process.exitValue() : -1;
+    }
+
+    // This method created because cucumberFeature.getI18n() isn't thread-safe
+    // and always returns the last feature iso code
+    private String parseFeatureLanguage(CucumberFeature cucumberFeature) {
+        String regex = "#\\s*language\\s*:\\s*([^\\s]+).*";
+        Pattern pattern = Pattern.compile(regex, Pattern.DOTALL);
+        return cucumberFeature.getGherkinFeature().getComments().stream().filter(c -> {
+                    String comment = c.getValue().trim();
+                    return pattern.matcher(comment).matches();
+                }
+        ).map(c -> {
+            String comment = c.getValue().trim();
+            Matcher matcher = pattern.matcher(comment);
+            if (matcher.matches()) {
+                return matcher.group(1);
+            } else return "en";
+        }).findFirst().orElse("en");
     }
 
     static {
