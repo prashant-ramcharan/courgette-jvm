@@ -60,6 +60,7 @@ public class CourgetteFeatureRunner {
 
         final List<String> systemPropertyList = new ArrayList<>();
         System.getProperties().keySet().forEach(property -> systemPropertyList.add(String.format("-D%s=%s", property, System.getProperty(property.toString()))));
+        systemPropertyList.removeIf(systemProperty -> systemProperty.startsWith("-Dcucumber.options"));
 
         systemProperties = systemPropertyList;
     }
