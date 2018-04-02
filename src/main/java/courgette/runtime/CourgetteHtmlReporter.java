@@ -1,6 +1,9 @@
 package courgette.runtime;
 
 import courgette.api.CourgetteRunLevel;
+import courgette.runtime.report.JsonReportParser;
+import courgette.runtime.report.builder.HtmlReportBuilder;
+import courgette.runtime.report.model.Feature;
 import courgette.runtime.utils.FileUtils;
 
 import java.io.BufferedReader;
@@ -16,19 +19,22 @@ import java.util.concurrent.TimeUnit;
 public class CourgetteHtmlReporter {
     private final String INDEX_HTML = "/report/index.html";
     private final String CSS_ASSETS = "/report/css/bootstrap.min.css,/report/css/core.min.css,/report/css/dataTables.bootstrap4.css";
-    private final String JS_ASSETS = "/report/js/bootstrap.min.js,/report/js/core.min.js,/report/js/dataTables.bootstrap4.js,/report/js/jquery.dataTables.js,/report/js/jquery.easing.min.js,/report/js/jquery.min.js,/report/js/popper.min.js";
+    private final String JS_ASSETS = "/report/js/bootstrap.min.js,/report/js/core.min.js,/report/js/dataTables.bootstrap4.js,/report/js/jquery.dataTables.js,/report/js/jquery.easing.min.js,/report/js/jquery.min.js,/report/js/popper.min.js,/report/js/mdb.min.js,/report/js/Chart.min.js";
 
     private final String TARGET_DIR = "target";
     private final String REPORT_DIR = TARGET_DIR + "/courgette-report";
+    private final String IMAGES_DIR = REPORT_DIR + "/images";
     private final String CSS_DIR = REPORT_DIR + "/css";
     private final String JS_DIR = REPORT_DIR + "/js";
 
     private final CourgetteProperties courgetteProperties;
-    private final List<CourgetteRunResult> courgetteRunResults;
+    private List<CourgetteRunResult> courgetteRunResults;
+    private String cucumberJsonReport;
 
-    public CourgetteHtmlReporter(CourgetteProperties courgetteProperties, List<CourgetteRunResult> courgetteRunResults) {
+    public CourgetteHtmlReporter(CourgetteProperties courgetteProperties, List<CourgetteRunResult> courgetteRunResults, String cucumberJsonReport) {
         this.courgetteProperties = courgetteProperties;
         this.courgetteRunResults = courgetteRunResults;
+        this.cucumberJsonReport = cucumberJsonReport;
     }
 
     public void create() {
@@ -61,7 +67,6 @@ public class CourgetteHtmlReporter {
 
         String formattedIndexHtml = indexHtmlBuilder.toString();
 
-        formattedIndexHtml = formattedIndexHtml.replaceAll("id:duration", duration);
         formattedIndexHtml = formattedIndexHtml.replaceAll("id:label", featureScenarioLabel);
         formattedIndexHtml = formattedIndexHtml.replaceAll("id:total", String.valueOf(total));
         formattedIndexHtml = formattedIndexHtml.replaceAll("id:passed", String.valueOf(passed.intValue()));
@@ -70,20 +75,48 @@ public class CourgetteHtmlReporter {
         formattedIndexHtml = formattedIndexHtml.replaceAll("id:after", String.valueOf(passedAfterRerun.intValue()));
         formattedIndexHtml = formattedIndexHtml.replaceAll("id:namelabel", featureScenarioLabel.substring(0, featureScenarioLabel.length() - 1));
 
-        final String resultTableFormat =
-                "                        <tr>\n" +
-                        "                          <td>%s</td>\n" +
-                        "                          <td>%s</td>\n" +
-                        "                          <td>%s</td>\n" +
-                        "                        </tr>";
+        formattedIndexHtml = formattedIndexHtml.replaceAll("id:timestamp", Instant.now().toString());
+        formattedIndexHtml = formattedIndexHtml.replaceAll("id:duration", duration);
+        formattedIndexHtml = formattedIndexHtml.replaceAll("id:threads", String.valueOf(courgetteProperties.getMaxThreads()));
+        formattedIndexHtml = formattedIndexHtml.replaceAll("id:runlevel", courgetteProperties.getCourgetteOptions().runLevel().toString());
+        formattedIndexHtml = formattedIndexHtml.replaceAll("id:retry", String.valueOf(courgetteProperties.getCourgetteOptions().rerunFailedScenarios() ? "true" : "false"));
 
-        final StringBuilder tableData = new StringBuilder();
+        String cucumberTags = "Not provided";
 
-        courgetteRunResults.forEach(runResult -> tableData
-                .append(String.format(resultTableFormat, runResult.getFeatureName(), runResult.getLineNumber(), runResult.getStatus().getDescription()))
-                .append("\n"));
+        String[] tags = courgetteProperties.getCourgetteOptions().cucumberOptions().tags();
+        if (tags.length > 0) {
+            cucumberTags = Arrays.asList(tags).toString().replace("[", "").replace("]", "");
+        }
 
-        formattedIndexHtml = formattedIndexHtml.replace("id:results", tableData);
+        formattedIndexHtml = formattedIndexHtml.replaceAll("id:tags", cucumberTags);
+
+        String featureDir = Arrays.asList(courgetteProperties.getCourgetteOptions().cucumberOptions().features()).toString().replace("[", "").replace("]", "");
+        formattedIndexHtml = formattedIndexHtml.replaceAll("id:features", featureDir);
+
+        final List<Feature> features = JsonReportParser.create(new File(cucumberJsonReport)).getReportFeatures();
+
+        features.forEach(feature -> {
+            feature.getScenarios().forEach(scenario -> {
+                scenario.getSteps().forEach(step -> {
+                    step.getEmbeddings().forEach(embedding -> {
+                        if (embedding.getMimeType().startsWith("image")) {
+                            final String imageName = IMAGES_DIR + "/" + embedding.getCourgetteEmbeddingId();
+                            final String imageFormat = embedding.getMimeType().split("/")[1];
+                            FileUtils.writeImageFile(imageName, imageFormat, embedding.getData());
+                        }
+                    });
+                });
+            });
+        });
+
+        final HtmlReportBuilder htmlReportBuilder = HtmlReportBuilder.create(features);
+
+        final String results = courgetteProperties.getCourgetteOptions().runLevel() == CourgetteRunLevel.FEATURE ?
+                htmlReportBuilder.getHtmlTableFeatureRows() :
+                htmlReportBuilder.getHtmlTableScenarioRows();
+
+        formattedIndexHtml = formattedIndexHtml.replace("id:results", results);
+        formattedIndexHtml = formattedIndexHtml.replace("id:modals", htmlReportBuilder.getHtmlModals());
 
         FileUtils.writeFile(REPORT_DIR + "/index.html", formattedIndexHtml);
     }
@@ -134,6 +167,14 @@ public class CourgetteHtmlReporter {
         if (!jsDir.exists()) {
             if (!jsDir.mkdir()) {
                 throw new CourgetteException("Unable to create the '../js' directory");
+            }
+        }
+
+        final File imagesDir = new File(IMAGES_DIR);
+
+        if (!imagesDir.exists()) {
+            if (!imagesDir.mkdir()) {
+                throw new CourgetteException("Unable to create the '../images' directory");
             }
         }
     }

@@ -78,6 +78,10 @@ public class CourgetteRuntimeOptions {
         return reportFiles;
     }
 
+    public String getSourceJson() {
+        return "target/courgette-report/source.json";
+    }
+
     private Map<String, List<String>> createRuntimeOptions(CucumberOptions cucumberOptions, String path) {
         final Map<String, List<String>> runtimeOptions = new HashMap<>();
 
@@ -163,6 +167,7 @@ public class CourgetteRuntimeOptions {
                 }
                 pluginList.add("rerun:" + rerunFile);
             }
+            pluginList.add("json:" + getSourceJson());
         }
         return copyOf(pluginList.toArray(), pluginList.size(), String[].class);
     }
