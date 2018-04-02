@@ -13,6 +13,12 @@ import java.util.stream.Collectors;
 public class HtmlReportBuilder {
     private List<Feature> featureList;
 
+    private static final String PASSED = "passed";
+    private static final String FAILED = "failed";
+    private static final String SUCCESS = "success";
+    private static final String DANGER = "danger";
+    private static final String WARNING = "warning";
+
     private HtmlReportBuilder(List<Feature> featureList) {
         this.featureList = featureList;
     }
@@ -49,18 +55,18 @@ public class HtmlReportBuilder {
 
     private static Function<Result, String> statusBadge = (result) -> {
         String status = result.getStatus();
-        return status.equalsIgnoreCase("passed") ? "success" : status.equalsIgnoreCase("failed") ? "danger" : "warning";
+        return status.equalsIgnoreCase(PASSED) ? SUCCESS : status.equalsIgnoreCase(FAILED) ? DANGER : WARNING;
     };
 
     private static Predicate<Feature> successFeature = (feature ->
-            feature.getScenarios().stream().allMatch(e -> e.getBefore().stream().allMatch(t -> t.getResult().getStatus().equalsIgnoreCase("passed")))
-                    && feature.getScenarios().stream().allMatch(e -> e.getAfter().stream().allMatch(t -> t.getResult().getStatus().equalsIgnoreCase("passed")))
-                    && feature.getScenarios().stream().allMatch(e -> e.getSteps().stream().allMatch(t -> t.getResult().getStatus().equalsIgnoreCase("passed"))));
+            feature.getScenarios().stream().allMatch(e -> e.getBefore().stream().allMatch(t -> t.getResult().getStatus().equalsIgnoreCase(PASSED)))
+                    && feature.getScenarios().stream().allMatch(e -> e.getAfter().stream().allMatch(t -> t.getResult().getStatus().equalsIgnoreCase(PASSED)))
+                    && feature.getScenarios().stream().allMatch(e -> e.getSteps().stream().allMatch(t -> t.getResult().getStatus().equalsIgnoreCase(PASSED))));
 
     private static Predicate<Scenario> successScenario = (scenario ->
-            scenario.getBefore().stream().allMatch(t -> t.getResult().getStatus().equalsIgnoreCase("passed"))
-                    && scenario.getAfter().stream().allMatch(t -> t.getResult().getStatus().equalsIgnoreCase("passed"))
-                    && scenario.getSteps().stream().allMatch(t -> t.getResult().getStatus().equalsIgnoreCase("passed")));
+            scenario.getBefore().stream().allMatch(t -> t.getResult().getStatus().equalsIgnoreCase(PASSED))
+                    && scenario.getAfter().stream().allMatch(t -> t.getResult().getStatus().equalsIgnoreCase(PASSED))
+                    && scenario.getSteps().stream().allMatch(t -> t.getResult().getStatus().equalsIgnoreCase(PASSED)));
 
     static class TableRowBuilder {
         private Feature feature;
@@ -105,7 +111,7 @@ public class HtmlReportBuilder {
                         "</div>\n" +
                         "</div>";
 
-        public String getScenarioRow() {
+        private String getScenarioRow() {
             final StringBuilder scenarioRows = new StringBuilder();
 
             feature.getScenarios().forEach(scenario -> {
@@ -117,11 +123,11 @@ public class HtmlReportBuilder {
             return scenarioRows.toString();
         }
 
-        public String getFeatureRow() {
+        private String getFeatureRow() {
             final StringBuilder featureRows = new StringBuilder();
 
-            String featureBadge = successFeature.test(feature) ? "success" : "danger";
-            String featureStatus = featureBadge.equals("success") ? "Passed" : "Failed";
+            String featureBadge = successFeature.test(feature) ? SUCCESS : DANGER;
+            String featureStatus = featureBadge.equals(SUCCESS) ? PASSED : FAILED;
             String featureName = feature.getName();
             String featureId = feature.getCourgetteFeatureId();
 
@@ -141,8 +147,8 @@ public class HtmlReportBuilder {
             final StringBuilder scenarioRows = new StringBuilder();
 
             String scenarioName = scenario.getName();
-            String scenarioBadge = successScenario.test(scenario) ? "success" : "danger";
-            String scenarioStatus = scenarioBadge.equals("success") ? "Passed" : "Failed";
+            String scenarioBadge = successScenario.test(scenario) ? SUCCESS : DANGER;
+            String scenarioStatus = scenarioBadge.equals(SUCCESS) ? PASSED : FAILED;
             String scenarioId = scenario.getCourgetteScenarioId();
 
             scenarioRows.append(String.format(format, scenarioName, scenarioBadge, scenarioStatus, scenarioId));
@@ -174,7 +180,7 @@ public class HtmlReportBuilder {
                         "</div>\n";
 
         private final String MODEL_BODY_ROW =
-                "<div class=\"row mt-2\">\n" +
+                "<div class=\"row\">\n" +
                         "<div class=\"col-lg-9\">\n" +
                         "%s\n" +
                         "</div>\n\n" +
@@ -215,7 +221,7 @@ public class HtmlReportBuilder {
             return hookBuilder.toString();
         });
 
-        public String getModal() {
+        private String getModal() {
             final StringBuilder modal = new StringBuilder();
 
             modal.append(String.format(MODEL_HEADER, scenario.getCourgetteScenarioId(), scenario.getCourgetteScenarioId(), scenario.getName()));
@@ -226,7 +232,7 @@ public class HtmlReportBuilder {
 
             scenario.getSteps().forEach(step -> {
                 String status = step.getResult().getStatus();
-                String statusBadge = status.equalsIgnoreCase("passed") ? "success" : status.equalsIgnoreCase("failed") ? "danger" : "warning";
+                String statusBadge = status.equalsIgnoreCase(PASSED) ? SUCCESS : status.equalsIgnoreCase(FAILED) ? DANGER : WARNING;
 
                 modal.append(String.format(MODEL_BODY_ROW, step.getKeyword() + step.getName(), step.getResult().getDuration(), statusBadge, status));
 

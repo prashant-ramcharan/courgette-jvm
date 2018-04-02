@@ -126,7 +126,7 @@ public class CourgetteRunner {
     }
 
     public void createCourgetteReport() {
-        final CourgetteHtmlReporter courgetteReport = new CourgetteHtmlReporter(courgetteProperties, runResults, defaultRuntimeOptions.getSourceJson());
+        final CourgetteHtmlReporter courgetteReport = new CourgetteHtmlReporter(courgetteProperties, runResults, defaultRuntimeOptions.getCourgetteReportJson());
         courgetteReport.create();
     }
 

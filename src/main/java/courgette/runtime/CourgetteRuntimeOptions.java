@@ -78,8 +78,8 @@ public class CourgetteRuntimeOptions {
         return reportFiles;
     }
 
-    public String getSourceJson() {
-        return "target/courgette-report/source.json";
+    public String getCourgetteReportJson() {
+        return "target/courgette-report/data/report.json";
     }
 
     private Map<String, List<String>> createRuntimeOptions(CucumberOptions cucumberOptions, String path) {
@@ -88,7 +88,7 @@ public class CourgetteRuntimeOptions {
         runtimeOptions.put("--glue", optionParser.apply("--glue", envCucumberOptionParser.apply("glue", cucumberOptions.glue())));
         runtimeOptions.put("--tags", optionParser.apply("--tags", envCucumberOptionParser.apply("tags", cucumberOptions.tags())));
         runtimeOptions.put("--plugin", optionParser.apply("--plugin", parsePlugins(envCucumberOptionParser.apply("plugin", cucumberOptions.plugin()))));
-        runtimeOptions.put("--format", optionParser.apply("--format", parsePlugins(envCucumberOptionParser.apply("format", cucumberOptions.format()))));
+        runtimeOptions.put("--format", optionParser.apply("--format", cucumberOptions.format()));
         runtimeOptions.put("--name", optionParser.apply("--name", envCucumberOptionParser.apply("name", cucumberOptions.name())));
         runtimeOptions.put("--junit", optionParser.apply("--junit", envCucumberOptionParser.apply("junit", cucumberOptions.junit())));
         runtimeOptions.put("--snippets", optionParser.apply("--snippets", cucumberOptions.snippets()));
@@ -138,37 +138,43 @@ public class CourgetteRuntimeOptions {
     private String[] parsePlugins(String[] plugins) {
         List<String> pluginList = new ArrayList<>();
 
-        if (plugins.length > 0) {
-            asList(plugins).forEach(plugin -> {
-                if (isReportPlugin.test(plugin)) {
-                    if (cucumberFeature != null) {
-                        pluginList.add(plugin);
-
-                        String extension = plugin.substring(0, plugin.indexOf(":"));
-
-                        if (!extension.equals("")) {
-                            final String reportPath = String.format("%s:%s.%s", extension, getMultiThreadReportFile(), extension);
-                            pluginList.add(reportPath);
-                        }
-                    } else {
-                        pluginList.add(plugin);
-                    }
-                }
-            });
-
-            Predicate<List<String>> alreadyAddedRerunPlugin = (addedPlugins) -> addedPlugins.stream().anyMatch(p -> p.startsWith("rerun:"));
-
-            if (!alreadyAddedRerunPlugin.test(pluginList)) {
-                if (cucumberFeature != null) {
-                    rerunFile = getMultiThreadRerunFile();
-                } else {
-                    final String cucumberRerunFile = cucumberRerunPlugin.apply(courgetteProperties);
-                    rerunFile = cucumberRerunFile != null ? cucumberRerunFile : "target/courgette-rerun.txt";
-                }
-                pluginList.add("rerun:" + rerunFile);
-            }
-            pluginList.add("json:" + getSourceJson());
+        if (plugins.length == 0) {
+            plugins = new String[]{"json:" + getCourgetteReportJson()};
         }
+
+        asList(plugins).forEach(plugin -> {
+            if (isReportPlugin.test(plugin)) {
+                if (cucumberFeature != null) {
+                    pluginList.add(plugin);
+
+                    String extension = plugin.substring(0, plugin.indexOf(":"));
+
+                    if (!extension.equals("")) {
+                        final String reportPath = String.format("%s:%s.%s", extension, getMultiThreadReportFile(), extension);
+                        pluginList.add(reportPath);
+                    }
+                } else {
+                    pluginList.add(plugin);
+                }
+            }
+        });
+
+        Predicate<List<String>> alreadyAddedRerunPlugin = (addedPlugins) -> addedPlugins.stream().anyMatch(p -> p.startsWith("rerun:"));
+
+        if (!alreadyAddedRerunPlugin.test(pluginList)) {
+            if (cucumberFeature != null) {
+                rerunFile = getMultiThreadRerunFile();
+            } else {
+                final String cucumberRerunFile = cucumberRerunPlugin.apply(courgetteProperties);
+                rerunFile = cucumberRerunFile != null ? cucumberRerunFile : "target/courgette-rerun.txt";
+            }
+            pluginList.add("rerun:" + rerunFile);
+        }
+
+        if (pluginList.stream().noneMatch(plugin -> plugin.contains(getCourgetteReportJson()))) {
+            pluginList.add("json:" + getCourgetteReportJson());
+        }
+
         return copyOf(pluginList.toArray(), pluginList.size(), String[].class);
     }
 
