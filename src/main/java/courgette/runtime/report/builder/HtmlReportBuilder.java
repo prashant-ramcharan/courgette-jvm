@@ -23,13 +23,13 @@ public class HtmlReportBuilder {
 
     public String getHtmlTableFeatureRows() {
         final StringBuilder tableRows = new StringBuilder();
-        featureList.forEach(feature -> tableRows.append(TableRowBuilder.create(feature).getFeatureRows()));
+        featureList.forEach(feature -> tableRows.append(TableRowBuilder.create(feature).getFeatureRow()));
         return tableRows.toString();
     }
 
     public String getHtmlTableScenarioRows() {
         final StringBuilder tableRows = new StringBuilder();
-        featureList.forEach(feature -> tableRows.append(TableRowBuilder.create(feature).getScenarioRows()));
+        featureList.forEach(feature -> tableRows.append(TableRowBuilder.create(feature).getScenarioRow()));
         return tableRows.toString();
     }
 
@@ -73,17 +73,20 @@ public class HtmlReportBuilder {
             return new TableRowBuilder(feature);
         }
 
-        private final String FEATURE_ROW = "<tr>\n" +
-                "<td>%s " +
-                "<span class=\"badge badge-%s\">Feature %s</span>\n" +
-                "<a data-toggle=\"collapse\" href=\"#%s\" class=\"badge badge-primary\">View Scenarios</a>\n" +
-                "\n" +
-                "<div class=\"collapse mt-2\" id=\"%s\">\n";
+        private final String FEATURE_ROW =
+                "<div class=\"row\">\n" +
+                        "<div class=\"col-lg-10\">" +
+                        "<a data-toggle=\"collapse\" href=\"#%s\">%s</a>\n" +
+                        "</div>\n" +
+                        "<div class=\"col-lg-auto\">\n" +
+                        "<span class=\"badge badge-%s\">Feature %s</span>\n" +
+                        "</div>\n" +
+                        "</div>\n" +
+                        "<div class=\"collapse mt-2\" id=\"%s\">\n";
 
         private final String SCENARIO_ROW =
                 "<div class=\"row\">\n" +
-                        "<div class=\"col-lg-9\">\n" +
-                        "%s\n" +
+                        "<div class=\"col-lg-9\">%s\n" +
                         "</div>\n" +
                         "<div id=\"row-badge\" class=\"col-lg-2\">\n" +
                         "<span class=\"float-left badge badge-%s\">Scenario %s</span>\n" +
@@ -94,8 +97,7 @@ public class HtmlReportBuilder {
         private final String SCENARIO_CHILD_ROW =
                 "<hr>\n" +
                         "<div class=\"row\">\n" +
-                        "<div id=\"child-row\" class=\"col-lg-8\">\n" +
-                        "%s\n" +
+                        "<div id=\"child-row\" class=\"col-lg-8\">%s\n" +
                         "</div>\n" +
                         "<div id=\"child-row-badge\" class=\"col-lg-2\">\n" +
                         "<span class=\"float-left badge badge-%s\">Scenario %s</span>\n" +
@@ -103,7 +105,7 @@ public class HtmlReportBuilder {
                         "</div>\n" +
                         "</div>";
 
-        public String getScenarioRows() {
+        public String getScenarioRow() {
             final StringBuilder scenarioRows = new StringBuilder();
 
             feature.getScenarios().forEach(scenario -> {
@@ -115,7 +117,7 @@ public class HtmlReportBuilder {
             return scenarioRows.toString();
         }
 
-        public String getFeatureRows() {
+        public String getFeatureRow() {
             final StringBuilder featureRows = new StringBuilder();
 
             String featureBadge = successFeature.test(feature) ? "success" : "danger";
@@ -123,14 +125,12 @@ public class HtmlReportBuilder {
             String featureName = feature.getName();
             String featureId = feature.getCourgetteFeatureId();
 
-            featureRows.append(String.format(FEATURE_ROW, featureName, featureBadge, featureStatus, featureId, featureId));
-
-            featureRows.append("<div>\n");
+            featureRows.append("<tr>\n<td>\n");
+            featureRows.append(String.format(FEATURE_ROW, featureId, featureName, featureBadge, featureStatus, featureId));
 
             feature.getScenarios().forEach(scenario -> featureRows.append(getScenario(scenario, SCENARIO_CHILD_ROW)));
 
             featureRows.append("</div>\n" +
-                    "</div>\n" +
                     "</td>\n" +
                     "</tr>");
 
