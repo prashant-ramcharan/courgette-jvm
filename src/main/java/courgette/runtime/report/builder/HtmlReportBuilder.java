@@ -13,8 +13,9 @@ import java.util.stream.Collectors;
 public class HtmlReportBuilder {
     private List<Feature> featureList;
 
-    private static final String PASSED = "passed";
-    private static final String FAILED = "failed";
+    private static final String PASSED = "Passed";
+    private static final String FAILED = "Failed";
+    private static final String SKIPPED = "Skipped";
     private static final String SUCCESS = "success";
     private static final String DANGER = "danger";
     private static final String WARNING = "warning";
@@ -53,6 +54,12 @@ public class HtmlReportBuilder {
         return modals.toString();
     }
 
+    private static Function<Result, String> statusLabel = (result) -> result.getStatus().equalsIgnoreCase("passed")
+            ? PASSED
+            : result.getStatus().equalsIgnoreCase("failed")
+            ? FAILED
+            : SKIPPED;
+
     private static Function<Result, String> statusBadge = (result) -> {
         String status = result.getStatus();
         return status.equalsIgnoreCase(PASSED) ? SUCCESS : status.equalsIgnoreCase(FAILED) ? DANGER : WARNING;
@@ -79,81 +86,66 @@ public class HtmlReportBuilder {
             return new TableRowBuilder(feature);
         }
 
-        private final String FEATURE_ROW =
-                "<div class=\"row\">\n" +
-                        "<div class=\"col-lg-10\">" +
-                        "<a data-toggle=\"collapse\" href=\"#%s\">%s</a>\n" +
-                        "</div>\n" +
-                        "<div class=\"col-lg-auto\">\n" +
-                        "<span class=\"badge badge-%s\">Feature %s</span>\n" +
-                        "</div>\n" +
-                        "</div>\n" +
-                        "<div class=\"collapse mt-2\" id=\"%s\">\n";
+        private final String FEATURE_ROW_START = "<tr>\n" +
+                "                                   <td>\n" +
+                "                                        <a href=\"\" data-toggle=\"collapse\" data-target=\"#%s\">%s</a>\n" +
+                "                                        <div class=\"collapse mt-2\" id=\"%s\">\n";
 
-        private final String SCENARIO_ROW =
-                "<div class=\"row\">\n" +
-                        "<div class=\"col-lg-9\">%s\n" +
-                        "</div>\n" +
-                        "<div id=\"row-badge\" class=\"col-lg-2\">\n" +
-                        "<span class=\"float-left badge badge-%s\">Scenario %s</span>\n" +
-                        "<a href=\"\" data-toggle=\"modal\" data-target=\"#%s\" class=\"float-right badge badge-primary\">View Steps</a>\n" +
-                        "</div>\n" +
-                        "</div>";
+        private final String FEATURE_ROW_DETAIL = "          <hr>\n" +
+                "                                            <div class=\"row\">\n" +
+                "                                                <a href=\"\" data-toggle=\"modal\" data-target=\"#%s\" id=\"child-row\" class=\"col-lg-9\">%s\n" +
+                "                                                </a>\n" +
+                "                                                <div class=\"col-lg-2\">\n" +
+                "                                                    <span class=\"float-right badge badge-%s\">%s</span>\n" +
+                "                                                </div>\n" +
+                "                                            </div>\n";
 
-        private final String SCENARIO_CHILD_ROW =
-                "<hr>\n" +
-                        "<div class=\"row\">\n" +
-                        "<div id=\"child-row\" class=\"col-lg-8\">%s\n" +
-                        "</div>\n" +
-                        "<div id=\"child-row-badge\" class=\"col-lg-2\">\n" +
-                        "<span class=\"float-left badge badge-%s\">Scenario %s</span>\n" +
-                        "<a href=\"\" data-toggle=\"modal\" data-target=\"#%s\" class=\"float-right badge badge-primary\">View Steps</a>\n" +
-                        "</div>\n" +
-                        "</div>";
+        private final String FEATURE_ROW_END = "</td>\n" +
+                "                                    <td>\n" +
+                "                                        <span class=\"float-left badge badge-%s\">%s</span>\n" +
+                "                                    </td>\n" +
+                "                                </tr>\n";
 
-        private String getScenarioRow() {
-            final StringBuilder scenarioRows = new StringBuilder();
 
-            feature.getScenarios().forEach(scenario -> {
-                scenarioRows.append("<tr>\n<td>\n");
-                scenarioRows.append(getScenario(scenario, SCENARIO_ROW));
-                scenarioRows.append("</td>\n</tr>\n");
-            });
-
-            return scenarioRows.toString();
-        }
+        private final String SCENARIO_ROW = "<tr>\n" +
+                "                                    <td>\n" +
+                "                                        <a href=\"\" data-toggle=\"modal\" data-target=\"#%s\">%s</a>\n" +
+                "                                    </td>\n" +
+                "                                    <td>\n" +
+                "                                        <span class=\"float-left badge badge-%s\">%s</span>\n" +
+                "                                    </td>\n" +
+                "                                </tr>\n";
 
         private String getFeatureRow() {
-            final StringBuilder featureRows = new StringBuilder();
+            final StringBuilder featureRow = new StringBuilder();
 
+            String featureId = feature.getCourgetteFeatureId();
+            String featureName = feature.getName();
             String featureBadge = successFeature.test(feature) ? SUCCESS : DANGER;
             String featureStatus = featureBadge.equals(SUCCESS) ? PASSED : FAILED;
-            String featureName = feature.getName();
-            String featureId = feature.getCourgetteFeatureId();
 
-            featureRows.append("<tr>\n<td>\n");
-            featureRows.append(String.format(FEATURE_ROW, featureId, featureName, featureBadge, featureStatus, featureId));
+            featureRow.append(String.format(FEATURE_ROW_START, featureId, featureName, featureId));
+            getScenario(featureRow, FEATURE_ROW_DETAIL);
+            featureRow.append(String.format(FEATURE_ROW_END, featureBadge, featureStatus));
 
-            feature.getScenarios().forEach(scenario -> featureRows.append(getScenario(scenario, SCENARIO_CHILD_ROW)));
-
-            featureRows.append("</div>\n" +
-                    "</td>\n" +
-                    "</tr>");
-
-            return featureRows.toString();
+            return featureRow.toString();
         }
 
-        private String getScenario(Scenario scenario, final String format) {
-            final StringBuilder scenarioRows = new StringBuilder();
+        private String getScenarioRow() {
+            final StringBuilder scenarioRow = new StringBuilder();
+            getScenario(scenarioRow, SCENARIO_ROW);
+            return scenarioRow.toString();
+        }
 
-            String scenarioName = scenario.getName();
-            String scenarioBadge = successScenario.test(scenario) ? SUCCESS : DANGER;
-            String scenarioStatus = scenarioBadge.equals(SUCCESS) ? PASSED : FAILED;
-            String scenarioId = scenario.getCourgetteScenarioId();
+        private void getScenario(StringBuilder source, String format) {
+            feature.getScenarios().forEach(scenario -> {
+                String scenarioId = scenario.getCourgetteScenarioId();
+                String scenarioName = scenario.getName();
+                String scenarioBadge = successScenario.test(scenario) ? SUCCESS : DANGER;
+                String scenarioStatus = scenarioBadge.equals(SUCCESS) ? PASSED : FAILED;
 
-            scenarioRows.append(String.format(format, scenarioName, scenarioBadge, scenarioStatus, scenarioId));
-
-            return scenarioRows.toString();
+                source.append(String.format(format, scenarioId, scenarioName, scenarioBadge, scenarioStatus));
+            });
         }
     }
 
@@ -212,7 +204,7 @@ public class HtmlReportBuilder {
             String name = hook.getLocation();
             Result result = hook.getResult();
 
-            hookBuilder.append(String.format(MODEL_BODY_ROW, name, result.getDuration(), statusBadge.apply(result), result.getStatus()));
+            hookBuilder.append(String.format(MODEL_BODY_ROW, name, result.getDuration(), statusBadge.apply(result), statusLabel.apply(result)));
 
             if (result.getErrorMessage() != null) {
                 hookBuilder.append(String.format(MODAL_BODY_ROW_ERROR_MESSAGE, result.getErrorMessage()));
@@ -231,10 +223,13 @@ public class HtmlReportBuilder {
             scenario.getBefore().forEach(before -> modal.append(hookFunc.apply(before)));
 
             scenario.getSteps().forEach(step -> {
-                String status = step.getResult().getStatus();
-                String statusBadge = status.equalsIgnoreCase(PASSED) ? SUCCESS : status.equalsIgnoreCase(FAILED) ? DANGER : WARNING;
+                String stepKeyword = step.getKeyword();
+                String stepName = step.getName();
+                long stepDuration = step.getResult().getDuration();
+                String stepStatus = statusLabel.apply(step.getResult());
+                String stepStatusBadge = statusBadge.apply(step.getResult());
 
-                modal.append(String.format(MODEL_BODY_ROW, step.getKeyword() + step.getName(), step.getResult().getDuration(), statusBadge, status));
+                modal.append(String.format(MODEL_BODY_ROW, stepKeyword + stepName, stepDuration, stepStatusBadge, stepStatus));
 
                 step.getEmbeddings().forEach(embedding -> {
                     if (embedding.getMimeType().startsWith("image")) {
