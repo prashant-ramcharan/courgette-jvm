@@ -14,8 +14,8 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 - **Single report generation** for all executed features including embedded files (Json and Html reports)
 - **Single re-run file** listing all failed scenarios that occured during parallel execution.
 - Can be used with **Gradle** or **Maven**.
-- Searchable and paginated **Courgette-JVM Html Report**.
-[![](https://s26.postimg.org/6yj655ae1/Screen_Shot_2017-09-17_at_17.11.33.png)](https://postimg.org/image/m793ix42d/)
+- Searchable and paginated **Courgette-JVM Html Report** which includes all steps, embedded screenshots, thrown exceptions etc.
+[![Courgette-_JVM_Report.png](https://s5.postimg.org/t3p29w0yv/Courgette-_JVM_Report.png)](https://postimg.org/image/pk34k2y8z/)
 
 ## Requirements
 - Java 8
@@ -24,7 +24,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 
 #### Repository: [jcenter](https://bintray.com/bintray/jcenter?filterByPkgName=courgette-jvm)
 
-#### Release notes: [1.5.1](https://bintray.com/prashantr/Courgette-JVM/courgette-jvm#release)
+#### Release notes: [1.6.0](https://bintray.com/prashantr/Courgette-JVM/courgette-jvm#release)
 
 <a href='https://bintray.com/prashantr/Courgette-JVM/courgette-jvm?source=watch' alt='Get automatic notifications about new "courgette-jvm" versions'><img src='https://www.bintray.com/docs/images/bintray_badge_color.png'></a>
 
@@ -33,7 +33,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>1.5.1</version>
+  <version>1.6.0</version>
   <type>pom</type>
 </dependency>
 ````
@@ -44,7 +44,7 @@ repositories {
     jcenter()
 }
 
-compile 'io.github.prashant-ramcharan:courgette-jvm:1.5.1'
+compile 'io.github.prashant-ramcharan:courgette-jvm:1.6.0'
 ````
 
 #### Included Dependencies
