@@ -15,7 +15,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 - **Single report generation** for all executed features including embedded files (Json and Html reports)
 - **Single re-run file** listing all failed scenarios that occured during parallel execution.
 - Can be used with **Gradle** or **Maven**.
-- Searchable and paginated **Courgette-JVM Html Report** which includes all steps, embedded screenshots, thrown exceptions etc.
+- Searchable and paginated **Courgette-JVM Html Report** which includes all step definitions, embedded screenshots, thrown exceptions, pie chart and Courgette run information.
 [![Courgette-_JVM_Report.png](https://s5.postimg.org/t3p29w0yv/Courgette-_JVM_Report.png)](https://postimg.org/image/pk34k2y8z/)
 
 ## Requirements
