@@ -33,6 +33,7 @@ public class JsonReportParser {
     private final static String MATCH_ATTRIBUTE = "match";
     private final static String LOCATION_ATTRIBUTE = "location";
     private final static String EMBEDDINGS_ATTRIBUTE = "embeddings";
+    private final static String OUTPUT_ATTRIBUTE = "output";
     private final static String DATA_ATTRIBUTE = "data";
     private final static String MIME_TYPE_ATTRIBUTE = "mime_type";
 
@@ -129,7 +130,16 @@ public class JsonReportParser {
                                 stepEmbeddings.add(new Embedding(data, mimeType));
                             }
                         }
-                        scenarioSteps.add(new Step(stepName, stepKeyword, stepResult, stepEmbeddings));
+
+                        JsonArray output = (JsonArray) step.get(OUTPUT_ATTRIBUTE);
+                        final List<String> stepOutputs = new ArrayList<>();
+
+                        if (output != null) {
+                            for (JsonElement out : output) {
+                                stepOutputs.add(out.getAsString());
+                            }
+                        }
+                        scenarioSteps.add(new Step(stepName, stepKeyword, stepResult, stepEmbeddings, stepOutputs));
                     });
                 }
                 scenarioElements.add(new Scenario(scenarioName, scenarioBefore, scenarioAfter, scenarioSteps));
