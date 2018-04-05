@@ -173,7 +173,7 @@ public class HtmlReportBuilder {
 
         private final String MODEL_BODY_ROW =
                 "<div class=\"row\">\n" +
-                        "<div class=\"col-lg-9\">\n" +
+                        "<div class=\"col-lg-9\" style=\"overflow-wrap:break-word;\">\n" +
                         "%s\n" +
                         "</div>\n\n" +
                         "<div class=\"col-lg-3\">\n" +
@@ -193,7 +193,14 @@ public class HtmlReportBuilder {
 
         private final String MODAL_BODY_ROW_ERROR_MESSAGE =
                 "<div class=\"row mt-2\">\n" +
-                        "<div class=\"col-lg-12 text-danger\">\n" +
+                        "<div class=\"col-lg-12 text-danger\" style=\"overflow-wrap:break-word;\">\n" +
+                        "%s\n" +
+                        "</div>\n" +
+                        "</div>\n";
+
+        private final String MODAL_BODY_ROW_OUTPUT =
+                "<div class=\"row mt-2\">\n" +
+                        "<div class=\"col-lg-12 text-info\" style=\"overflow-wrap:break-word;\">\n" +
                         "%s\n" +
                         "</div>\n" +
                         "</div>\n";
@@ -231,6 +238,12 @@ public class HtmlReportBuilder {
 
                 modal.append(String.format(MODEL_BODY_ROW, stepKeyword + stepName, stepDuration, stepStatusBadge, stepStatus));
 
+                if (step.getResult().getErrorMessage() != null) {
+                    modal.append(String.format(MODAL_BODY_ROW_ERROR_MESSAGE, step.getResult().getErrorMessage()));
+                }
+
+                step.getOutput().forEach(output -> modal.append(String.format(MODAL_BODY_ROW_OUTPUT, output)));
+
                 step.getEmbeddings().forEach(embedding -> {
                     if (embedding.getMimeType().startsWith("image")) {
                         final String imageName = embedding.getCourgetteEmbeddingId();
@@ -240,9 +253,6 @@ public class HtmlReportBuilder {
                     }
                 });
 
-                if (step.getResult().getErrorMessage() != null) {
-                    modal.append(String.format(MODAL_BODY_ROW_ERROR_MESSAGE, step.getResult().getErrorMessage()));
-                }
                 modal.append("<hr>\n");
             });
 

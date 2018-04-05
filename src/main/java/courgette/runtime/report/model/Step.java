@@ -7,12 +7,14 @@ public class Step {
     private String keyword;
     private Result result;
     private List<Embedding> embeddings;
+    private List<String> output;
 
-    public Step(String name, String keyword, Result result, List<Embedding> embeddings) {
+    public Step(String name, String keyword, Result result, List<Embedding> embeddings, List<String> output) {
         this.name = name;
         this.keyword = keyword;
         this.result = result;
         this.embeddings = embeddings;
+        this.output = output;
     }
 
     public String getName() {
@@ -29,5 +31,9 @@ public class Step {
 
     public List<Embedding> getEmbeddings() {
         return embeddings;
+    }
+
+    public List<String> getOutput() {
+        return output;
     }
 }
