@@ -49,6 +49,10 @@ public class CourgetteFeatureLoader {
         return runtime;
     }
 
+    public EventBus getEventBus() {
+        return eventBus;
+    }
+
     private RuntimeOptions createRuntimeOptions() {
         final CourgetteRuntimeOptions courgetteRuntimeOptions = new CourgetteRuntimeOptions(courgetteProperties);
         final List<String> argv = Arrays.asList(courgetteRuntimeOptions.getRuntimeOptions());
@@ -83,23 +87,23 @@ public class CourgetteFeatureLoader {
             cucumberFeatures.forEach(cucumberFeature ->
                     cucumberFeature.getGherkinFeature().getFeature().getChildren().forEach(scenario -> {
 
-                        final List<Integer> lineIds = new ArrayList<>();
+                        final List<Integer> lines = new ArrayList<>();
 
                         if (scenario instanceof ScenarioOutline) {
                             List<Examples> examples = ((ScenarioOutline) scenario).getExamples();
 
                             examples.forEach(example ->
                                     example.getTableBody().forEach(
-                                            tr -> lineIds.add(tr.getLocation().getLine())
+                                            tr -> lines.add(tr.getLocation().getLine())
                                     ));
                         } else {
-                            lineIds.add(scenario.getLocation().getLine());
+                            lines.add(scenario.getLocation().getLine());
                         }
 
-                        lineIds.forEach(lineId -> {
+                        lines.forEach(line -> {
                             CourgettePickleMatcher pickleMatcher = new CourgettePickleMatcher(cucumberFeature, runtime);
 
-                            PickleLocation pickleLocation = pickleMatcher.matchLocation(lineId);
+                            PickleLocation pickleLocation = pickleMatcher.matchLocation(line);
 
                             if (pickleLocation != null) {
                                 scenarios.put(pickleLocation, cucumberFeature);

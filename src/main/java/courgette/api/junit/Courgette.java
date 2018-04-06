@@ -4,7 +4,6 @@ import courgette.api.CourgetteOptions;
 import courgette.api.CourgetteRunLevel;
 import courgette.runtime.*;
 import cucumber.runner.EventBus;
-import cucumber.runner.TimeService;
 import cucumber.runtime.Runtime;
 import cucumber.runtime.RuntimeOptions;
 import cucumber.runtime.junit.FeatureRunner;
@@ -53,14 +52,16 @@ public class Courgette extends ParentRunner<FeatureRunner> {
     public List<FeatureRunner> getChildren() {
         final Runtime runtime = courgetteFeatureLoader.getRuntime();
         final RuntimeOptions runtimeOptions = courgetteFeatureLoader.getRuntimeOptions();
-        final EventBus eventBus = new EventBus(TimeService.SYSTEM);
+        final EventBus eventBus = courgetteFeatureLoader.getEventBus();
 
         final JUnitReporter jUnitReporter = new JUnitReporter(eventBus, runtimeOptions.isStrict(), new JUnitOptions(runtimeOptions.getJunitOptions()));
 
         final List<FeatureRunner> children = new ArrayList<>();
         this.cucumberFeatures.forEach(cucumberFeature -> {
             try {
-                children.add(new FeatureRunner(cucumberFeature, runtime, jUnitReporter));
+                FeatureRunner runner = new FeatureRunner(cucumberFeature, runtime, jUnitReporter);
+                runner.getDescription();
+                children.add(runner);
             } catch (InitializationError error) {
                 error.printStackTrace();
             }
