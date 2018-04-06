@@ -13,6 +13,7 @@ public class HtmlReportBuilder {
     private static final String PASSED = "Passed";
     private static final String FAILED = "Failed";
     private static final String SKIPPED = "Skipped";
+    private static final String AMBIGUOUS = "Ambiguous";
     private static final String SUCCESS = "success";
     private static final String DANGER = "danger";
     private static final String WARNING = "warning";
@@ -51,10 +52,12 @@ public class HtmlReportBuilder {
         return modals.toString();
     }
 
-    private static Function<Result, String> statusLabel = (result) -> result.getStatus().equalsIgnoreCase("passed")
+    private static Function<Result, String> statusLabel = (result) -> result.getStatus().equalsIgnoreCase(PASSED)
             ? PASSED
-            : result.getStatus().equalsIgnoreCase("failed")
+            : result.getStatus().equalsIgnoreCase(FAILED)
             ? FAILED
+            : result.getStatus().equalsIgnoreCase(AMBIGUOUS)
+            ? AMBIGUOUS
             : SKIPPED;
 
     private static Function<Result, String> statusBadge = (result) -> {
