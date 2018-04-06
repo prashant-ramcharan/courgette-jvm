@@ -1,22 +1,10 @@
 package courgette.runtime;
 
 public class CourgetteRunResult {
-    private String featureName;
-    private Integer lineNumber;
     private Status status;
 
-    public CourgetteRunResult(String description, Integer lineNumber, Status status) {
-        this.featureName = description;
-        this.lineNumber = lineNumber;
+    public CourgetteRunResult(Status status) {
         this.status = status;
-    }
-
-    public String getFeatureName() {
-        return featureName;
-    }
-
-    public Integer getLineNumber() {
-        return lineNumber;
     }
 
     public Status getStatus() {

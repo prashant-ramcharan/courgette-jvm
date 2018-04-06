@@ -3,59 +3,59 @@ package courgette.api.junit;
 import courgette.api.CourgetteOptions;
 import courgette.api.CourgetteRunLevel;
 import courgette.runtime.*;
-import cucumber.runtime.ClassFinder;
+import cucumber.runner.EventBus;
+import cucumber.runner.TimeService;
 import cucumber.runtime.Runtime;
 import cucumber.runtime.RuntimeOptions;
-import cucumber.runtime.io.MultiLoader;
-import cucumber.runtime.io.ResourceLoader;
-import cucumber.runtime.io.ResourceLoaderClassFinder;
 import cucumber.runtime.junit.FeatureRunner;
 import cucumber.runtime.junit.JUnitOptions;
 import cucumber.runtime.junit.JUnitReporter;
 import cucumber.runtime.model.CucumberFeature;
+import gherkin.pickles.PickleLocation;
 import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.ParentRunner;
 import org.junit.runners.model.InitializationError;
 
-import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class Courgette extends ParentRunner<FeatureRunner> {
+    private final CourgetteFeatureLoader courgetteFeatureLoader;
     private final CourgetteProperties courgetteProperties;
     private final List<CucumberFeature> cucumberFeatures;
     private final List<CourgetteRunnerInfo> runnerInfoList;
-    private final ClassLoader classLoader;
-    private final RuntimeOptions runtimeOptions;
 
-    public Courgette(Class clazz) throws IOException, InitializationError {
+    public Courgette(Class clazz) throws InitializationError {
         super(clazz);
-        classLoader = clazz.getClassLoader();
 
         final CourgetteOptions courgetteOptions = new CourgetteRunOptions(clazz);
         courgetteProperties = new CourgetteProperties(courgetteOptions, createSessionId(), courgetteOptions.threads());
 
-        final CourgetteFeatureLoader courgetteFeatureLoader = new CourgetteFeatureLoader(courgetteProperties);
+        courgetteFeatureLoader = new CourgetteFeatureLoader(courgetteProperties, clazz.getClassLoader());
         cucumberFeatures = courgetteFeatureLoader.getCucumberFeatures();
-
-        runtimeOptions = courgetteFeatureLoader.getCucumberRuntimeOptions();
 
         runnerInfoList = new ArrayList<>();
 
         if (courgetteOptions.runLevel().equals(CourgetteRunLevel.FEATURE)) {
             cucumberFeatures.forEach(feature -> runnerInfoList.add(new CourgetteRunnerInfo(courgetteProperties, feature, null)));
         } else {
-            final Map<CucumberFeature, Integer> scenarios = courgetteFeatureLoader.getCucumberScenarios();
+            final Map<PickleLocation, CucumberFeature> scenarios = courgetteFeatureLoader.getCucumberScenarios();
             scenarios
                     .keySet()
-                    .forEach(scenario -> runnerInfoList.add(new CourgetteRunnerInfo(courgetteProperties, scenario, scenarios.get(scenario))));
+                    .forEach(location -> runnerInfoList.add(new CourgetteRunnerInfo(courgetteProperties, scenarios.get(location), location.getLine())));
         }
     }
 
     @Override
     public List<FeatureRunner> getChildren() {
-        final Runtime runtime = createRuntime(runtimeOptions);
-        final JUnitReporter jUnitReporter = new JUnitReporter(runtimeOptions.reporter(classLoader), runtimeOptions.formatter(classLoader), runtimeOptions.isStrict(), new JUnitOptions(runtimeOptions.getJunitOptions()));
+        final Runtime runtime = courgetteFeatureLoader.getRuntime();
+        final RuntimeOptions runtimeOptions = courgetteFeatureLoader.getRuntimeOptions();
+        final EventBus eventBus = new EventBus(TimeService.SYSTEM);
+
+        final JUnitReporter jUnitReporter = new JUnitReporter(eventBus, runtimeOptions.isStrict(), new JUnitOptions(runtimeOptions.getJunitOptions()));
 
         final List<FeatureRunner> children = new ArrayList<>();
         this.cucumberFeatures.forEach(cucumberFeature -> {
@@ -98,11 +98,5 @@ public class Courgette extends ParentRunner<FeatureRunner> {
 
     private String createSessionId() {
         return UUID.randomUUID().toString().replaceAll("-", "");
-    }
-
-    private Runtime createRuntime(RuntimeOptions runtimeOptions) {
-        final ResourceLoader resourceLoader = new MultiLoader(classLoader);
-        final ClassFinder classFinder = new ResourceLoaderClassFinder(resourceLoader, classLoader);
-        return new Runtime(resourceLoader, classFinder, classLoader, runtimeOptions);
     }
 }

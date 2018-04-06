@@ -3,6 +3,7 @@ package courgette.runtime;
 import courgette.api.CourgetteRunLevel;
 import courgette.runtime.report.JsonReportParser;
 import courgette.runtime.report.builder.HtmlReportBuilder;
+import courgette.runtime.report.model.Embedding;
 import courgette.runtime.report.model.Feature;
 import courgette.runtime.utils.FileUtils;
 
@@ -12,9 +13,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class CourgetteHtmlReporter {
     private final String INDEX_HTML = "/report/index.html";
@@ -93,21 +96,28 @@ public class CourgetteHtmlReporter {
         String featureDir = Arrays.asList(courgetteProperties.getCourgetteOptions().cucumberOptions().features()).toString().replace("[", "").replace("]", "");
         formattedIndexHtml = formattedIndexHtml.replaceAll("id:features", featureDir);
 
-        final List<Feature> features = JsonReportParser.create(new File(cucumberJsonReport)).getReportFeatures();
+        final List<Feature> features = new ArrayList<>();
 
-        features.forEach(feature -> {
-            feature.getScenarios().forEach(scenario -> {
-                scenario.getSteps().forEach(step -> {
-                    step.getEmbeddings().forEach(embedding -> {
-                        if (embedding.getMimeType().startsWith("image")) {
-                            final String imageName = IMAGES_DIR + "/" + embedding.getCourgetteEmbeddingId();
-                            final String imageFormat = embedding.getMimeType().split("/")[1];
-                            FileUtils.writeImageFile(imageName, imageFormat, embedding.getData());
-                        }
-                    });
-                });
-            });
-        });
+        try {
+            features.addAll(JsonReportParser.create(new File(cucumberJsonReport)).getReportFeatures());
+        } catch (CourgetteException e) {
+            System.err.println("Unable to create the Courgette Html Report -> " + e.getMessage());
+        }
+
+        final Consumer<Embedding> imageEmbedding = (embedding) -> {
+            if (embedding.getMimeType().startsWith("image")) {
+                final String imageName = IMAGES_DIR + "/" + embedding.getCourgetteEmbeddingId();
+                final String imageFormat = embedding.getMimeType().split("/")[1];
+                FileUtils.writeImageFile(imageName, imageFormat, embedding.getData());
+            }
+        };
+
+        features.forEach(feature ->
+                feature.getScenarios().forEach(scenario -> {
+                    scenario.getBefore().forEach(before -> before.getEmbeddings().forEach(imageEmbedding));
+                    scenario.getAfter().forEach(before -> before.getEmbeddings().forEach(imageEmbedding));
+                    scenario.getSteps().forEach(step -> step.getEmbeddings().forEach(imageEmbedding));
+                }));
 
         final HtmlReportBuilder htmlReportBuilder = HtmlReportBuilder.create(features);
 

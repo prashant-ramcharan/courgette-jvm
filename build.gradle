@@ -1,5 +1,5 @@
 group 'io.github.prashant-ramcharan'
-version '1.6.1'
+version '2.0.0'
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'
@@ -13,13 +13,17 @@ repositories {
     jcenter()
 }
 
+project.ext {
+    cucumberVersion = '2.4.0'
+    jacksonDatabindVersion = '2.8.8'
+}
+
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.11'
-    compile 'info.cukes:cucumber-core:1.2.5'
-    compile 'info.cukes:cucumber-java:1.2.5'
-    compile 'info.cukes:cucumber-java8:1.2.5'
-    compile 'info.cukes:cucumber-junit:1.2.5'
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.8.8'
+    compile 'io.cucumber:cucumber-core:' + cucumberVersion
+    compile 'io.cucumber:cucumber-java:' + cucumberVersion
+    compile 'io.cucumber:cucumber-java8:' + cucumberVersion
+    compile 'io.cucumber:cucumber-junit:' + cucumberVersion
+    compile 'com.fasterxml.jackson.core:jackson-databind:' + jacksonDatabindVersion
 }
 
 task buildJar(type: Jar, dependsOn: classes) {

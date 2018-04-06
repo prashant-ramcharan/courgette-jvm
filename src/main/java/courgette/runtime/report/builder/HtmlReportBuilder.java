@@ -1,9 +1,6 @@
 package courgette.runtime.report.builder;
 
-import courgette.runtime.report.model.Feature;
-import courgette.runtime.report.model.Hook;
-import courgette.runtime.report.model.Result;
-import courgette.runtime.report.model.Scenario;
+import courgette.runtime.report.model.*;
 
 import java.util.List;
 import java.util.function.Function;
@@ -216,9 +213,25 @@ public class HtmlReportBuilder {
             if (result.getErrorMessage() != null) {
                 hookBuilder.append(String.format(MODAL_BODY_ROW_ERROR_MESSAGE, result.getErrorMessage()));
             }
+
+            hook.getOutput().forEach(output -> hookBuilder.append(String.format(MODAL_BODY_ROW_OUTPUT, output)));
+
+            addEmbeddings(hookBuilder, hook.getEmbeddings());
+
             hookBuilder.append("<hr>\n");
             return hookBuilder.toString();
         });
+
+        private void addEmbeddings(StringBuilder hookBuilder, List<Embedding> embeddings) {
+            embeddings.forEach(embedding -> {
+                if (embedding.getMimeType().startsWith("image")) {
+                    final String imageName = embedding.getCourgetteEmbeddingId();
+                    final String imageFormat = embedding.getMimeType().split("/")[1];
+
+                    hookBuilder.append(String.format(MODAL_BODY_ROW_EMBEDDINGS, imageName + "." + imageFormat));
+                }
+            });
+        }
 
         private String getModal() {
             final StringBuilder modal = new StringBuilder();
@@ -244,14 +257,7 @@ public class HtmlReportBuilder {
 
                 step.getOutput().forEach(output -> modal.append(String.format(MODAL_BODY_ROW_OUTPUT, output)));
 
-                step.getEmbeddings().forEach(embedding -> {
-                    if (embedding.getMimeType().startsWith("image")) {
-                        final String imageName = embedding.getCourgetteEmbeddingId();
-                        final String imageFormat = embedding.getMimeType().split("/")[1];
-
-                        modal.append(String.format(MODAL_BODY_ROW_EMBEDDINGS, imageName + "." + imageFormat));
-                    }
-                });
+                addEmbeddings(modal, step.getEmbeddings());
 
                 modal.append("<hr>\n");
             });

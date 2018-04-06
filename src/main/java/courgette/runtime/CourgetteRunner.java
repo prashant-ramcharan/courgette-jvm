@@ -1,9 +1,7 @@
 package courgette.runtime;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import courgette.api.CourgetteRunLevel;
 import courgette.runtime.utils.FileUtils;
-import cucumber.runtime.model.CucumberFeature;
 
 import java.io.IOException;
 import java.util.*;
@@ -49,7 +47,7 @@ public class CourgetteRunner {
                     Boolean isPassed = runFeature(cucumberArgs);
 
                     if (isPassed) {
-                        addRunResult(runnerInfo, CourgetteRunResult.Status.PASSED);
+                        runResults.add(new CourgetteRunResult(CourgetteRunResult.Status.PASSED));
                         return Boolean.TRUE;
                     }
 
@@ -62,13 +60,13 @@ public class CourgetteRunner {
                         isPassed = runFeature(rerunCucumberArgs);
 
                         if (isPassed) {
-                            addRunResult(runnerInfo, CourgetteRunResult.Status.PASSED_AFTER_RERUN);
+                            runResults.add(new CourgetteRunResult(CourgetteRunResult.Status.PASSED_AFTER_RERUN));
                             return Boolean.TRUE;
                         } else {
-                            addRunResult(runnerInfo, CourgetteRunResult.Status.FAILED);
+                            runResults.add(new CourgetteRunResult(CourgetteRunResult.Status.FAILED));
                         }
                     } else {
-                        addRunResult(runnerInfo, CourgetteRunResult.Status.FAILED);
+                        runResults.add(new CourgetteRunResult(CourgetteRunResult.Status.FAILED));
                     }
 
                     if (rerun != null) {
@@ -138,7 +136,7 @@ public class CourgetteRunner {
         return canRunFeatures;
     }
 
-    private Boolean runFeature(Map<String, List<String>> args) throws IOException {
+    private Boolean runFeature(Map<String, List<String>> args) {
         try {
             final Boolean showTestOutput = courgetteProperties.getCourgetteOptions().showTestOutput();
             return 0 == new CourgetteFeatureRunner(args, showTestOutput).run();
@@ -165,16 +163,5 @@ public class CourgetteRunner {
                 : courgetteProperties.getMaxThreads() < 1
                 ? 1
                 : courgetteProperties.getMaxThreads();
-    }
-
-    private void addRunResult(CourgetteRunnerInfo runInfo, CourgetteRunResult.Status status) {
-        final CucumberFeature cucumberFeature = runInfo.getCucumberFeature();
-
-        if (courgetteProperties.getCourgetteOptions().runLevel() == CourgetteRunLevel.FEATURE) {
-            runResults.add(new CourgetteRunResult(cucumberFeature.getGherkinFeature().getName(), cucumberFeature.getGherkinFeature().getLine(), status));
-        } else {
-            final String scenarioName = cucumberFeature.getFeatureElements().get(0).getGherkinModel().getName();
-            runResults.add(new CourgetteRunResult(scenarioName, runInfo.getLineId(), status));
-        }
     }
 }
