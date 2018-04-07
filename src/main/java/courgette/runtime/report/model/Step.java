@@ -2,6 +2,8 @@ package courgette.runtime.report.model;
 
 import java.util.List;
 
+import static cucumber.api.Result.Type.*;
+
 public class Step {
     private String name;
     private String keyword;
@@ -35,5 +37,16 @@ public class Step {
 
     public List<String> getOutput() {
         return output;
+    }
+
+    public boolean failed() {
+        return result.getStatus().equalsIgnoreCase(FAILED.lowerCaseName())
+                || result.getStatus().equalsIgnoreCase(SKIPPED.lowerCaseName())
+                || result.getStatus().equalsIgnoreCase(UNDEFINED.lowerCaseName())
+                || result.getStatus().equalsIgnoreCase(PENDING.lowerCaseName());
+    }
+
+    public boolean isAmbiguous() {
+        return result.getStatus().equalsIgnoreCase(AMBIGUOUS.lowerCaseName());
     }
 }
