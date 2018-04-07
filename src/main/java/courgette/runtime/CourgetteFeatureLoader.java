@@ -1,7 +1,6 @@
 package courgette.runtime;
 
 import cucumber.runner.EventBus;
-import cucumber.runner.TimeService;
 import cucumber.runtime.ClassFinder;
 import cucumber.runtime.Runtime;
 import cucumber.runtime.RuntimeOptions;
@@ -29,7 +28,7 @@ public class CourgetteFeatureLoader {
         this.resourceLoader = new MultiLoader(classLoader);
         this.runtimeOptions = createRuntimeOptions();
         this.runtime = createRuntime(runtimeOptions, classLoader);
-        this.eventBus = new EventBus(TimeService.SYSTEM);
+        this.eventBus = runtime.getEventBus();
     }
 
     public List<CucumberFeature> getCucumberFeatures() {

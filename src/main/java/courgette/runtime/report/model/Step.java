@@ -39,14 +39,15 @@ public class Step {
         return output;
     }
 
-    public boolean failed() {
-        return result.getStatus().equalsIgnoreCase(FAILED.lowerCaseName())
-                || result.getStatus().equalsIgnoreCase(SKIPPED.lowerCaseName())
-                || result.getStatus().equalsIgnoreCase(UNDEFINED.lowerCaseName())
-                || result.getStatus().equalsIgnoreCase(PENDING.lowerCaseName());
-    }
-
-    public boolean isAmbiguous() {
-        return result.getStatus().equalsIgnoreCase(AMBIGUOUS.lowerCaseName());
+    public boolean passed(boolean isStrict) {
+        if (isStrict) {
+            return result.getStatus().equalsIgnoreCase(PASSED.lowerCaseName()) || result.getStatus().equalsIgnoreCase(SKIPPED.lowerCaseName());
+        } else {
+            return result.getStatus().equalsIgnoreCase(PASSED.lowerCaseName())
+                    || result.getStatus().equalsIgnoreCase(SKIPPED.lowerCaseName())
+                    || result.getStatus().equalsIgnoreCase(PENDING.lowerCaseName())
+                    || result.getStatus().equalsIgnoreCase(UNDEFINED.lowerCaseName())
+                    || result.getStatus().equalsIgnoreCase(AMBIGUOUS.lowerCaseName());
+        }
     }
 }

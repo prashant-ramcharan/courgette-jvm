@@ -2,8 +2,7 @@ package courgette.runtime.report.model;
 
 import java.util.List;
 
-import static cucumber.api.Result.Type.AMBIGUOUS;
-import static cucumber.api.Result.Type.PASSED;
+import static cucumber.api.Result.Type.*;
 
 public class Hook {
     private String location;
@@ -34,7 +33,15 @@ public class Hook {
         return output;
     }
 
-    public boolean passed() {
-        return result.getStatus().equalsIgnoreCase(PASSED.lowerCaseName()) || result.getStatus().equalsIgnoreCase(AMBIGUOUS.lowerCaseName());
+    public boolean passed(boolean isStrict) {
+        if (isStrict) {
+            return result.getStatus().equalsIgnoreCase(PASSED.lowerCaseName()) || result.getStatus().equalsIgnoreCase(SKIPPED.lowerCaseName());
+        } else {
+            return result.getStatus().equalsIgnoreCase(PASSED.lowerCaseName())
+                    || result.getStatus().equalsIgnoreCase(SKIPPED.lowerCaseName())
+                    || result.getStatus().equalsIgnoreCase(PENDING.lowerCaseName())
+                    || result.getStatus().equalsIgnoreCase(UNDEFINED.lowerCaseName())
+                    || result.getStatus().equalsIgnoreCase(AMBIGUOUS.lowerCaseName());
+        }
     }
 }

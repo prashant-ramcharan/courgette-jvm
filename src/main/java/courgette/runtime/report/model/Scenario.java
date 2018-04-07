@@ -2,7 +2,6 @@ package courgette.runtime.report.model;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class Scenario {
     private String courgetteScenarioId;
@@ -39,27 +38,9 @@ public class Scenario {
         return steps;
     }
 
-    public boolean passed() {
-        return before.stream().allMatch(Hook::passed) && after.stream().allMatch(Hook::passed) && stepsPassed();
-    }
-
-    private boolean stepsPassed() {
-        final AtomicInteger stepsPassed = new AtomicInteger(0);
-
-        steps.forEach(step -> {
-            if (stepsPassed.get() > -1 && stepsPassed.get() < steps.size()) {
-
-                if (step.failed()) {
-                    stepsPassed.set(-1);
-                }
-
-                if (step.isAmbiguous()) {
-                    stepsPassed.set(steps.size());
-                } else {
-                    stepsPassed.incrementAndGet();
-                }
-            }
-        });
-        return stepsPassed.get() == steps.size();
+    public boolean passed(boolean isStrict) {
+        return before.stream().allMatch(before -> before.passed(isStrict))
+                && after.stream().allMatch(after -> after.passed(isStrict))
+                && steps.stream().allMatch(step -> step.passed(isStrict));
     }
 }

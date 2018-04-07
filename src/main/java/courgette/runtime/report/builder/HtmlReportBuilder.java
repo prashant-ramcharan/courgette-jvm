@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 public class HtmlReportBuilder {
     private List<Feature> featureList;
+    private boolean isStrict;
 
     private static final String PASSED = "Passed";
     private static final String FAILED = "Failed";
@@ -15,23 +16,24 @@ public class HtmlReportBuilder {
     private static final String DANGER = "danger";
     private static final String WARNING = "warning";
 
-    private HtmlReportBuilder(List<Feature> featureList) {
+    private HtmlReportBuilder(List<Feature> featureList, boolean isStrict) {
         this.featureList = featureList;
+        this.isStrict = isStrict;
     }
 
-    public static HtmlReportBuilder create(List<Feature> featureList) {
-        return new HtmlReportBuilder(featureList);
+    public static HtmlReportBuilder create(List<Feature> featureList, boolean isStrict) {
+        return new HtmlReportBuilder(featureList, isStrict);
     }
 
     public String getHtmlTableFeatureRows() {
         final StringBuilder tableRows = new StringBuilder();
-        featureList.forEach(feature -> tableRows.append(TableRowBuilder.create(feature).getFeatureRow()));
+        featureList.forEach(feature -> tableRows.append(TableRowBuilder.create(feature, isStrict).getFeatureRow()));
         return tableRows.toString();
     }
 
     public String getHtmlTableScenarioRows() {
         final StringBuilder tableRows = new StringBuilder();
-        featureList.forEach(feature -> tableRows.append(TableRowBuilder.create(feature).getScenarioRow()));
+        featureList.forEach(feature -> tableRows.append(TableRowBuilder.create(feature, isStrict).getScenarioRow()));
         return tableRows.toString();
     }
 
@@ -58,13 +60,15 @@ public class HtmlReportBuilder {
 
     static class TableRowBuilder {
         private Feature feature;
+        private boolean isStrict;
 
-        private TableRowBuilder(Feature feature) {
+        private TableRowBuilder(Feature feature, boolean isStrict) {
             this.feature = feature;
+            this.isStrict = isStrict;
         }
 
-        public static TableRowBuilder create(Feature feature) {
-            return new TableRowBuilder(feature);
+        public static TableRowBuilder create(Feature feature, boolean isStrict) {
+            return new TableRowBuilder(feature, isStrict);
         }
 
         private final String FEATURE_ROW_START = "<tr>\n" +
@@ -102,7 +106,7 @@ public class HtmlReportBuilder {
 
             String featureId = feature.getCourgetteFeatureId();
             String featureName = feature.getName();
-            String featureBadge = feature.passed() ? SUCCESS : DANGER;
+            String featureBadge = feature.passed(isStrict) ? SUCCESS : DANGER;
             String featureStatus = featureBadge.equals(SUCCESS) ? PASSED : FAILED;
 
             featureRow.append(String.format(FEATURE_ROW_START, featureId, featureName, featureId));
@@ -122,7 +126,7 @@ public class HtmlReportBuilder {
             feature.getScenarios().forEach(scenario -> {
                 String scenarioId = scenario.getCourgetteScenarioId();
                 String scenarioName = scenario.getName();
-                String scenarioBadge = scenario.passed() ? SUCCESS : DANGER;
+                String scenarioBadge = scenario.passed(isStrict) ? SUCCESS : DANGER;
                 String scenarioStatus = scenarioBadge.equals(SUCCESS) ? PASSED : FAILED;
 
                 source.append(String.format(format, scenarioId, scenarioName, scenarioBadge, scenarioStatus));

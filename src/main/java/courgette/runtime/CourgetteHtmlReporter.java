@@ -63,9 +63,10 @@ public class CourgetteHtmlReporter {
                 TimeUnit.MILLISECONDS.toSeconds(elapsedMill) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(elapsedMill)));
 
         final String featureScenarioLabel = courgetteProperties.getCourgetteOptions().runLevel() == CourgetteRunLevel.FEATURE ? "Features" : "Scenarios";
+        final boolean isStrict = courgetteProperties.getCourgetteOptions().cucumberOptions().strict();
 
         final int total = features.size();
-        final int passed = (int) features.stream().filter(Feature::passed).count();
+        final int passed = (int) features.stream().filter(feature -> feature.passed(isStrict)).count();
         final int failed = total - passed;
         final int rerun = courgetteProperties.getCourgetteOptions().rerunFailedScenarios() ? (int) courgetteRunResults.stream().filter(result -> result.getStatus().equals(CourgetteRunResult.Status.RERUN)).count() : 0;
 
@@ -118,7 +119,7 @@ public class CourgetteHtmlReporter {
                     scenario.getSteps().forEach(step -> step.getEmbeddings().forEach(imageEmbedding));
                 }));
 
-        final HtmlReportBuilder htmlReportBuilder = HtmlReportBuilder.create(features);
+        final HtmlReportBuilder htmlReportBuilder = HtmlReportBuilder.create(features, isStrict);
 
         final String results = courgetteProperties.getCourgetteOptions().runLevel() == CourgetteRunLevel.FEATURE ?
                 htmlReportBuilder.getHtmlTableFeatureRows() :
