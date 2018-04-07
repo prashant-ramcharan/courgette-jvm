@@ -40,6 +40,10 @@ public class Scenario {
     }
 
     public boolean passed() {
+        return before.stream().allMatch(Hook::passed) && after.stream().allMatch(Hook::passed) && stepsPassed();
+    }
+
+    private boolean stepsPassed() {
         final AtomicInteger stepsPassed = new AtomicInteger(0);
 
         steps.forEach(step -> {
@@ -56,7 +60,6 @@ public class Scenario {
                 }
             }
         });
-
-        return before.stream().allMatch(Hook::passed) && after.stream().allMatch(Hook::passed) && (stepsPassed.get() == steps.size());
+        return stepsPassed.get() == steps.size();
     }
 }
