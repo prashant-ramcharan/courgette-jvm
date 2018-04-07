@@ -37,4 +37,12 @@ public class Scenario {
     public List<Step> getSteps() {
         return steps;
     }
+
+    public boolean passed() {
+        return before.stream().allMatch(Hook::passed)
+                &&
+                after.stream().allMatch(Hook::passed)
+                &&
+                steps.stream().allMatch(r -> r.getResult().getStatus().equalsIgnoreCase("passed"));
+    }
 }

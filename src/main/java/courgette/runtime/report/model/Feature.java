@@ -31,4 +31,8 @@ public class Feature {
     public List<Scenario> getScenarios() {
         return scenarios;
     }
+
+    public boolean passed() {
+        return scenarios.stream().allMatch(Scenario::passed);
+    }
 }

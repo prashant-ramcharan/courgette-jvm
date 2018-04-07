@@ -4,7 +4,6 @@ import courgette.runtime.report.model.*;
 
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class HtmlReportBuilder {
@@ -12,8 +11,6 @@ public class HtmlReportBuilder {
 
     private static final String PASSED = "Passed";
     private static final String FAILED = "Failed";
-    private static final String SKIPPED = "Skipped";
-    private static final String AMBIGUOUS = "Ambiguous";
     private static final String SUCCESS = "success";
     private static final String DANGER = "danger";
     private static final String WARNING = "warning";
@@ -52,28 +49,12 @@ public class HtmlReportBuilder {
         return modals.toString();
     }
 
-    private static Function<Result, String> statusLabel = (result) -> result.getStatus().equalsIgnoreCase(PASSED)
-            ? PASSED
-            : result.getStatus().equalsIgnoreCase(FAILED)
-            ? FAILED
-            : result.getStatus().equalsIgnoreCase(AMBIGUOUS)
-            ? AMBIGUOUS
-            : SKIPPED;
+    private static Function<Result, String> statusLabel = (result) -> result.getStatus().substring(0, 1).toUpperCase() + result.getStatus().substring(1);
 
     private static Function<Result, String> statusBadge = (result) -> {
         String status = result.getStatus();
         return status.equalsIgnoreCase(PASSED) ? SUCCESS : status.equalsIgnoreCase(FAILED) ? DANGER : WARNING;
     };
-
-    private static Predicate<Feature> successFeature = (feature ->
-            feature.getScenarios().stream().allMatch(e -> e.getBefore().stream().allMatch(t -> t.getResult().getStatus().equalsIgnoreCase(PASSED)))
-                    && feature.getScenarios().stream().allMatch(e -> e.getAfter().stream().allMatch(t -> t.getResult().getStatus().equalsIgnoreCase(PASSED)))
-                    && feature.getScenarios().stream().allMatch(e -> e.getSteps().stream().allMatch(t -> t.getResult().getStatus().equalsIgnoreCase(PASSED))));
-
-    private static Predicate<Scenario> successScenario = (scenario ->
-            scenario.getBefore().stream().allMatch(t -> t.getResult().getStatus().equalsIgnoreCase(PASSED))
-                    && scenario.getAfter().stream().allMatch(t -> t.getResult().getStatus().equalsIgnoreCase(PASSED))
-                    && scenario.getSteps().stream().allMatch(t -> t.getResult().getStatus().equalsIgnoreCase(PASSED)));
 
     static class TableRowBuilder {
         private Feature feature;
@@ -121,7 +102,7 @@ public class HtmlReportBuilder {
 
             String featureId = feature.getCourgetteFeatureId();
             String featureName = feature.getName();
-            String featureBadge = successFeature.test(feature) ? SUCCESS : DANGER;
+            String featureBadge = feature.passed() ? SUCCESS : DANGER;
             String featureStatus = featureBadge.equals(SUCCESS) ? PASSED : FAILED;
 
             featureRow.append(String.format(FEATURE_ROW_START, featureId, featureName, featureId));
@@ -141,7 +122,7 @@ public class HtmlReportBuilder {
             feature.getScenarios().forEach(scenario -> {
                 String scenarioId = scenario.getCourgetteScenarioId();
                 String scenarioName = scenario.getName();
-                String scenarioBadge = successScenario.test(scenario) ? SUCCESS : DANGER;
+                String scenarioBadge = scenario.passed() ? SUCCESS : DANGER;
                 String scenarioStatus = scenarioBadge.equals(SUCCESS) ? PASSED : FAILED;
 
                 source.append(String.format(format, scenarioId, scenarioName, scenarioBadge, scenarioStatus));

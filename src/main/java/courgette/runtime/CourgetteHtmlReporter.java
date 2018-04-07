@@ -47,6 +47,15 @@ public class CourgetteHtmlReporter {
     }
 
     private void generateHtmlReport() {
+        final List<Feature> features;
+
+        try {
+            features = new ArrayList<>(JsonReportParser.create(new File(cucumberJsonReport)).getReportFeatures());
+        } catch (CourgetteException e) {
+            System.err.println("Unable to create the Courgette Html Report -> " + e.getMessage());
+            return;
+        }
+
         final long elapsedMill = (Instant.now().minus(courgetteProperties.getSessionStartTime().toEpochMilli(), ChronoUnit.MILLIS)).toEpochMilli();
 
         String duration = String.format("%d min, %d sec",
@@ -55,11 +64,10 @@ public class CourgetteHtmlReporter {
 
         final String featureScenarioLabel = courgetteProperties.getCourgetteOptions().runLevel() == CourgetteRunLevel.FEATURE ? "Features" : "Scenarios";
 
-        final int total = courgetteRunResults.size();
-        final Long passed = courgetteRunResults.stream().filter(t -> t.getStatus() == CourgetteRunResult.Status.PASSED).count();
-        final Long failed = courgetteRunResults.stream().filter(t -> t.getStatus() == CourgetteRunResult.Status.FAILED).count();
-        final Long passedAfterRerun = courgetteRunResults.stream().filter(t -> t.getStatus() == CourgetteRunResult.Status.PASSED_AFTER_RERUN).count();
-        final Long rerun = courgetteProperties.getCourgetteOptions().rerunFailedScenarios() ? (failed + passedAfterRerun) : 0;
+        final int total = features.size();
+        final int passed = (int) features.stream().filter(Feature::passed).count();
+        final int failed = total - passed;
+        final int rerun = courgetteProperties.getCourgetteOptions().rerunFailedScenarios() ? (int) courgetteRunResults.stream().filter(result -> result.getStatus().equals(CourgetteRunResult.Status.RERUN)).count() : 0;
 
         StringBuilder indexHtmlBuilder = new StringBuilder();
 
@@ -72,10 +80,9 @@ public class CourgetteHtmlReporter {
 
         formattedIndexHtml = formattedIndexHtml.replaceAll("id:label", featureScenarioLabel);
         formattedIndexHtml = formattedIndexHtml.replaceAll("id:total", String.valueOf(total));
-        formattedIndexHtml = formattedIndexHtml.replaceAll("id:passed", String.valueOf(passed.intValue()));
-        formattedIndexHtml = formattedIndexHtml.replaceAll("id:failed", String.valueOf(failed.intValue()));
-        formattedIndexHtml = formattedIndexHtml.replaceAll("id:rerun", String.valueOf(rerun.intValue()));
-        formattedIndexHtml = formattedIndexHtml.replaceAll("id:after", String.valueOf(passedAfterRerun.intValue()));
+        formattedIndexHtml = formattedIndexHtml.replaceAll("id:passed", String.valueOf(passed));
+        formattedIndexHtml = formattedIndexHtml.replaceAll("id:failed", String.valueOf(failed));
+        formattedIndexHtml = formattedIndexHtml.replaceAll("id:rerun", String.valueOf(rerun));
         formattedIndexHtml = formattedIndexHtml.replaceAll("id:namelabel", featureScenarioLabel.substring(0, featureScenarioLabel.length() - 1));
 
         formattedIndexHtml = formattedIndexHtml.replaceAll("id:timestamp", Instant.now().toString());
@@ -95,14 +102,6 @@ public class CourgetteHtmlReporter {
 
         String featureDir = Arrays.asList(courgetteProperties.getCourgetteOptions().cucumberOptions().features()).toString().replace("[", "").replace("]", "");
         formattedIndexHtml = formattedIndexHtml.replaceAll("id:features", featureDir);
-
-        final List<Feature> features = new ArrayList<>();
-
-        try {
-            features.addAll(JsonReportParser.create(new File(cucumberJsonReport)).getReportFeatures());
-        } catch (CourgetteException e) {
-            System.err.println("Unable to create the Courgette Html Report -> " + e.getMessage());
-        }
 
         final Consumer<Embedding> imageEmbedding = (embedding) -> {
             if (embedding.getMimeType().startsWith("image")) {

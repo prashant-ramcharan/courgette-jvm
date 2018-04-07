@@ -18,11 +18,11 @@ public class CourgetteRunner {
     private final List<CourgetteRunnerInfo> runnerInfoList;
     private final CourgetteProperties courgetteProperties;
     private final CourgetteRuntimeOptions defaultRuntimeOptions;
-    private final Boolean rerunFailedScenarios;
+    private final boolean rerunFailedScenarios;
 
     private final List<CourgetteRunResult> runResults = new ArrayList<>();
 
-    private final Boolean canRunFeatures;
+    private final boolean canRunFeatures;
 
     public CourgetteRunner(List<CourgetteRunnerInfo> runnerInfoList, CourgetteProperties courgetteProperties) {
         this.runnerInfoList = runnerInfoList;
@@ -44,24 +44,25 @@ public class CourgetteRunner {
 
             this.runners.add(() -> {
                 try {
-                    Boolean isPassed = runFeature(cucumberArgs);
+                    boolean isPassed = runFeature(cucumberArgs);
 
                     if (isPassed) {
                         runResults.add(new CourgetteRunResult(CourgetteRunResult.Status.PASSED));
-                        return Boolean.TRUE;
+                        return true;
                     }
 
                     String rerunFile = runnerInfo.getRerunFile();
-                    String rerun = FileUtils.readFile(rerunFile, Boolean.FALSE);
+                    String rerun = FileUtils.readFile(rerunFile, false);
 
                     if (rerunFailedScenarios && rerun != null) {
                         final Map<String, List<String>> rerunCucumberArgs = runnerInfo.getRerunRuntimeOptions(rerun);
 
+                        runResults.add(new CourgetteRunResult(CourgetteRunResult.Status.RERUN));
+
                         isPassed = runFeature(rerunCucumberArgs);
 
                         if (isPassed) {
-                            runResults.add(new CourgetteRunResult(CourgetteRunResult.Status.PASSED_AFTER_RERUN));
-                            return Boolean.TRUE;
+                            return true;
                         } else {
                             runResults.add(new CourgetteRunResult(CourgetteRunResult.Status.FAILED));
                         }
@@ -75,11 +76,11 @@ public class CourgetteRunner {
                 } finally {
                     runnerInfo.getReportFiles().forEach(reportFile -> {
                         if (reportFile.contains(courgetteProperties.getSessionId())) {
-                            Boolean isJson = reportFile.endsWith(".json");
+                            boolean isJson = reportFile.endsWith(".json");
 
                             String report = isJson
-                                    ? prettyJson(FileUtils.readFile(reportFile, Boolean.TRUE))
-                                    : FileUtils.readFile(reportFile, Boolean.TRUE);
+                                    ? prettyJson(FileUtils.readFile(reportFile, true))
+                                    : FileUtils.readFile(reportFile, true);
 
                             final CopyOnWriteArrayList<String> reportDetails = new CopyOnWriteArrayList<>();
                             reportDetails.add(report);
@@ -88,7 +89,7 @@ public class CourgetteRunner {
                         }
                     });
                 }
-                return Boolean.FALSE;
+                return false;
             });
         }
 
@@ -128,21 +129,21 @@ public class CourgetteRunner {
         courgetteReport.create();
     }
 
-    public Boolean allFeaturesPassed() {
+    public boolean allFeaturesPassed() {
         return runResults.stream().noneMatch(result -> result.getStatus() == CourgetteRunResult.Status.FAILED);
     }
 
-    public Boolean canRunFeatures() {
+    public boolean canRunFeatures() {
         return canRunFeatures;
     }
 
-    private Boolean runFeature(Map<String, List<String>> args) {
+    private boolean runFeature(Map<String, List<String>> args) {
         try {
-            final Boolean showTestOutput = courgetteProperties.getCourgetteOptions().showTestOutput();
+            final boolean showTestOutput = courgetteProperties.getCourgetteOptions().showTestOutput();
             return 0 == new CourgetteFeatureRunner(args, showTestOutput).run();
         } catch (Throwable throwable) {
             throwable.printStackTrace();
-            return Boolean.FALSE;
+            return false;
         }
     }
 

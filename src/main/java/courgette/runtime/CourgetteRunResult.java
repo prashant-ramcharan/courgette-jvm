@@ -14,7 +14,7 @@ public class CourgetteRunResult {
     public enum Status {
         PASSED("Passed"),
         FAILED("Failed"),
-        PASSED_AFTER_RERUN("Passed after Re-run");
+        RERUN("Re-run");
 
         private String description;
 

@@ -30,4 +30,8 @@ public class Hook {
     public List<String> getOutput() {
         return output;
     }
+
+    public boolean passed() {
+        return result.getStatus().equalsIgnoreCase("passed");
+    }
 }
