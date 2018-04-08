@@ -37,4 +37,10 @@ public class Scenario {
     public List<Step> getSteps() {
         return steps;
     }
+
+    public boolean passed(boolean isStrict) {
+        return before.stream().allMatch(before -> before.passed(isStrict))
+                && after.stream().allMatch(after -> after.passed(isStrict))
+                && steps.stream().allMatch(step -> step.passed(isStrict));
+    }
 }

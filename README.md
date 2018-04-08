@@ -14,9 +14,10 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 - **Requires only 1 annotated class** to run all feature files in parallel.
 - **Single report generation** for all executed features including embedded files (Json and Html reports)
 - **Single re-run file** listing all failed scenarios that occured during parallel execution.
+- Supports **Cucumber-JVM 2+**
 - Can be used with **Gradle** or **Maven**.
 - Searchable and paginated **Courgette-JVM Html Report** which includes all step definitions, embedded screenshots, thrown exceptions, pie chart and Courgette run information.
-[![Courgette-_JVM_Report.png](https://s5.postimg.org/t3p29w0yv/Courgette-_JVM_Report.png)](https://postimg.org/image/pk34k2y8z/)
+[![Courgette-_JVM_2.0_Report.png](https://s5.postimg.org/bk2gdnb7r/Courgette-_JVM_2.0_Report.png)](https://postimg.org/image/g5yklzwqr/)
 
 ## Requirements
 - Java 8
@@ -25,7 +26,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 
 #### Repository: [jcenter](https://bintray.com/bintray/jcenter?filterByPkgName=courgette-jvm)
 
-#### Release notes: [1.6.1](https://bintray.com/prashantr/Courgette-JVM/courgette-jvm#release)
+#### Release notes: [2.0.0](https://bintray.com/prashantr/Courgette-JVM/courgette-jvm#release)
 
 <a href='https://bintray.com/prashantr/Courgette-JVM/courgette-jvm?source=watch' alt='Get automatic notifications about new "courgette-jvm" versions'><img src='https://www.bintray.com/docs/images/bintray_badge_color.png'></a>
 
@@ -41,7 +42,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>1.6.1</version>
+  <version>2.0.0</version>
 </dependency>
 ````
 
@@ -51,14 +52,14 @@ repositories {
     jcenter()
 }
 
-compile 'io.github.prashant-ramcharan:courgette-jvm:1.6.1'
+compile 'io.github.prashant-ramcharan:courgette-jvm:2.0.0'
 ````
 
 #### Included Dependencies
-* cucumber-core 1.2.5
-* cucumber-java 1.2.5
-* cucumber-java8 1.2.5
-* cucumber-junit 1.2.5
+* cucumber-core 2.4.0
+* cucumber-java 2.4.0
+* cucumber-java8 2.4.0
+* cucumber-junit 2.4.0
 * jackson-databind 2.8.8
 
 
@@ -100,7 +101,7 @@ Courgette-JVM uses JUnit to run cucumber features. A runner class must be annota
         cucumberOptions = @CucumberOptions(
                 features = "src/test/resources/features",
                 glue = "steps",
-                tags = {"@regression"},
+                tags = {"@regression", "not @wip"},
                 plugin = {
                         "pretty",
                         "json:target/cucumber-report/cucumber.json",
@@ -154,14 +155,13 @@ gradle regressionSuite -Dcourgette.vmoptions="-Xms256m -Xmx512m"
 ## Limitations and Known Issues
 
 * JUnit test notifier is not updated when running features in the IDE during parallel test execution.
+   
    * _Each feature is run using the Cucumber CLI and because of this JUnit is not notified off the test result. The workaround to this is the Courgette-JVM html report which lists all test passes, failures and re-runs. Alternatively, you can review the Cucumber reports or the results from the build tool_.
    
-   
+  
 * When there's a failure in the feature and your runner is set to 'runLevel = CourgetteRunLevel.FEATURE' and 'rerunFailedScenarios = true', the re-run cucumber feature report will override the original cucumber feature report.
-
-    Tips: 
-    * Use CourgetteRunLevel.SCENARIO which resolves this issue and retains all results in the cucumber report.
-    * Use CourgetteRunLevel.FEATURE alongside the Courgette-JVM html report (_target folder_) which retains all results.
+   
+   * _Use CourgetteRunLevel.SCENARIO which resolves this issue and retains all results in the cucumber report._
 
 
 ## Submitting Issues

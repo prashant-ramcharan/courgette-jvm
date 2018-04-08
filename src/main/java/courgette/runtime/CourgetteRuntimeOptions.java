@@ -2,6 +2,7 @@ package courgette.runtime;
 
 import cucumber.api.CucumberOptions;
 import cucumber.runtime.model.CucumberFeature;
+import gherkin.ast.Location;
 
 import java.io.File;
 import java.net.URL;
@@ -28,9 +29,9 @@ public class CourgetteRuntimeOptions {
         this.courgetteProperties = courgetteProperties;
         this.cucumberFeature = cucumberFeature;
         this.cucumberOptions = courgetteProperties.getCourgetteOptions().cucumberOptions();
-        this.cucumberResourcePath = cucumberFeature.getPath();
+        this.cucumberResourcePath = cucumberFeature.getUri();
 
-        createRuntimeOptions(cucumberOptions, cucumberResourcePath).entrySet().forEach(entry -> runtimeOptions.addAll(entry.getValue()));
+        createRuntimeOptions(cucumberOptions, cucumberResourcePath).forEach((key, value) -> runtimeOptions.addAll(value));
     }
 
     public CourgetteRuntimeOptions(CourgetteProperties courgetteProperties) {
@@ -38,7 +39,7 @@ public class CourgetteRuntimeOptions {
         this.cucumberOptions = courgetteProperties.getCourgetteOptions().cucumberOptions();
         this.cucumberFeature = null;
 
-        createRuntimeOptions(cucumberOptions, null).entrySet().forEach(entry -> runtimeOptions.addAll(entry.getValue()));
+        createRuntimeOptions(cucumberOptions, null).forEach((key, value) -> runtimeOptions.addAll(value));
     }
 
     public String[] getRuntimeOptions() {
@@ -82,6 +83,7 @@ public class CourgetteRuntimeOptions {
         return "target/courgette-report/data/report.json";
     }
 
+    @SuppressWarnings("deprecation")
     private Map<String, List<String>> createRuntimeOptions(CucumberOptions cucumberOptions, String path) {
         final Map<String, List<String>> runtimeOptions = new HashMap<>();
 
@@ -95,7 +97,7 @@ public class CourgetteRuntimeOptions {
         runtimeOptions.put("--dryRun", Collections.singletonList(cucumberOptions.dryRun() ? "--dry-run" : "--no-dry-run"));
         runtimeOptions.put("--strict", Collections.singletonList(cucumberOptions.strict() ? "--strict" : "--no-strict"));
         runtimeOptions.put("--monochrome", Collections.singletonList(cucumberOptions.monochrome() ? "--monochrome" : "--no-monochrome"));
-        runtimeOptions.put(null, featureParser.apply(cucumberOptions.features(), path == null ? null : path));
+        runtimeOptions.put(null, featureParser.apply(cucumberOptions.features(), path));
         runtimeOptions.values().removeIf(Objects::isNull);
 
         return runtimeOptions;
@@ -115,11 +117,16 @@ public class CourgetteRuntimeOptions {
     };
 
     private String getMultiThreadRerunFile() {
-        return getTempDirectory() + courgetteProperties.getSessionId() + "_rerun_" + cucumberFeature.getGherkinFeature().getId() + instanceId + ".txt";
+        return getTempDirectory() + courgetteProperties.getSessionId() + "_rerun_" + getFeatureId(cucumberFeature) + ".txt";
     }
 
     private String getMultiThreadReportFile() {
-        return getTempDirectory() + courgetteProperties.getSessionId() + "_thread_report_" + cucumberFeature.getGherkinFeature().getId() + instanceId;
+        return getTempDirectory() + courgetteProperties.getSessionId() + "_thread_report_" + getFeatureId(cucumberFeature);
+    }
+
+    private String getFeatureId(CucumberFeature cucumberFeature) {
+        final Location location = cucumberFeature.getGherkinFeature().getFeature().getLocation();
+        return String.format("%s_%s_%s", location.getLine(), location.getColumn(), instanceId);
     }
 
     private Function<CourgetteProperties, String> cucumberRerunPlugin = (courgetteProperties) -> {
@@ -254,7 +261,7 @@ public class CourgetteRuntimeOptions {
                 }
             }
         }
-        Arrays.asList(resourceFeaturePaths).forEach(featurePaths::add);
+        featurePaths.addAll(Arrays.asList(resourceFeaturePaths));
         return featurePaths;
     };
 

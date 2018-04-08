@@ -1,92 +1,111 @@
 package courgette.runtime;
 
+import cucumber.runner.EventBus;
+import cucumber.runtime.ClassFinder;
+import cucumber.runtime.Runtime;
 import cucumber.runtime.RuntimeOptions;
 import cucumber.runtime.io.MultiLoader;
 import cucumber.runtime.io.ResourceLoader;
+import cucumber.runtime.io.ResourceLoaderClassFinder;
 import cucumber.runtime.model.CucumberFeature;
-import cucumber.runtime.model.CucumberScenarioOutline;
+import gherkin.ast.Examples;
+import gherkin.ast.ScenarioOutline;
+import gherkin.pickles.PickleLocation;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CourgetteFeatureLoader {
     private final CourgetteProperties courgetteProperties;
-    private final ClassLoader classLoader;
     private final ResourceLoader resourceLoader;
+    private final RuntimeOptions runtimeOptions;
+    private final Runtime runtime;
+    private final EventBus eventBus;
 
-    private RuntimeOptions runtimeOptions;
     private List<CucumberFeature> cucumberFeatures;
 
-    public CourgetteFeatureLoader(CourgetteProperties courgetteProperties) {
+    public CourgetteFeatureLoader(CourgetteProperties courgetteProperties, ClassLoader classLoader) {
         this.courgetteProperties = courgetteProperties;
-        this.classLoader = Thread.currentThread().getContextClassLoader();
         this.resourceLoader = new MultiLoader(classLoader);
+        this.runtimeOptions = createRuntimeOptions();
+        this.runtime = createRuntime(runtimeOptions, classLoader);
+        this.eventBus = runtime.getEventBus();
     }
 
     public List<CucumberFeature> getCucumberFeatures() {
-        final CourgetteRuntimeOptions courgetteRuntimeOptions = new CourgetteRuntimeOptions(courgetteProperties);
-        final List<String> argv = Arrays.asList(courgetteRuntimeOptions.getRuntimeOptions());
-
-        runtimeOptions = new RuntimeOptions(argv);
-        cucumberFeatures = runtimeOptions.cucumberFeatures(resourceLoader);
+        cucumberFeatures = cucumberFeatures();
         return cucumberFeatures;
     }
 
-    public Map<CucumberFeature, Integer> getCucumberScenarios() {
-        return cucumberScenarios(cucumberFeatures, runtimeOptions);
+    public Map<PickleLocation, CucumberFeature> getCucumberScenarios() {
+        return cucumberScenarios(cucumberFeatures);
     }
 
-    public RuntimeOptions getCucumberRuntimeOptions() {
+    public RuntimeOptions getRuntimeOptions() {
+        return runtimeOptions;
+    }
+
+    public Runtime getRuntime() {
+        return runtime;
+    }
+
+    private RuntimeOptions createRuntimeOptions() {
         final CourgetteRuntimeOptions courgetteRuntimeOptions = new CourgetteRuntimeOptions(courgetteProperties);
-        return new RuntimeOptions(Arrays.asList(courgetteRuntimeOptions.getRuntimeOptions()));
+        final List<String> argv = Arrays.asList(courgetteRuntimeOptions.getRuntimeOptions());
+        return new RuntimeOptions(argv);
     }
 
-    private Map<CucumberFeature, Integer> cucumberScenarios(List<CucumberFeature> cucumberFeatures, RuntimeOptions runtimeOptions) {
-        final Map<CucumberFeature, Integer> scenarios = new HashMap<>();
+    private Runtime createRuntime(RuntimeOptions runtimeOptions, ClassLoader classLoader) {
+        final ResourceLoader resourceLoader = new MultiLoader(classLoader);
+        final ClassFinder classFinder = new ResourceLoaderClassFinder(resourceLoader, classLoader);
+        return new Runtime(resourceLoader, classFinder, classLoader, runtimeOptions);
+    }
+
+    private List<CucumberFeature> cucumberFeatures() {
+        final List<CucumberFeature> loadedCucumberFeatures = runtimeOptions.cucumberFeatures(resourceLoader, eventBus);
+
+        final List<CucumberFeature> matchedCucumberFeatures = new ArrayList<>();
+
+        loadedCucumberFeatures.forEach(cucumberFeature -> {
+            CourgettePickleMatcher pickleMatcher = new CourgettePickleMatcher(cucumberFeature, runtime);
+
+            if (pickleMatcher.matches()) {
+                matchedCucumberFeatures.add(cucumberFeature);
+            }
+        });
+        return matchedCucumberFeatures;
+    }
+
+    private Map<PickleLocation, CucumberFeature> cucumberScenarios(List<CucumberFeature> cucumberFeatures) {
+        final Map<PickleLocation, CucumberFeature> scenarios = new HashMap<>();
 
         if (cucumberFeatures != null) {
-            cucumberFeatures.forEach(cucumberFeature -> cucumberFeature.getFeatureElements().forEach(featureElement -> {
+            cucumberFeatures.forEach(cucumberFeature ->
+                    cucumberFeature.getGherkinFeature().getFeature().getChildren().forEach(scenario -> {
 
-                final List<Integer> lineIds = new ArrayList<>();
+                        final List<Integer> lines = new ArrayList<>();
 
-                if (featureElement instanceof CucumberScenarioOutline) {
-                    ((CucumberScenarioOutline) featureElement).getCucumberExamplesList()
-                            .forEach(c -> c.getExamples().getRows().stream().skip(1).forEach(row -> {
-                                lineIds.add(row.getLine());
-                            }));
-                } else {
-                    lineIds.add(featureElement.getGherkinModel().getLine());
-                }
+                        if (scenario instanceof ScenarioOutline) {
+                            List<Examples> examples = ((ScenarioOutline) scenario).getExamples();
 
-                lineIds.forEach(lineId -> {
-                    final AtomicBoolean alreadyAdded = new AtomicBoolean(Boolean.FALSE);
-
-                    runtimeOptions.getFeaturePaths().forEach(resourcePath -> {
-                        if (!alreadyAdded.get()) {
-                            final List<String> scenarioPath = new ArrayList<>();
-                            addScenario(scenarioPath, cucumberFeature, resourcePath, lineId);
-
-                            try {
-                                scenarios.put(
-                                        CucumberFeature.load(resourceLoader, scenarioPath, new ArrayList<>()).stream().findFirst().orElse(null),
-                                        lineId);
-                                alreadyAdded.set(Boolean.TRUE);
-                            } catch (IllegalArgumentException e) {
-                                alreadyAdded.set(Boolean.FALSE);
-                            }
+                            examples.forEach(example ->
+                                    example.getTableBody().forEach(
+                                            tr -> lines.add(tr.getLocation().getLine())
+                                    ));
+                        } else {
+                            lines.add(scenario.getLocation().getLine());
                         }
-                    });
-                });
-            }));
+
+                        lines.forEach(line -> {
+                            CourgettePickleMatcher pickleMatcher = new CourgettePickleMatcher(cucumberFeature, runtime);
+
+                            PickleLocation pickleLocation = pickleMatcher.matchLocation(line);
+
+                            if (pickleLocation != null) {
+                                scenarios.put(pickleLocation, cucumberFeature);
+                            }
+                        });
+                    }));
         }
         return scenarios;
-    }
-
-    private void addScenario(List<String> path, CucumberFeature cucumberFeature, String resourcePath, Integer lineId) {
-        if (cucumberFeature.getPath().startsWith(resourcePath)) {
-            path.add(String.format("%s:%s", cucumberFeature.getPath(), lineId));
-        } else {
-            path.add(String.format("%s/%s:%s", resourcePath, cucumberFeature.getPath(), lineId));
-        }
     }
 }

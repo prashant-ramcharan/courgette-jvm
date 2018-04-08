@@ -32,7 +32,7 @@
     <div class="container-fluid">
         <!-- Result Cards -->
         <div class="row">
-            <div class="col-xl-3 col-sm-6 mb-3">
+            <div class="col-lg-3 col-sm-6 mb-3">
                 <div class="card text-white bg-primary o-hidden h-100">
                     <div class="card-body">
                         <div class="card-body-icon">
@@ -48,7 +48,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-xl-3 col-sm-6 mb-3">
+            <div class="col-lg-3 col-sm-6 mb-3">
                 <div class="card text-white bg-success o-hidden h-100">
                     <div class="card-body">
                         <div class="card-body-icon">
@@ -64,7 +64,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-xl-3 col-sm-6 mb-3">
+            <div class="col-lg-3 col-sm-6 mb-3">
                 <div class="card text-white bg-danger o-hidden h-100">
                     <div class="card-body">
                         <div class="card-body-icon">
@@ -80,7 +80,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-xl-3 col-sm-6 mb-3">
+            <div class="col-lg-3 col-sm-6 mb-3">
                 <div class="card text-white bg-warning o-hidden h-100">
                     <div class="card-body">
                         <div class="card-body-icon">
@@ -92,21 +92,6 @@
                     </div>
                     <div class="card-footer text-white clearfix small z-1">
                         <span class="float-left" id="card-rerun">id:rerun</span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-sm-6 mb-3">
-                <div class="card text-white bg-secondary o-hidden h-100">
-                    <div class="card-body">
-                        <div class="card-body-icon">
-                            <i class="fa fa-fw"></i>
-                        </div>
-                        <div class="mr-10">
-                            Passed after Re-run
-                        </div>
-                    </div>
-                    <div class="card-footer text-white clearfix small z-1">
-                        <span class="float-left" id="card-after-rerun">id:after</span>
                     </div>
                 </div>
             </div>
@@ -229,16 +214,15 @@
     var passed = $('#card-passed').text();
     var failed = $('#card-failed').text();
     var rerun = $('#card-rerun').text();
-    var afterRerun = $('#card-after-rerun').text();
 
     var ctxP = document.getElementById("pieChart").getContext('2d');
     var pieChart = new Chart(ctxP, {
         type: 'pie',
         data: {
-            labels: ["Passed", "Failed", "Re-run", "Passed after Re-run"],
+            labels: ["Passed", "Failed", "Re-run"],
             datasets: [{
-                data: [passed, failed, rerun, afterRerun],
-                backgroundColor: ["#28a745", "#dc3545", "#ffbb33", "#868e96"]
+                data: [passed, failed, rerun],
+                backgroundColor: ["#28a745", "#dc3545", "#ffbb33"]
             }]
         },
         options: {

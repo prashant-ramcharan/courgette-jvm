@@ -37,6 +37,7 @@ public final class SystemPropertyUtils {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> void splitAndAddPropertyToList(String key, List<T> list) {
         Object value = System.getProperty(key);
         if (value != null) {

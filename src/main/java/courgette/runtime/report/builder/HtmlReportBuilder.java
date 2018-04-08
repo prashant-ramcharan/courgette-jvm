@@ -1,42 +1,39 @@
 package courgette.runtime.report.builder;
 
-import courgette.runtime.report.model.Feature;
-import courgette.runtime.report.model.Hook;
-import courgette.runtime.report.model.Result;
-import courgette.runtime.report.model.Scenario;
+import courgette.runtime.report.model.*;
 
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class HtmlReportBuilder {
     private List<Feature> featureList;
+    private boolean isStrict;
 
     private static final String PASSED = "Passed";
     private static final String FAILED = "Failed";
-    private static final String SKIPPED = "Skipped";
     private static final String SUCCESS = "success";
     private static final String DANGER = "danger";
     private static final String WARNING = "warning";
 
-    private HtmlReportBuilder(List<Feature> featureList) {
+    private HtmlReportBuilder(List<Feature> featureList, boolean isStrict) {
         this.featureList = featureList;
+        this.isStrict = isStrict;
     }
 
-    public static HtmlReportBuilder create(List<Feature> featureList) {
-        return new HtmlReportBuilder(featureList);
+    public static HtmlReportBuilder create(List<Feature> featureList, boolean isStrict) {
+        return new HtmlReportBuilder(featureList, isStrict);
     }
 
     public String getHtmlTableFeatureRows() {
         final StringBuilder tableRows = new StringBuilder();
-        featureList.forEach(feature -> tableRows.append(TableRowBuilder.create(feature).getFeatureRow()));
+        featureList.forEach(feature -> tableRows.append(TableRowBuilder.create(feature, isStrict).getFeatureRow()));
         return tableRows.toString();
     }
 
     public String getHtmlTableScenarioRows() {
         final StringBuilder tableRows = new StringBuilder();
-        featureList.forEach(feature -> tableRows.append(TableRowBuilder.create(feature).getScenarioRow()));
+        featureList.forEach(feature -> tableRows.append(TableRowBuilder.create(feature, isStrict).getScenarioRow()));
         return tableRows.toString();
     }
 
@@ -54,36 +51,24 @@ public class HtmlReportBuilder {
         return modals.toString();
     }
 
-    private static Function<Result, String> statusLabel = (result) -> result.getStatus().equalsIgnoreCase("passed")
-            ? PASSED
-            : result.getStatus().equalsIgnoreCase("failed")
-            ? FAILED
-            : SKIPPED;
+    private static Function<Result, String> statusLabel = (result) -> result.getStatus().substring(0, 1).toUpperCase() + result.getStatus().substring(1);
 
     private static Function<Result, String> statusBadge = (result) -> {
         String status = result.getStatus();
         return status.equalsIgnoreCase(PASSED) ? SUCCESS : status.equalsIgnoreCase(FAILED) ? DANGER : WARNING;
     };
 
-    private static Predicate<Feature> successFeature = (feature ->
-            feature.getScenarios().stream().allMatch(e -> e.getBefore().stream().allMatch(t -> t.getResult().getStatus().equalsIgnoreCase(PASSED)))
-                    && feature.getScenarios().stream().allMatch(e -> e.getAfter().stream().allMatch(t -> t.getResult().getStatus().equalsIgnoreCase(PASSED)))
-                    && feature.getScenarios().stream().allMatch(e -> e.getSteps().stream().allMatch(t -> t.getResult().getStatus().equalsIgnoreCase(PASSED))));
-
-    private static Predicate<Scenario> successScenario = (scenario ->
-            scenario.getBefore().stream().allMatch(t -> t.getResult().getStatus().equalsIgnoreCase(PASSED))
-                    && scenario.getAfter().stream().allMatch(t -> t.getResult().getStatus().equalsIgnoreCase(PASSED))
-                    && scenario.getSteps().stream().allMatch(t -> t.getResult().getStatus().equalsIgnoreCase(PASSED)));
-
     static class TableRowBuilder {
         private Feature feature;
+        private boolean isStrict;
 
-        private TableRowBuilder(Feature feature) {
+        private TableRowBuilder(Feature feature, boolean isStrict) {
             this.feature = feature;
+            this.isStrict = isStrict;
         }
 
-        public static TableRowBuilder create(Feature feature) {
-            return new TableRowBuilder(feature);
+        public static TableRowBuilder create(Feature feature, boolean isStrict) {
+            return new TableRowBuilder(feature, isStrict);
         }
 
         private final String FEATURE_ROW_START = "<tr>\n" +
@@ -121,7 +106,7 @@ public class HtmlReportBuilder {
 
             String featureId = feature.getCourgetteFeatureId();
             String featureName = feature.getName();
-            String featureBadge = successFeature.test(feature) ? SUCCESS : DANGER;
+            String featureBadge = feature.passed(isStrict) ? SUCCESS : DANGER;
             String featureStatus = featureBadge.equals(SUCCESS) ? PASSED : FAILED;
 
             featureRow.append(String.format(FEATURE_ROW_START, featureId, featureName, featureId));
@@ -141,7 +126,7 @@ public class HtmlReportBuilder {
             feature.getScenarios().forEach(scenario -> {
                 String scenarioId = scenario.getCourgetteScenarioId();
                 String scenarioName = scenario.getName();
-                String scenarioBadge = successScenario.test(scenario) ? SUCCESS : DANGER;
+                String scenarioBadge = scenario.passed(isStrict) ? SUCCESS : DANGER;
                 String scenarioStatus = scenarioBadge.equals(SUCCESS) ? PASSED : FAILED;
 
                 source.append(String.format(format, scenarioId, scenarioName, scenarioBadge, scenarioStatus));
@@ -216,9 +201,25 @@ public class HtmlReportBuilder {
             if (result.getErrorMessage() != null) {
                 hookBuilder.append(String.format(MODAL_BODY_ROW_ERROR_MESSAGE, result.getErrorMessage()));
             }
+
+            hook.getOutput().forEach(output -> hookBuilder.append(String.format(MODAL_BODY_ROW_OUTPUT, output)));
+
+            addEmbeddings(hookBuilder, hook.getEmbeddings());
+
             hookBuilder.append("<hr>\n");
             return hookBuilder.toString();
         });
+
+        private void addEmbeddings(StringBuilder hookBuilder, List<Embedding> embeddings) {
+            embeddings.forEach(embedding -> {
+                if (embedding.getMimeType().startsWith("image")) {
+                    final String imageName = embedding.getCourgetteEmbeddingId();
+                    final String imageFormat = embedding.getMimeType().split("/")[1];
+
+                    hookBuilder.append(String.format(MODAL_BODY_ROW_EMBEDDINGS, imageName + "." + imageFormat));
+                }
+            });
+        }
 
         private String getModal() {
             final StringBuilder modal = new StringBuilder();
@@ -244,14 +245,7 @@ public class HtmlReportBuilder {
 
                 step.getOutput().forEach(output -> modal.append(String.format(MODAL_BODY_ROW_OUTPUT, output)));
 
-                step.getEmbeddings().forEach(embedding -> {
-                    if (embedding.getMimeType().startsWith("image")) {
-                        final String imageName = embedding.getCourgetteEmbeddingId();
-                        final String imageFormat = embedding.getMimeType().split("/")[1];
-
-                        modal.append(String.format(MODAL_BODY_ROW_EMBEDDINGS, imageName + "." + imageFormat));
-                    }
-                });
+                addEmbeddings(modal, step.getEmbeddings());
 
                 modal.append("<hr>\n");
             });

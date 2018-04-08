@@ -9,19 +9,13 @@ import java.util.Map;
 
 public class CourgetteRunnerInfo {
     private final CourgetteRuntimeOptions courgetteRuntimeOptions;
-    private final CucumberFeature cucumberFeature;
     private final Integer lineId;
     private final CourgetteRunLevel courgetteRunLevel;
 
     public CourgetteRunnerInfo(CourgetteProperties courgetteProperties, CucumberFeature cucumberFeature, Integer lineId) {
-        this.cucumberFeature = cucumberFeature;
         this.courgetteRuntimeOptions = new CourgetteRuntimeOptions(courgetteProperties, cucumberFeature);
         this.lineId = lineId;
         this.courgetteRunLevel = courgetteProperties.getCourgetteOptions().runLevel();
-    }
-
-    public CucumberFeature getCucumberFeature() {
-        return cucumberFeature;
     }
 
     public Map<String, List<String>> getRuntimeOptions() {
@@ -56,13 +50,5 @@ public class CourgetteRunnerInfo {
 
     public List<String> getReportFiles() {
         return courgetteRuntimeOptions.getReportJsFiles();
-    }
-
-    public Integer getLineId() {
-        return lineId;
-    }
-
-    public CourgetteRunLevel getCourgetteRunLevel() {
-        return courgetteRunLevel;
     }
 }

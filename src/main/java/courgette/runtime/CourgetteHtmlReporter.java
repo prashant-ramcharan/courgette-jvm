@@ -3,6 +3,7 @@ package courgette.runtime;
 import courgette.api.CourgetteRunLevel;
 import courgette.runtime.report.JsonReportParser;
 import courgette.runtime.report.builder.HtmlReportBuilder;
+import courgette.runtime.report.model.Embedding;
 import courgette.runtime.report.model.Feature;
 import courgette.runtime.utils.FileUtils;
 
@@ -12,9 +13,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class CourgetteHtmlReporter {
     private final String INDEX_HTML = "/report/index.html";
@@ -44,6 +47,15 @@ public class CourgetteHtmlReporter {
     }
 
     private void generateHtmlReport() {
+        final List<Feature> features;
+
+        try {
+            features = new ArrayList<>(JsonReportParser.create(new File(cucumberJsonReport)).getReportFeatures());
+        } catch (CourgetteException e) {
+            System.err.println("Unable to create the Courgette Html Report -> " + e.getMessage());
+            return;
+        }
+
         final long elapsedMill = (Instant.now().minus(courgetteProperties.getSessionStartTime().toEpochMilli(), ChronoUnit.MILLIS)).toEpochMilli();
 
         String duration = String.format("%d min, %d sec",
@@ -51,12 +63,12 @@ public class CourgetteHtmlReporter {
                 TimeUnit.MILLISECONDS.toSeconds(elapsedMill) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(elapsedMill)));
 
         final String featureScenarioLabel = courgetteProperties.getCourgetteOptions().runLevel() == CourgetteRunLevel.FEATURE ? "Features" : "Scenarios";
+        final boolean isStrict = courgetteProperties.getCourgetteOptions().cucumberOptions().strict();
 
-        final int total = courgetteRunResults.size();
-        final Long passed = courgetteRunResults.stream().filter(t -> t.getStatus() == CourgetteRunResult.Status.PASSED).count();
-        final Long failed = courgetteRunResults.stream().filter(t -> t.getStatus() == CourgetteRunResult.Status.FAILED).count();
-        final Long passedAfterRerun = courgetteRunResults.stream().filter(t -> t.getStatus() == CourgetteRunResult.Status.PASSED_AFTER_RERUN).count();
-        final Long rerun = courgetteProperties.getCourgetteOptions().rerunFailedScenarios() ? (failed + passedAfterRerun) : 0;
+        final int total = features.size();
+        final int passed = (int) features.stream().filter(feature -> feature.passed(isStrict)).count();
+        final int failed = total - passed;
+        final int rerun = courgetteProperties.getCourgetteOptions().rerunFailedScenarios() ? (int) courgetteRunResults.stream().filter(result -> result.getStatus().equals(CourgetteRunResult.Status.RERUN)).count() : 0;
 
         StringBuilder indexHtmlBuilder = new StringBuilder();
 
@@ -69,10 +81,9 @@ public class CourgetteHtmlReporter {
 
         formattedIndexHtml = formattedIndexHtml.replaceAll("id:label", featureScenarioLabel);
         formattedIndexHtml = formattedIndexHtml.replaceAll("id:total", String.valueOf(total));
-        formattedIndexHtml = formattedIndexHtml.replaceAll("id:passed", String.valueOf(passed.intValue()));
-        formattedIndexHtml = formattedIndexHtml.replaceAll("id:failed", String.valueOf(failed.intValue()));
-        formattedIndexHtml = formattedIndexHtml.replaceAll("id:rerun", String.valueOf(rerun.intValue()));
-        formattedIndexHtml = formattedIndexHtml.replaceAll("id:after", String.valueOf(passedAfterRerun.intValue()));
+        formattedIndexHtml = formattedIndexHtml.replaceAll("id:passed", String.valueOf(passed));
+        formattedIndexHtml = formattedIndexHtml.replaceAll("id:failed", String.valueOf(failed));
+        formattedIndexHtml = formattedIndexHtml.replaceAll("id:rerun", String.valueOf(rerun));
         formattedIndexHtml = formattedIndexHtml.replaceAll("id:namelabel", featureScenarioLabel.substring(0, featureScenarioLabel.length() - 1));
 
         formattedIndexHtml = formattedIndexHtml.replaceAll("id:timestamp", Instant.now().toString());
@@ -93,23 +104,22 @@ public class CourgetteHtmlReporter {
         String featureDir = Arrays.asList(courgetteProperties.getCourgetteOptions().cucumberOptions().features()).toString().replace("[", "").replace("]", "");
         formattedIndexHtml = formattedIndexHtml.replaceAll("id:features", featureDir);
 
-        final List<Feature> features = JsonReportParser.create(new File(cucumberJsonReport)).getReportFeatures();
+        final Consumer<Embedding> imageEmbedding = (embedding) -> {
+            if (embedding.getMimeType().startsWith("image")) {
+                final String imageName = IMAGES_DIR + "/" + embedding.getCourgetteEmbeddingId();
+                final String imageFormat = embedding.getMimeType().split("/")[1];
+                FileUtils.writeImageFile(imageName, imageFormat, embedding.getData());
+            }
+        };
 
-        features.forEach(feature -> {
-            feature.getScenarios().forEach(scenario -> {
-                scenario.getSteps().forEach(step -> {
-                    step.getEmbeddings().forEach(embedding -> {
-                        if (embedding.getMimeType().startsWith("image")) {
-                            final String imageName = IMAGES_DIR + "/" + embedding.getCourgetteEmbeddingId();
-                            final String imageFormat = embedding.getMimeType().split("/")[1];
-                            FileUtils.writeImageFile(imageName, imageFormat, embedding.getData());
-                        }
-                    });
-                });
-            });
-        });
+        features.forEach(feature ->
+                feature.getScenarios().forEach(scenario -> {
+                    scenario.getBefore().forEach(before -> before.getEmbeddings().forEach(imageEmbedding));
+                    scenario.getAfter().forEach(before -> before.getEmbeddings().forEach(imageEmbedding));
+                    scenario.getSteps().forEach(step -> step.getEmbeddings().forEach(imageEmbedding));
+                }));
 
-        final HtmlReportBuilder htmlReportBuilder = HtmlReportBuilder.create(features);
+        final HtmlReportBuilder htmlReportBuilder = HtmlReportBuilder.create(features, isStrict);
 
         final String results = courgetteProperties.getCourgetteOptions().runLevel() == CourgetteRunLevel.FEATURE ?
                 htmlReportBuilder.getHtmlTableFeatureRows() :

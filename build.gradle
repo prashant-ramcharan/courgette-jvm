@@ -1,5 +1,5 @@
 group 'io.github.prashant-ramcharan'
-version '1.6.1'
+version '2.0.0'
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'
@@ -14,11 +14,10 @@ repositories {
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.11'
-    compile 'info.cukes:cucumber-core:1.2.5'
-    compile 'info.cukes:cucumber-java:1.2.5'
-    compile 'info.cukes:cucumber-java8:1.2.5'
-    compile 'info.cukes:cucumber-junit:1.2.5'
+    compile 'io.cucumber:cucumber-core:2.4.0'
+    compile 'io.cucumber:cucumber-java:2.4.0'
+    compile 'io.cucumber:cucumber-java8:2.4.0'
+    compile 'io.cucumber:cucumber-junit:2.4.0'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.8.8'
 }
 

@@ -49,7 +49,7 @@ public class JsonReportParser {
     public List<Feature> getReportFeatures() {
         try {
             parseJsonReport();
-        } catch (FileNotFoundException e) {
+        } catch (FileNotFoundException | IllegalStateException e) {
             throw new CourgetteException(e);
         }
         return features;
@@ -91,7 +91,13 @@ public class JsonReportParser {
                             JsonObject match = hook.get(MATCH_ATTRIBUTE).getAsJsonObject();
                             String location = match.get(LOCATION_ATTRIBUTE).getAsString();
 
-                            hookList.add(new Hook(location, result));
+                            final List<Embedding> hookEmbeddings = new ArrayList<>();
+                            addEmbeddings(hook, hookEmbeddings);
+
+                            final List<String> hookOutputs = new ArrayList<>();
+                            addOutputs(hook, hookOutputs);
+
+                            hookList.add(new Hook(location, result, hookEmbeddings, hookOutputs));
                         }
                     }
                     return hookList;
@@ -117,34 +123,43 @@ public class JsonReportParser {
 
                         Result stepResult = new Result(stepStatus, stepDuration, stepErrorMessage);
 
-                        JsonArray embeddings = (JsonArray) step.get(EMBEDDINGS_ATTRIBUTE);
                         final List<Embedding> stepEmbeddings = new ArrayList<>();
+                        addEmbeddings(step, stepEmbeddings);
 
-                        if (embeddings != null) {
-                            for (JsonElement embedding : embeddings) {
-                                JsonObject embeddedData = embedding.getAsJsonObject();
-
-                                String data = embeddedData.get(DATA_ATTRIBUTE).getAsString();
-                                String mimeType = embeddedData.get(MIME_TYPE_ATTRIBUTE).getAsString();
-
-                                stepEmbeddings.add(new Embedding(data, mimeType));
-                            }
-                        }
-
-                        JsonArray output = (JsonArray) step.get(OUTPUT_ATTRIBUTE);
                         final List<String> stepOutputs = new ArrayList<>();
+                        addOutputs(step, stepOutputs);
 
-                        if (output != null) {
-                            for (JsonElement out : output) {
-                                stepOutputs.add(out.getAsString());
-                            }
-                        }
                         scenarioSteps.add(new Step(stepName, stepKeyword, stepResult, stepEmbeddings, stepOutputs));
                     });
                 }
                 scenarioElements.add(new Scenario(scenarioName, scenarioBefore, scenarioAfter, scenarioSteps));
             }
             features.add(new Feature(featureName, featureUri, scenarioElements));
+        }
+    }
+
+    private void addEmbeddings(JsonObject source, List<Embedding> embeddingList) {
+        JsonArray embeddings = (JsonArray) source.get(EMBEDDINGS_ATTRIBUTE);
+
+        if (embeddings != null) {
+            for (JsonElement embedding : embeddings) {
+                JsonObject embeddedData = embedding.getAsJsonObject();
+
+                String data = embeddedData.get(DATA_ATTRIBUTE).getAsString();
+                String mimeType = embeddedData.get(MIME_TYPE_ATTRIBUTE).getAsString();
+
+                embeddingList.add(new Embedding(data, mimeType));
+            }
+        }
+    }
+
+    private void addOutputs(JsonObject source, List<String> outputList) {
+        JsonArray output = (JsonArray) source.get(OUTPUT_ATTRIBUTE);
+
+        if (output != null) {
+            for (JsonElement out : output) {
+                outputList.add(out.getAsString());
+            }
         }
     }
 }
