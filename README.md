@@ -14,10 +14,10 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 - **Requires only 1 annotated class** to run all feature files in parallel.
 - **Single report generation** for all executed features including embedded files (Json and Html reports)
 - **Single re-run file** listing all failed scenarios that occured during parallel execution.
-- Supports **Cucumber-JVM 2+** (_Courgette-JVM 2+_) and **Cucumber-JVM 1.2.5** (_Courgette-JVM 1+_)
+- Supports **Cucumber-JVM 2+**
 - Can be used with **Gradle** or **Maven**.
 - Searchable and paginated **Courgette-JVM Html Report** which includes all step definitions, embedded screenshots, thrown exceptions, pie chart and Courgette run information.
-[![Courgette-_JVM_Report.png](https://s5.postimg.org/t3p29w0yv/Courgette-_JVM_Report.png)](https://postimg.org/image/pk34k2y8z/)
+[![Courgette-_JVM_2.0_Report.png](https://s5.postimg.org/bk2gdnb7r/Courgette-_JVM_2.0_Report.png)](https://postimg.org/image/g5yklzwqr/)
 
 ## Requirements
 - Java 8
@@ -101,7 +101,7 @@ Courgette-JVM uses JUnit to run cucumber features. A runner class must be annota
         cucumberOptions = @CucumberOptions(
                 features = "src/test/resources/features",
                 glue = "steps",
-                tags = {"@regression"},
+                tags = {"@regression", "not @wip"},
                 plugin = {
                         "pretty",
                         "json:target/cucumber-report/cucumber.json",
