@@ -43,7 +43,7 @@ public class Step {
         if (isStrict) {
             return result.getStatus().equalsIgnoreCase(PASSED.lowerCaseName()) || result.getStatus().equalsIgnoreCase(SKIPPED.lowerCaseName());
         } else {
-            return !result.getStatus().equalsIgnoreCase(FAILED.lowerCaseName()) || !result.getStatus().equalsIgnoreCase(AMBIGUOUS.lowerCaseName());
+            return !result.getStatus().equalsIgnoreCase(FAILED.lowerCaseName()) && !result.getStatus().equalsIgnoreCase(AMBIGUOUS.lowerCaseName());
         }
     }
 }
