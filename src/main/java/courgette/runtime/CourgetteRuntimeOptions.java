@@ -83,6 +83,7 @@ public class CourgetteRuntimeOptions {
         return "target/courgette-report/data/report.json";
     }
 
+    @SuppressWarnings("deprecation")
     private Map<String, List<String>> createRuntimeOptions(CucumberOptions cucumberOptions, String path) {
         final Map<String, List<String>> runtimeOptions = new HashMap<>();
 
