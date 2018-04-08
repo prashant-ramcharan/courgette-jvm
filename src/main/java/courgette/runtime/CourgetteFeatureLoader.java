@@ -70,9 +70,9 @@ public class CourgetteFeatureLoader {
         final List<CucumberFeature> matchedCucumberFeatures = new ArrayList<>();
 
         loadedCucumberFeatures.forEach(cucumberFeature -> {
-            CourgettePickleMatcher courgettePickleMatcher = new CourgettePickleMatcher(cucumberFeature, runtime);
+            CourgettePickleMatcher pickleMatcher = new CourgettePickleMatcher(cucumberFeature, runtime);
 
-            if (courgettePickleMatcher.matches()) {
+            if (pickleMatcher.matches()) {
                 matchedCucumberFeatures.add(cucumberFeature);
             }
         });
