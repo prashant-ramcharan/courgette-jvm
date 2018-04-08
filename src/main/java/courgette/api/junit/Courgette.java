@@ -52,7 +52,7 @@ public class Courgette extends ParentRunner<FeatureRunner> {
     public List<FeatureRunner> getChildren() {
         final Runtime runtime = courgetteFeatureLoader.getRuntime();
         final RuntimeOptions runtimeOptions = courgetteFeatureLoader.getRuntimeOptions();
-        final EventBus eventBus = courgetteFeatureLoader.getEventBus();
+        final EventBus eventBus = runtime.getEventBus();
 
         final JUnitReporter jUnitReporter = new JUnitReporter(eventBus, runtimeOptions.isStrict(), new JUnitOptions(runtimeOptions.getJunitOptions()));
 

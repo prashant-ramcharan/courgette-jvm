@@ -48,10 +48,6 @@ public class CourgetteFeatureLoader {
         return runtime;
     }
 
-    public EventBus getEventBus() {
-        return eventBus;
-    }
-
     private RuntimeOptions createRuntimeOptions() {
         final CourgetteRuntimeOptions courgetteRuntimeOptions = new CourgetteRuntimeOptions(courgetteProperties);
         final List<String> argv = Arrays.asList(courgetteRuntimeOptions.getRuntimeOptions());
