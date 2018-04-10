@@ -2,6 +2,7 @@ package courgette.runtime.utils;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 
 public final class SystemPropertyUtils {
 
@@ -37,10 +38,17 @@ public final class SystemPropertyUtils {
         }
     }
 
-    public static String getStringProperty(String key, String defaultValue) {
+    public static String getNonEmptyStringProperty(String key, String providedValue, String defaultValue) {
+        final Predicate<String> isEmptyString = (string) -> string == null || string.trim().isEmpty();
+
         String value = System.getProperty(key);
-        if (value == null || value.trim().isEmpty()) {
-            return defaultValue;
+
+        if (isEmptyString.test(value)) {
+            if (!isEmptyString.test(providedValue)) {
+                return providedValue;
+            } else {
+                return defaultValue;
+            }
         }
         return value;
     }

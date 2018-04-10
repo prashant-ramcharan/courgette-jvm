@@ -31,9 +31,9 @@ public @interface CourgetteOptions {
     boolean showTestOutput() default false;
 
     /**
-     * @return target directory of courgette-report
+     * @return target directory of courgette-report (this defaults to 'target' directory)
      */
-    String reportTargetDir() default "target";
+    String reportTargetDir() default "";
 
     /**
      * @return the Cucumber options
