@@ -107,8 +107,8 @@ Courgette-JVM uses JUnit to run cucumber features. A runner class must be annota
                 tags = {"@regression", "not @wip"},
                 plugin = {
                         "pretty",
-                        "json:target/cucumber-report/cucumber.json",
-                        "html:target/cucumber-report/cucumber.html"},
+                        "json:build/cucumber-report/cucumber.json",
+                        "html:build/cucumber-report/cucumber.html"},
                 strict = true
         ))
 public class RegressionTestSuite {
