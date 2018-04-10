@@ -26,7 +26,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 
 #### Repository: [jcenter](https://bintray.com/bintray/jcenter?filterByPkgName=courgette-jvm)
 
-#### Release notes: [2.1.0](https://bintray.com/prashantr/Courgette-JVM/courgette-jvm#release)
+#### Release notes: [2.2.0](https://bintray.com/prashantr/Courgette-JVM/courgette-jvm#release)
 
 <a href='https://bintray.com/prashantr/Courgette-JVM/courgette-jvm?source=watch' alt='Get automatic notifications about new "courgette-jvm" versions'><img src='https://www.bintray.com/docs/images/bintray_badge_color.png'></a>
 
@@ -42,7 +42,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>2.1.0</version>
+  <version>2.2.0</version>
 </dependency>
 ````
 
@@ -52,7 +52,7 @@ repositories {
     jcenter()
 }
 
-compile 'io.github.prashant-ramcharan:courgette-jvm:2.1.0'
+compile 'io.github.prashant-ramcharan:courgette-jvm:2.2.0'
 ````
 
 #### Included Dependencies
