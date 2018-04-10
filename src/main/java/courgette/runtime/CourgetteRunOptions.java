@@ -37,7 +37,7 @@ public class CourgetteRunOptions implements CourgetteOptions {
 
     @Override
     public String reportTargetDir() {
-        return SystemPropertyUtils.getStringProperty(CourgetteSystemProperty.REPORT_TARGET_DIR, courgetteOptions.reportTargetDir());
+        return SystemPropertyUtils.getNonEmptyStringProperty(CourgetteSystemProperty.REPORT_TARGET_DIR, courgetteOptions.reportTargetDir(), "target");
     }
 
     @Override
