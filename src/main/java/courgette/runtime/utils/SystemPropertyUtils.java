@@ -37,6 +37,14 @@ public final class SystemPropertyUtils {
         }
     }
 
+    public static String getStringProperty(String key, String defaultValue) {
+        String value = System.getProperty(key);
+        if (value == null || value.trim().isEmpty()) {
+            return defaultValue;
+        }
+        return value;
+    }
+
     @SuppressWarnings("unchecked")
     public static <T> void splitAndAddPropertyToList(String key, List<T> list) {
         Object value = System.getProperty(key);

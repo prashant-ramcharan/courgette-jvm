@@ -80,6 +80,8 @@ Courgette-JVM uses JUnit to run cucumber features. A runner class must be annota
 * **rerunFailedScenarios** : If set to true, any failed scenario will be immediately re-run in the same thread. If the re-run succeeds, the initial failure will be ignored and not cause the build to fail.
 
 * **showTestOutput** : If set to true, the output for each feature will be redirected to the current I/O source or destination.
+
+* **reportTargetDir** : Target directory where courgette-report is generated. Set to target by default.
     
 * **cucumberOptions** : The standard cucumber options for specifying feature paths, glue, tags etc..
 
@@ -98,6 +100,7 @@ Courgette-JVM uses JUnit to run cucumber features. A runner class must be annota
         runLevel = CourgetteRunLevel.SCENARIO,
         rerunFailedScenarios = true,
         showTestOutput = true,
+        reportTargetDir = "build",
         cucumberOptions = @CucumberOptions(
                 features = "src/test/resources/features",
                 glue = "steps",
@@ -128,11 +131,11 @@ task regressionSuite(type: Test) {
 
 ## Gradle Run Options
 
-To override the hard-coded courgette options (_threads, runLevel, rerunFailedScenarios, showTestOutput_) set in the runner class, you can provide system properties to the gradle task.
+To override the hard-coded courgette options (_threads, runLevel, rerunFailedScenarios, showTestOutput, reportTargetDir_) set in the runner class, you can provide system properties to the gradle task.
 
 ````gradle
 
-gradle regressionSuite -Dcourgette.threads=2 -Dcourgette.runLevel=FEATURE -Dcourgette.rerunFailedScenarios=false -Dcourgette.showTestOutput=true
+gradle regressionSuite -Dcourgette.threads=2 -Dcourgette.runLevel=FEATURE -Dcourgette.rerunFailedScenarios=false -Dcourgette.showTestOutput=true -Dcourgette.reportTargetDir=build
 
 ````
 

@@ -18,6 +18,7 @@ public class CourgetteRuntimeOptions {
     private final CourgetteProperties courgetteProperties;
     private final CucumberFeature cucumberFeature;
     private final CucumberOptions cucumberOptions;
+    private final String reportTargetDir;
 
     private List<String> runtimeOptions = new ArrayList<>();
     private String rerunFile;
@@ -30,6 +31,7 @@ public class CourgetteRuntimeOptions {
         this.cucumberFeature = cucumberFeature;
         this.cucumberOptions = courgetteProperties.getCourgetteOptions().cucumberOptions();
         this.cucumberResourcePath = cucumberFeature.getUri();
+        this.reportTargetDir = courgetteProperties.getCourgetteOptions().reportTargetDir();
 
         createRuntimeOptions(cucumberOptions, cucumberResourcePath).forEach((key, value) -> runtimeOptions.addAll(value));
     }
@@ -38,6 +40,7 @@ public class CourgetteRuntimeOptions {
         this.courgetteProperties = courgetteProperties;
         this.cucumberOptions = courgetteProperties.getCourgetteOptions().cucumberOptions();
         this.cucumberFeature = null;
+        this.reportTargetDir = courgetteProperties.getCourgetteOptions().reportTargetDir();
 
         createRuntimeOptions(cucumberOptions, null).forEach((key, value) -> runtimeOptions.addAll(value));
     }
@@ -80,7 +83,7 @@ public class CourgetteRuntimeOptions {
     }
 
     public String getCourgetteReportJson() {
-        return "target/courgette-report/data/report.json";
+        return String.format("%s/courgette-report/data/report.json", reportTargetDir);
     }
 
     @SuppressWarnings("deprecation")
@@ -173,7 +176,7 @@ public class CourgetteRuntimeOptions {
                 rerunFile = getMultiThreadRerunFile();
             } else {
                 final String cucumberRerunFile = cucumberRerunPlugin.apply(courgetteProperties);
-                rerunFile = cucumberRerunFile != null ? cucumberRerunFile : "target/courgette-rerun.txt";
+                rerunFile = cucumberRerunFile != null ? cucumberRerunFile : String.format("%s/courgette-rerun.txt", reportTargetDir);
             }
             pluginList.add("rerun:" + rerunFile);
         }

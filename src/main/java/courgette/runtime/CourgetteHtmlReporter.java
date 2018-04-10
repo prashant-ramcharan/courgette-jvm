@@ -24,17 +24,23 @@ public class CourgetteHtmlReporter {
     private final String CSS_ASSETS = "/report/css/bootstrap.min.css,/report/css/core.min.css,/report/css/dataTables.bootstrap4.css";
     private final String JS_ASSETS = "/report/js/bootstrap.min.js,/report/js/core.min.js,/report/js/dataTables.bootstrap4.js,/report/js/jquery.dataTables.js,/report/js/jquery.easing.min.js,/report/js/jquery.min.js,/report/js/popper.min.js,/report/js/mdb.min.js,/report/js/Chart.min.js";
 
-    private final String TARGET_DIR = "target";
-    private final String REPORT_DIR = TARGET_DIR + "/courgette-report";
-    private final String IMAGES_DIR = REPORT_DIR + "/images";
-    private final String CSS_DIR = REPORT_DIR + "/css";
-    private final String JS_DIR = REPORT_DIR + "/js";
+    private final String targetDir;
+    private final String reportDir;
+    private final String imagesDir;
+    private final String cssDir;
+    private final String jsDir;
 
     private final CourgetteProperties courgetteProperties;
     private List<CourgetteRunResult> courgetteRunResults;
     private String cucumberJsonReport;
 
     public CourgetteHtmlReporter(CourgetteProperties courgetteProperties, List<CourgetteRunResult> courgetteRunResults, String cucumberJsonReport) {
+        this.targetDir = courgetteProperties.getCourgetteOptions().reportTargetDir();
+        this.reportDir = targetDir + "/courgette-report";
+        this.imagesDir = reportDir + "/images";
+        this.cssDir = reportDir + "/css";
+        this.jsDir = reportDir + "/js";
+
         this.courgetteProperties = courgetteProperties;
         this.courgetteRunResults = courgetteRunResults;
         this.cucumberJsonReport = cucumberJsonReport;
@@ -106,7 +112,7 @@ public class CourgetteHtmlReporter {
 
         final Consumer<Embedding> imageEmbedding = (embedding) -> {
             if (embedding.getMimeType().startsWith("image")) {
-                final String imageName = IMAGES_DIR + "/" + embedding.getCourgetteEmbeddingId();
+                final String imageName = imagesDir + "/" + embedding.getCourgetteEmbeddingId();
                 final String imageFormat = embedding.getMimeType().split("/")[1];
                 FileUtils.writeImageFile(imageName, imageFormat, embedding.getData());
             }
@@ -128,35 +134,35 @@ public class CourgetteHtmlReporter {
         formattedIndexHtml = formattedIndexHtml.replace("id:results", results);
         formattedIndexHtml = formattedIndexHtml.replace("id:modals", htmlReportBuilder.getHtmlModals());
 
-        FileUtils.writeFile(REPORT_DIR + "/index.html", formattedIndexHtml);
+        FileUtils.writeFile(reportDir + "/index.html", formattedIndexHtml);
     }
 
     private void copyReportAssets() {
         Arrays.stream(CSS_ASSETS.split(",")).forEach(cssAsset -> {
             InputStream resource = getClass().getResourceAsStream(cssAsset);
             if (resource != null) {
-                FileUtils.readAndWriteFile(resource, CSS_DIR + "/" + cssAsset.substring(cssAsset.lastIndexOf("/") + 1));
+                FileUtils.readAndWriteFile(resource, cssDir + "/" + cssAsset.substring(cssAsset.lastIndexOf("/") + 1));
             }
         });
 
         Arrays.stream(JS_ASSETS.split(",")).forEach(jsAsset -> {
             InputStream resource = getClass().getResourceAsStream(jsAsset);
             if (resource != null) {
-                FileUtils.readAndWriteFile(resource, JS_DIR + "/" + jsAsset.substring(jsAsset.lastIndexOf("/") + 1));
+                FileUtils.readAndWriteFile(resource, jsDir + "/" + jsAsset.substring(jsAsset.lastIndexOf("/") + 1));
             }
         });
     }
 
     private void createReportDirectories() {
-        final File targetDir = new File(TARGET_DIR);
+        final File targetDir = new File(this.targetDir);
 
         if (!targetDir.exists()) {
             if (!targetDir.mkdir()) {
-                throw new CourgetteException("Unable to create the 'target' directory");
+                throw new CourgetteException(String.format("Unable to create the '%s' directory", targetDir));
             }
         }
 
-        final File reportDir = new File(REPORT_DIR);
+        final File reportDir = new File(this.reportDir);
 
         if (!reportDir.exists()) {
             if (!reportDir.mkdir()) {
@@ -164,7 +170,7 @@ public class CourgetteHtmlReporter {
             }
         }
 
-        final File cssDir = new File(CSS_DIR);
+        final File cssDir = new File(this.cssDir);
 
         if (!cssDir.exists()) {
             if (!cssDir.mkdir()) {
@@ -172,7 +178,7 @@ public class CourgetteHtmlReporter {
             }
         }
 
-        final File jsDir = new File(JS_DIR);
+        final File jsDir = new File(this.jsDir);
 
         if (!jsDir.exists()) {
             if (!jsDir.mkdir()) {
@@ -180,7 +186,7 @@ public class CourgetteHtmlReporter {
             }
         }
 
-        final File imagesDir = new File(IMAGES_DIR);
+        final File imagesDir = new File(this.imagesDir);
 
         if (!imagesDir.exists()) {
             if (!imagesDir.mkdir()) {
