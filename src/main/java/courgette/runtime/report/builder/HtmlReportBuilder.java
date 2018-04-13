@@ -124,12 +124,13 @@ public class HtmlReportBuilder {
 
         private void getScenario(StringBuilder source, String format) {
             feature.getScenarios().forEach(scenario -> {
-                String scenarioId = scenario.getCourgetteScenarioId();
-                String scenarioName = scenario.getName();
-                String scenarioBadge = scenario.passed(isStrict) ? SUCCESS : DANGER;
-                String scenarioStatus = scenarioBadge.equals(SUCCESS) ? PASSED : FAILED;
-
-                source.append(String.format(format, scenarioId, scenarioName, scenarioBadge, scenarioStatus));
+                if (!scenario.getKeyword().equalsIgnoreCase("Background")) {
+                    String scenarioId = scenario.getCourgetteScenarioId();
+                    String scenarioName = scenario.getName();
+                    String scenarioBadge = scenario.passed(isStrict) ? SUCCESS : DANGER;
+                    String scenarioStatus = scenarioBadge.equals(SUCCESS) ? PASSED : FAILED;
+                    source.append(String.format(format, scenarioId, scenarioName, scenarioBadge, scenarioStatus));
+                }
             });
         }
     }
