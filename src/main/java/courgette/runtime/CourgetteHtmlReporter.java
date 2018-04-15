@@ -98,11 +98,13 @@ public class CourgetteHtmlReporter {
         formattedIndexHtml = formattedIndexHtml.replaceAll("id:runlevel", courgetteProperties.getCourgetteOptions().runLevel().toString());
         formattedIndexHtml = formattedIndexHtml.replaceAll("id:retry", String.valueOf(courgetteProperties.getCourgetteOptions().rerunFailedScenarios() ? "true" : "false"));
 
-        String cucumberTags = "Not provided";
+        String cucumberTags = System.getProperty("cucumber.tags", "Not provided");
 
-        String[] tags = courgetteProperties.getCourgetteOptions().cucumberOptions().tags();
-        if (tags.length > 0) {
-            cucumberTags = Arrays.asList(tags).toString().replace("[", "").replace("]", "");
+        if (cucumberTags.equals("Not provided")) {
+            String[] tags = courgetteProperties.getCourgetteOptions().cucumberOptions().tags();
+            if (tags.length > 0) {
+                cucumberTags = Arrays.asList(tags).toString().replace("[", "").replace("]", "");
+            }
         }
 
         formattedIndexHtml = formattedIndexHtml.replaceAll("id:tags", cucumberTags);

@@ -6,13 +6,15 @@ import java.util.UUID;
 public class Scenario {
     private String courgetteScenarioId;
     private String name;
+    private String keyword;
     private List<Hook> before;
     private List<Hook> after;
     private List<Step> steps;
 
-    public Scenario(String name, List<Hook> before, List<Hook> after, List<Step> steps) {
+    public Scenario(String name, String keyword, List<Hook> before, List<Hook> after, List<Step> steps) {
         this.courgetteScenarioId = UUID.randomUUID().toString();
         this.name = name;
+        this.keyword = keyword;
         this.before = before;
         this.after = after;
         this.steps = steps;
@@ -24,6 +26,10 @@ public class Scenario {
 
     public String getName() {
         return name;
+    }
+
+    public String getKeyword() {
+        return keyword;
     }
 
     public List<Hook> getBefore() {

@@ -10,9 +10,7 @@ import gherkin.deps.com.google.gson.JsonParser;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
 public class JsonReportParser {
@@ -24,6 +22,7 @@ public class JsonReportParser {
     private final static String ELEMENTS_ATTRIBUTE = "elements";
     private final static String STEPS_ATTRIBUTE = "steps";
     private final static String KEYWORD_ATTRIBUTE = "keyword";
+    private final static String LINE_ATTRIBUTE = "line";
     private final static String RESULT_ATTRIBUTE = "result";
     private final static String STATUS_ATTRIBUTE = "status";
     private final static String DURATION_ATTRIBUTE = "duration";
@@ -68,6 +67,21 @@ public class JsonReportParser {
             JsonArray elements = (JsonArray) feature.get(ELEMENTS_ATTRIBUTE);
             Iterator<JsonElement> elementsIterator = elements.iterator();
 
+            final Map<Integer, JsonArray> backgroundSteps = new HashMap<>();
+
+            while (elementsIterator.hasNext()) {
+                JsonObject element = elementsIterator.next().getAsJsonObject();
+
+                int elementLine = element.get(LINE_ATTRIBUTE).getAsInt();
+
+                if (element.get(KEYWORD_ATTRIBUTE).getAsString().equalsIgnoreCase("Background")) {
+                    JsonArray elementSteps = (JsonArray) element.get(STEPS_ATTRIBUTE);
+                    backgroundSteps.put(elementLine, elementSteps);
+                }
+            }
+
+            elementsIterator = elements.iterator();
+
             final List<Scenario> scenarioElements = new ArrayList<>();
 
             while (elementsIterator.hasNext()) {
@@ -104,38 +118,43 @@ public class JsonReportParser {
                 };
 
                 String scenarioName = scenario.get(NAME_ATTRIBUTE).getAsString();
+                String scenarioKeyword = scenario.get(KEYWORD_ATTRIBUTE).getAsString();
                 List<Hook> scenarioBefore = hookFunc.apply(BEFORE_ATTRIBUTE);
                 List<Hook> scenarioAfter = hookFunc.apply(AFTER_ATTRIBUTE);
 
-                JsonArray steps = (JsonArray) scenario.get(STEPS_ATTRIBUTE);
+                List<JsonArray> allSteps = new ArrayList<>(backgroundSteps.values());
+                allSteps.addAll(Collections.singleton((JsonArray) scenario.get(STEPS_ATTRIBUTE)));
+
                 final List<Step> scenarioSteps = new ArrayList<>();
+                allSteps.forEach(steps -> addSteps(steps, scenarioSteps));
 
-                if (steps != null) {
-                    steps.iterator().forEachRemaining((e) -> {
-                        JsonObject step = e.getAsJsonObject();
-                        JsonObject result = step.get(RESULT_ATTRIBUTE).getAsJsonObject();
-
-                        String stepName = step.get(NAME_ATTRIBUTE).getAsString();
-                        String stepKeyword = step.get(KEYWORD_ATTRIBUTE).getAsString();
-                        String stepStatus = result.get(STATUS_ATTRIBUTE).getAsString();
-                        long stepDuration = result.get(DURATION_ATTRIBUTE) != null ? result.get(DURATION_ATTRIBUTE).getAsLong() : 0L;
-                        String stepErrorMessage = result.get(ERROR_MESSAGE_ATTRIBUTE) != null ? result.get(ERROR_MESSAGE_ATTRIBUTE).getAsString() : null;
-
-                        Result stepResult = new Result(stepStatus, stepDuration, stepErrorMessage);
-
-                        final List<Embedding> stepEmbeddings = new ArrayList<>();
-                        addEmbeddings(step, stepEmbeddings);
-
-                        final List<String> stepOutputs = new ArrayList<>();
-                        addOutputs(step, stepOutputs);
-
-                        scenarioSteps.add(new Step(stepName, stepKeyword, stepResult, stepEmbeddings, stepOutputs));
-                    });
-                }
-                scenarioElements.add(new Scenario(scenarioName, scenarioBefore, scenarioAfter, scenarioSteps));
+                scenarioElements.add(new Scenario(scenarioName, scenarioKeyword, scenarioBefore, scenarioAfter, scenarioSteps));
             }
             features.add(new Feature(featureName, featureUri, scenarioElements));
         }
+    }
+
+    private void addSteps(JsonArray steps, List<Step> stepList) {
+        steps.iterator().forEachRemaining(e -> {
+            JsonObject step = e.getAsJsonObject();
+            JsonObject result = step.get(RESULT_ATTRIBUTE).getAsJsonObject();
+
+            String stepName = step.get(NAME_ATTRIBUTE).getAsString();
+            String stepKeyword = step.get(KEYWORD_ATTRIBUTE).getAsString();
+            String stepStatus = result.get(STATUS_ATTRIBUTE).getAsString();
+            long stepDuration = result.get(DURATION_ATTRIBUTE) != null ? result.get(DURATION_ATTRIBUTE).getAsLong() : 0L;
+            String stepErrorMessage = result.get(ERROR_MESSAGE_ATTRIBUTE) != null ? result.get(ERROR_MESSAGE_ATTRIBUTE).getAsString() : null;
+
+            Result stepResult = new Result(stepStatus, stepDuration, stepErrorMessage);
+
+            final List<Embedding> stepEmbeddings = new ArrayList<>();
+            addEmbeddings(step, stepEmbeddings);
+
+            final List<String> stepOutputs = new ArrayList<>();
+            addOutputs(step, stepOutputs);
+
+            stepList.add(new Step(stepName, stepKeyword, stepResult, stepEmbeddings, stepOutputs));
+        });
     }
 
     private void addEmbeddings(JsonObject source, List<Embedding> embeddingList) {

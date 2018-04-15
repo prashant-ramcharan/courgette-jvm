@@ -2,7 +2,6 @@ package courgette.runtime;
 
 import cucumber.api.CucumberOptions;
 import cucumber.runtime.model.CucumberFeature;
-import gherkin.ast.Location;
 
 import java.io.File;
 import java.net.URL;
@@ -128,8 +127,7 @@ public class CourgetteRuntimeOptions {
     }
 
     private String getFeatureId(CucumberFeature cucumberFeature) {
-        final Location location = cucumberFeature.getGherkinFeature().getFeature().getLocation();
-        return String.format("%s_%s_%s", location.getLine(), location.getColumn(), instanceId);
+        return String.format("%s_%s", cucumberFeature.getGherkinFeature().getFeature().hashCode(), instanceId);
     }
 
     private Function<CourgetteProperties, String> cucumberRerunPlugin = (courgetteProperties) -> {
@@ -163,6 +161,8 @@ public class CourgetteRuntimeOptions {
                         final String reportPath = String.format("%s:%s.%s", extension, getMultiThreadReportFile(), extension);
                         pluginList.add(reportPath);
                     }
+                } else {
+                    pluginList.add(plugin);
                 }
             } else {
                 pluginList.add(plugin);
