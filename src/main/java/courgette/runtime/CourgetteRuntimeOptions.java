@@ -161,6 +161,8 @@ public class CourgetteRuntimeOptions {
                         final String reportPath = String.format("%s:%s.%s", extension, getMultiThreadReportFile(), extension);
                         pluginList.add(reportPath);
                     }
+                } else {
+                    pluginList.add(plugin);
                 }
             } else {
                 pluginList.add(plugin);
