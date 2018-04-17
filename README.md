@@ -17,7 +17,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 - Supports **Cucumber-JVM 2+**
 - Can be used with **Gradle** or **Maven**.
 - Searchable and paginated **Courgette-JVM Html Report** which includes all step definitions, embedded screenshots, thrown exceptions, pie chart and Courgette run information.
-[![Courgette-_JVM_2.0_Report.png](https://s5.postimg.org/bk2gdnb7r/Courgette-_JVM_2.0_Report.png)](https://postimg.org/image/g5yklzwqr/)
+[![Courgette-_JVM_2.0_Report.png](https://s5.postimg.cc/bk2gdnb7r/Courgette-_JVM_2.0_Report.png)](https://postimg.cc/image/g5yklzwqr/)
 
 ## Requirements
 - Java 8
