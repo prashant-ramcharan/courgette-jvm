@@ -21,6 +21,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 
 ## Requirements
 - Java 8
+- Java 9 and 10 (_supported from version 2.3.0-beta_)
 
 ## Installation
 
