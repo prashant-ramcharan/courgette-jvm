@@ -14,8 +14,6 @@ import static courgette.runtime.utils.SystemPropertyUtils.splitAndAddPropertyToL
 public class CourgetteFeatureRunner {
     private Map<String, List<String>> runnerArgs;
     private Boolean output;
-    private static String classpath;
-    private static List<String> systemProperties;
 
     public CourgetteFeatureRunner(Map<String, List<String>> runnerArgs, Boolean output) {
         this.runnerArgs = runnerArgs;
@@ -25,23 +23,7 @@ public class CourgetteFeatureRunner {
     public int run() {
         Process process = null;
         try {
-            final ProcessBuilder builder = new ProcessBuilder();
-
-            if (output) {
-                builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-            }
-            builder.redirectErrorStream(Boolean.TRUE);
-
-            final List<String> commands = new ArrayList<>();
-            commands.add("java");
-            splitAndAddPropertyToList(CourgetteSystemProperty.VM_OPTIONS, commands);
-            commands.add("-cp");
-            commands.add("\"" + classpath + "\"");
-            systemProperties.forEach(commands::add);
-            commands.add("cucumber.api.cli.Main");
-            this.runnerArgs.entrySet().forEach(entry -> entry.getValue().forEach(commands::add));
-
-            builder.command(commands);
+            final ProcessBuilder builder = new Builder().buildProcess();
             process = builder.start();
             process.waitFor();
         } catch (IOException | InterruptedException e) {
@@ -50,18 +32,57 @@ public class CourgetteFeatureRunner {
         return process != null ? process.exitValue() : -1;
     }
 
-    static {
-        final StringBuffer classPathBuilder = new StringBuffer();
+    class Builder {
 
-        final URL[] classPathUrls = ((URLClassLoader) (Thread.currentThread().getContextClassLoader())).getURLs();
-        Arrays.asList(classPathUrls).forEach(url -> classPathBuilder.append(String.format("%s%s", url.getPath().replace("file:", ""), File.pathSeparator)));
+        ProcessBuilder buildProcess() {
+            final ProcessBuilder builder = new ProcessBuilder();
 
-        classpath = classPathBuilder.toString();
+            if (output) {
+                builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+            }
+            builder.redirectErrorStream(true);
 
-        final List<String> systemPropertyList = new ArrayList<>();
-        System.getProperties().keySet().forEach(property -> systemPropertyList.add(String.format("-D%s=%s", property, System.getProperty(property.toString()))));
-        systemPropertyList.removeIf(systemProperty -> systemProperty.startsWith("-Dcucumber.options"));
+            final List<String> commands = new ArrayList<>();
+            commands.add("java");
+            splitAndAddPropertyToList(CourgetteSystemProperty.VM_OPTIONS, commands);
 
-        systemProperties = systemPropertyList;
+            if (isJava8()) {
+                commands.add("-cp");
+                commands.add("\"" + getClassPath() + "\"");
+            } else {
+                commands.add("-p");
+                commands.add("jrt:/modules");
+            }
+
+            commands.addAll(getSystemProperties());
+
+            commands.add("cucumber.api.cli.Main");
+            runnerArgs.forEach((key, value) -> commands.addAll(value));
+
+            builder.command(commands);
+            return builder;
+        }
+
+        private boolean isJava8() {
+            return System.getProperty("java.version").startsWith("1.8");
+        }
+
+        private String getClassPath() {
+            final StringBuffer classPathBuilder = new StringBuffer();
+
+            final URL[] classPathUrls = ((URLClassLoader) (Thread.currentThread().getContextClassLoader())).getURLs();
+            Arrays.asList(classPathUrls).forEach(url -> classPathBuilder.append(String.format("%s%s", url.getPath().replace("file:", ""), File.pathSeparator)));
+
+            return classPathBuilder.toString();
+        }
+
+        private List<String> getSystemProperties() {
+            final List<String> systemPropertyList = new ArrayList<>();
+
+            System.getProperties().keySet().forEach(property -> systemPropertyList.add(String.format("-D%s=%s", property, System.getProperty(property.toString()))));
+            systemPropertyList.removeIf(systemProperty -> systemProperty.startsWith("-Dcucumber.options"));
+
+            return systemPropertyList;
+        }
     }
 }

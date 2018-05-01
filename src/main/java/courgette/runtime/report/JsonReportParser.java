@@ -2,10 +2,7 @@ package courgette.runtime.report;
 
 import courgette.runtime.CourgetteException;
 import courgette.runtime.report.model.*;
-import gherkin.deps.com.google.gson.JsonArray;
-import gherkin.deps.com.google.gson.JsonElement;
-import gherkin.deps.com.google.gson.JsonObject;
-import gherkin.deps.com.google.gson.JsonParser;
+import gherkin.deps.com.google.gson.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -35,6 +32,8 @@ public class JsonReportParser {
     private final static String OUTPUT_ATTRIBUTE = "output";
     private final static String DATA_ATTRIBUTE = "data";
     private final static String MIME_TYPE_ATTRIBUTE = "mime_type";
+    private final static String ROWS_ATTRIBUTE = "rows";
+    private final static String CELLS_ATTRIBUTE = "cells";
 
     private JsonReportParser(File jsonFile) {
         this.jsonFile = jsonFile;
@@ -56,7 +55,13 @@ public class JsonReportParser {
 
     private void parseJsonReport() throws FileNotFoundException {
         JsonParser jsonParser = new JsonParser();
-        JsonArray reportJson = (JsonArray) jsonParser.parse(new FileReader(jsonFile));
+        Object json = jsonParser.parse(new FileReader(jsonFile));
+
+        if (json instanceof JsonNull) {
+            return;
+        }
+
+        JsonArray reportJson = (JsonArray) json;
 
         for (JsonElement report : reportJson) {
             final JsonObject feature = report.getAsJsonObject();
@@ -119,6 +124,7 @@ public class JsonReportParser {
 
                 String scenarioName = scenario.get(NAME_ATTRIBUTE).getAsString();
                 String scenarioKeyword = scenario.get(KEYWORD_ATTRIBUTE).getAsString();
+                int scenarioLine = scenario.get(LINE_ATTRIBUTE).getAsInt();
                 List<Hook> scenarioBefore = hookFunc.apply(BEFORE_ATTRIBUTE);
                 List<Hook> scenarioAfter = hookFunc.apply(AFTER_ATTRIBUTE);
 
@@ -128,7 +134,7 @@ public class JsonReportParser {
                 final List<Step> scenarioSteps = new ArrayList<>();
                 allSteps.forEach(steps -> addSteps(steps, scenarioSteps));
 
-                scenarioElements.add(new Scenario(scenarioName, scenarioKeyword, scenarioBefore, scenarioAfter, scenarioSteps));
+                scenarioElements.add(new Scenario(scenarioName, scenarioKeyword, scenarioLine, scenarioBefore, scenarioAfter, scenarioSteps));
             }
             features.add(new Feature(featureName, featureUri, scenarioElements));
         }
@@ -153,7 +159,10 @@ public class JsonReportParser {
             final List<String> stepOutputs = new ArrayList<>();
             addOutputs(step, stepOutputs);
 
-            stepList.add(new Step(stepName, stepKeyword, stepResult, stepEmbeddings, stepOutputs));
+            final List<Map<String, String>> stepRowData = new ArrayList<>();
+            addStepRowData(step, stepRowData);
+
+            stepList.add(new Step(stepName, stepKeyword, stepResult, stepEmbeddings, stepOutputs, stepRowData));
         });
     }
 
@@ -178,6 +187,37 @@ public class JsonReportParser {
         if (output != null) {
             for (JsonElement out : output) {
                 outputList.add(out.getAsString());
+            }
+        }
+    }
+
+    private void addStepRowData(JsonObject source, List<Map<String, String>> rowDataMap) {
+        JsonArray rows = (JsonArray) source.get(ROWS_ATTRIBUTE);
+
+        List<List<String>> cells = new ArrayList<>();
+
+        if (rows != null) {
+            rows.iterator().forEachRemaining(cell -> {
+                List<String> cellData = new ArrayList<>();
+                cell.getAsJsonObject().get(CELLS_ATTRIBUTE).getAsJsonArray().iterator().forEachRemaining(c -> cellData.add(c.getAsString()));
+
+                cells.add(cellData);
+            });
+        }
+
+        if (!cells.isEmpty()) {
+            int cellColumns = cells.get(0).size();
+
+            for (int i = 0; i < cellColumns; i++) {
+                StringBuilder cellDataString = new StringBuilder();
+
+                int finalI = i;
+                cells.stream().skip(1).forEach(c -> cellDataString.append(c.get(finalI)).append(" | "));
+
+                Map<String, String> rowData = new HashMap<>();
+                rowData.put(cells.get(0).get(i), cellDataString.substring(0, cellDataString.lastIndexOf("| ")));
+
+                rowDataMap.add(i, rowData);
             }
         }
     }

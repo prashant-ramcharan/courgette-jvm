@@ -1,6 +1,7 @@
 package courgette.runtime.report.model;
 
 import java.util.List;
+import java.util.Map;
 
 import static cucumber.api.Result.Type.*;
 
@@ -10,13 +11,15 @@ public class Step {
     private Result result;
     private List<Embedding> embeddings;
     private List<String> output;
+    private List<Map<String, String>> rowData;
 
-    public Step(String name, String keyword, Result result, List<Embedding> embeddings, List<String> output) {
+    public Step(String name, String keyword, Result result, List<Embedding> embeddings, List<String> output, List<Map<String, String>> rowData) {
         this.name = name;
         this.keyword = keyword;
         this.result = result;
         this.embeddings = embeddings;
         this.output = output;
+        this.rowData = rowData;
     }
 
     public String getName() {
@@ -37,6 +40,10 @@ public class Step {
 
     public List<String> getOutput() {
         return output;
+    }
+
+    public List<Map<String, String>> getRowData() {
+        return rowData;
     }
 
     public boolean passed(boolean isStrict) {

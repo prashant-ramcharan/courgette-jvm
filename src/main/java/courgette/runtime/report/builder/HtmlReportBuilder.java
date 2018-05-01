@@ -4,7 +4,6 @@ import courgette.runtime.report.model.*;
 
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class HtmlReportBuilder {
     private List<Feature> featureList;
@@ -41,13 +40,11 @@ public class HtmlReportBuilder {
         final StringBuilder modals = new StringBuilder();
 
         featureList
-                .stream()
-                .map(Feature::getScenarios)
-                .collect(Collectors.toList())
-                .forEach(e ->
-                        e.forEach(scenario -> {
-                            modals.append(ModalBuilder.create(scenario).getModal());
-                        }));
+                .forEach(feature -> {
+                    List<Scenario> scenarios = feature.getScenarios();
+                    scenarios.forEach(scenario -> modals.append(ModalBuilder.create(feature, scenario).getModal()));
+                });
+
         return modals.toString();
     }
 
@@ -136,23 +133,26 @@ public class HtmlReportBuilder {
     }
 
     static class ModalBuilder {
+        private Feature feature;
         private Scenario scenario;
 
-        private ModalBuilder(Scenario scenario) {
+        private ModalBuilder(Feature feature, Scenario scenario) {
+            this.feature = feature;
             this.scenario = scenario;
         }
 
-        public static ModalBuilder create(Scenario scenario) {
-            return new ModalBuilder(scenario);
+        public static ModalBuilder create(Feature feature, Scenario scenario) {
+            return new ModalBuilder(feature, scenario);
         }
 
         private final String MODEL_HEADER =
                 "<div class=\"modal fade\" id=\"%s\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"%s\" aria-hidden=\"true\">\n" +
                         "<div class=\"modal-dialog modal-lg\" role=\"document\">\n" +
                         "<div class=\"modal-content\">\n" +
-                        "<div class=\"modal-header\">\n" +
-                        "<h5 class=\"modal-title\">%s</h5>\n" +
-                        "<button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\">\n" +
+                        "<div class=\"modal-header text-white bg-dark\">\n" +
+                        "<span class=\"modal-title\"><h5>%s</h5>\n" +
+                        "<div class=\"font-italic text-muted\">%s - line %s</div></span>\n" +
+                        "<button type=\"button\" class=\"close text-white\" data-dismiss=\"modal\" aria-label=\"Close\">\n" +
                         "<span aria-hidden=\"true\">&times;</span>\n" +
                         "</button>\n" +
                         "</div>\n";
@@ -160,9 +160,10 @@ public class HtmlReportBuilder {
         private final String MODEL_BODY_ROW =
                 "<div class=\"row\">\n" +
                         "<div class=\"col-lg-9\" style=\"overflow-wrap:break-word;\">\n" +
-                        "%s\n" +
-                        "</div>\n\n" +
-                        "<div class=\"col-lg-3\">\n" +
+                        "%s\n";
+
+        private final String MODEL_BODY_ROW_RESULT =
+                "<div class=\"col-lg-3\">\n" +
                         "<span class=\"float-right\">\n" +
                         "<span class=\"badge badge-info\">%s ms</span>\n" +
                         "<span class=\"badge badge-%s\">%s</span>\n" +
@@ -191,13 +192,25 @@ public class HtmlReportBuilder {
                         "</div>\n" +
                         "</div>\n";
 
+        private final String MODAL_BODY_ROW_DATATABLE =
+                "<div class=\"row mt-2\">\n" +
+                        "<div class=\"col-lg-6 text-muted\" style=\"overflow-wrap:break-word;\">\n" +
+                        "%s\n" +
+                        "</div>\n" +
+                        "<div class=\"col-lg-6 text-muted\" style=\"overflow-wrap:break-word;\">\n" +
+                        "%s\n" +
+                        "</div>\n" +
+                        "</div>";
+
         private Function<Hook, String> hookFunc = (hook -> {
             StringBuilder hookBuilder = new StringBuilder();
 
             String name = hook.getLocation();
             Result result = hook.getResult();
 
-            hookBuilder.append(String.format(MODEL_BODY_ROW, name, result.getDuration(), statusBadge.apply(result), statusLabel.apply(result)));
+            hookBuilder.append(String.format(MODEL_BODY_ROW, name));
+            hookBuilder.append("</div>\n");
+            hookBuilder.append(String.format(MODEL_BODY_ROW_RESULT, result.getDuration(), statusBadge.apply(result), statusLabel.apply(result)));
 
             if (result.getErrorMessage() != null) {
                 hookBuilder.append(String.format(MODAL_BODY_ROW_ERROR_MESSAGE, result.getErrorMessage()));
@@ -225,7 +238,9 @@ public class HtmlReportBuilder {
         private String getModal() {
             final StringBuilder modal = new StringBuilder();
 
-            modal.append(String.format(MODEL_HEADER, scenario.getCourgetteScenarioId(), scenario.getCourgetteScenarioId(), scenario.getName()));
+            final String featureName = feature.getUri().substring(feature.getUri().lastIndexOf("/") + 1);
+
+            modal.append(String.format(MODEL_HEADER, scenario.getCourgetteScenarioId(), scenario.getCourgetteScenarioId(), scenario.getName(), featureName, scenario.getLine()));
 
             modal.append("<div class=\"modal-body\">\n");
 
@@ -238,7 +253,15 @@ public class HtmlReportBuilder {
                 String stepStatus = statusLabel.apply(step.getResult());
                 String stepStatusBadge = statusBadge.apply(step.getResult());
 
-                modal.append(String.format(MODEL_BODY_ROW, stepKeyword + stepName, stepDuration, stepStatusBadge, stepStatus));
+                modal.append(String.format(MODEL_BODY_ROW, stepKeyword + stepName));
+
+                step.getRowData().forEach(row -> row.keySet().forEach(cell ->
+                        modal.append(String.format(MODAL_BODY_ROW_DATATABLE, cell, row.get(cell)))
+                ));
+
+                modal.append("</div>\n");
+
+                modal.append(String.format(MODEL_BODY_ROW_RESULT, stepDuration, stepStatusBadge, stepStatus));
 
                 if (step.getResult().getErrorMessage() != null) {
                     modal.append(String.format(MODAL_BODY_ROW_ERROR_MESSAGE, step.getResult().getErrorMessage()));
