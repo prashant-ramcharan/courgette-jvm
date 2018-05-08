@@ -1,10 +1,10 @@
 package courgette.runtime.utils;
 
 import javax.imageio.ImageIO;
-import javax.xml.bind.DatatypeConverter;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -26,7 +26,7 @@ public final class FileUtils {
 
     public static void writeImageFile(String file, String format, String base64Image) {
         try {
-            byte[] imageByte = DatatypeConverter.parseBase64Binary(base64Image);
+            byte[] imageByte = Base64.getDecoder().decode(base64Image);
 
             ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(imageByte);
             BufferedImage bufferedImage = ImageIO.read(byteArrayInputStream);
