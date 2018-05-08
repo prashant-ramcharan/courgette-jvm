@@ -1,6 +1,6 @@
 
 [![Build Status](https://travis-ci.org/prashant-ramcharan/courgette-jvm.svg?branch=master)](https://travis-ci.org/prashant-ramcharan/courgette-jvm)
-[ ![Download](https://api.bintray.com/packages/prashantr/Courgette-JVM/courgette-jvm/images/download.svg) ](https://bintray.com/prashantr/Courgette-JVM/courgette-jvm/_latestVersion)
+[ ![Download](https://api.bintray.com/packages/prashantr/Courgette-JVM/courgette-jvm/images/download.svg?version=2.2.1) ](https://bintray.com/prashantr/Courgette-JVM/courgette-jvm/2.2.1/link)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 # Courgette-JVM #
@@ -21,6 +21,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 
 ## Requirements
 - Java 8
+- Java 9 and 10 (_supported from version 2.3.0-beta_)
 
 ## Installation
 
