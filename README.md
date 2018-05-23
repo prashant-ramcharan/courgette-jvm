@@ -66,7 +66,10 @@ compile 'io.github.prashant-ramcharan:courgette-jvm:2.3.2'
 
 ## Usage
 
-Example project: [Courgette-JVM Example](https://github.com/prashant-ramcharan/courgette-jvm-example)
+Example projects: 
+
+* [Courgette-JVM Example](https://github.com/prashant-ramcharan/courgette-jvm-example)
+* [Courgette-JVM with Selenium Example (_multiple browsers_)](https://github.com/prashant-ramcharan/courgette-jvm-selenium)
 
 Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios in parallel. A JUnit runner class must be annotated with **@RunWith(Courgette.class)** and a TestNG runner class must extend **TestNGCourgette**.
 
