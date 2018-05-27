@@ -5,6 +5,7 @@ import courgette.runtime.report.JsonReportParser;
 import courgette.runtime.report.builder.HtmlReportBuilder;
 import courgette.runtime.report.model.Embedding;
 import courgette.runtime.report.model.Feature;
+import courgette.runtime.report.model.Step;
 import courgette.runtime.utils.FileUtils;
 
 import java.io.BufferedReader;
@@ -112,7 +113,7 @@ public class CourgetteHtmlReporter {
         String featureDir = Arrays.asList(courgetteProperties.getCourgetteOptions().cucumberOptions().features()).toString().replace("[", "").replace("]", "");
         formattedIndexHtml = formattedIndexHtml.replaceAll("id:features", featureDir);
 
-        final Consumer<Embedding> imageEmbedding = (embedding) -> {
+        final Consumer<Embedding> saveImage = (embedding) -> {
             if (embedding.getMimeType().startsWith("image")) {
                 final String imageName = imagesDir + "/" + embedding.getCourgetteEmbeddingId();
                 final String imageFormat = embedding.getMimeType().split("/")[1];
@@ -122,9 +123,14 @@ public class CourgetteHtmlReporter {
 
         features.forEach(feature ->
                 feature.getScenarios().forEach(scenario -> {
-                    scenario.getBefore().forEach(before -> before.getEmbeddings().forEach(imageEmbedding));
-                    scenario.getAfter().forEach(before -> before.getEmbeddings().forEach(imageEmbedding));
-                    scenario.getSteps().forEach(step -> step.getEmbeddings().forEach(imageEmbedding));
+                    scenario.getBefore().forEach(before -> before.getEmbeddings().forEach(saveImage));
+                    scenario.getAfter().forEach(after -> after.getEmbeddings().forEach(saveImage));
+
+                    List<Step> scenarioSteps = scenario.getSteps();
+
+                    scenarioSteps.forEach(step -> step.getEmbeddings().forEach(saveImage));
+                    scenarioSteps.forEach(step -> step.getBefore().forEach(before -> before.getEmbeddings().forEach(saveImage)));
+                    scenarioSteps.forEach(step -> step.getAfter().forEach(after -> after.getEmbeddings().forEach(saveImage)));
                 }));
 
         final HtmlReportBuilder htmlReportBuilder = HtmlReportBuilder.create(features, isStrict);

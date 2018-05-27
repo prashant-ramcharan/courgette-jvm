@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.*;
-import java.util.function.Function;
 
 public class JsonReportParser {
     private File jsonFile;
@@ -92,41 +91,15 @@ public class JsonReportParser {
             while (elementsIterator.hasNext()) {
                 JsonObject scenario = elementsIterator.next().getAsJsonObject();
 
-                Function<String, List<Hook>> hookFunc = (attr) -> {
-                    final List<Hook> hookList = new ArrayList<>();
-
-                    JsonArray scenarioHooks = (JsonArray) scenario.get(attr);
-                    if (scenarioHooks != null) {
-                        for (JsonElement scenarioHook : scenarioHooks) {
-                            JsonObject hook = scenarioHook.getAsJsonObject();
-
-                            JsonObject hookResult = hook.get(RESULT_ATTRIBUTE).getAsJsonObject();
-                            String hookStatus = hookResult.get(STATUS_ATTRIBUTE).getAsString();
-                            long hookDuration = hookResult.get(DURATION_ATTRIBUTE) != null ? hookResult.get(DURATION_ATTRIBUTE).getAsLong() : 0L;
-                            String hookErrorMessage = hookResult.get(ERROR_MESSAGE_ATTRIBUTE) != null ? hookResult.get(ERROR_MESSAGE_ATTRIBUTE).getAsString() : null;
-
-                            Result result = new Result(hookStatus, hookDuration, hookErrorMessage);
-
-                            JsonObject match = hook.get(MATCH_ATTRIBUTE).getAsJsonObject();
-                            String location = match.get(LOCATION_ATTRIBUTE).getAsString();
-
-                            final List<Embedding> hookEmbeddings = new ArrayList<>();
-                            addEmbeddings(hook, hookEmbeddings);
-
-                            final List<String> hookOutputs = new ArrayList<>();
-                            addOutputs(hook, hookOutputs);
-
-                            hookList.add(new Hook(location, result, hookEmbeddings, hookOutputs));
-                        }
-                    }
-                    return hookList;
-                };
-
                 String scenarioName = scenario.get(NAME_ATTRIBUTE).getAsString();
                 String scenarioKeyword = scenario.get(KEYWORD_ATTRIBUTE).getAsString();
                 int scenarioLine = scenario.get(LINE_ATTRIBUTE).getAsInt();
-                List<Hook> scenarioBefore = hookFunc.apply(BEFORE_ATTRIBUTE);
-                List<Hook> scenarioAfter = hookFunc.apply(AFTER_ATTRIBUTE);
+
+                final List<Hook> scenarioBefore = new ArrayList<>();
+                addHook(scenario.get(BEFORE_ATTRIBUTE), scenarioBefore);
+
+                final List<Hook> scenarioAfter = new ArrayList<>();
+                addHook(scenario.get(AFTER_ATTRIBUTE), scenarioAfter);
 
                 List<JsonArray> allSteps = new ArrayList<>(backgroundSteps.values());
                 allSteps.addAll(Collections.singleton((JsonArray) scenario.get(STEPS_ATTRIBUTE)));
@@ -153,17 +126,49 @@ public class JsonReportParser {
 
             Result stepResult = new Result(stepStatus, stepDuration, stepErrorMessage);
 
+            final List<Hook> stepBefore = new ArrayList<>();
+            addHook(step.get(BEFORE_ATTRIBUTE), stepBefore);
+
+            final List<Hook> stepAfter = new ArrayList<>();
+            addHook(step.get(AFTER_ATTRIBUTE), stepAfter);
+
             final List<Embedding> stepEmbeddings = new ArrayList<>();
             addEmbeddings(step, stepEmbeddings);
 
             final List<String> stepOutputs = new ArrayList<>();
             addOutputs(step, stepOutputs);
 
-            final List<Map<String, String>> stepRowData = new ArrayList<>();
+            final List<String> stepRowData = new ArrayList<>();
             addStepRowData(step, stepRowData);
 
-            stepList.add(new Step(stepName, stepKeyword, stepResult, stepEmbeddings, stepOutputs, stepRowData));
+            stepList.add(new Step(stepName, stepKeyword, stepResult, stepBefore, stepAfter, stepEmbeddings, stepOutputs, stepRowData));
         });
+    }
+
+    private void addHook(JsonElement source, List<Hook> hooks) {
+        if (source != null) {
+            for (JsonElement scenarioHook : (JsonArray) source) {
+                JsonObject hook = scenarioHook.getAsJsonObject();
+
+                JsonObject hookResult = hook.get(RESULT_ATTRIBUTE).getAsJsonObject();
+                String hookStatus = hookResult.get(STATUS_ATTRIBUTE).getAsString();
+                long hookDuration = hookResult.get(DURATION_ATTRIBUTE) != null ? hookResult.get(DURATION_ATTRIBUTE).getAsLong() : 0L;
+                String hookErrorMessage = hookResult.get(ERROR_MESSAGE_ATTRIBUTE) != null ? hookResult.get(ERROR_MESSAGE_ATTRIBUTE).getAsString() : null;
+
+                Result result = new Result(hookStatus, hookDuration, hookErrorMessage);
+
+                JsonObject match = hook.get(MATCH_ATTRIBUTE).getAsJsonObject();
+                String location = match.get(LOCATION_ATTRIBUTE).getAsString();
+
+                final List<Embedding> hookEmbeddings = new ArrayList<>();
+                addEmbeddings(hook, hookEmbeddings);
+
+                final List<String> hookOutputs = new ArrayList<>();
+                addOutputs(hook, hookOutputs);
+
+                hooks.add(new Hook(location, result, hookEmbeddings, hookOutputs));
+            }
+        }
     }
 
     private void addEmbeddings(JsonObject source, List<Embedding> embeddingList) {
@@ -191,34 +196,21 @@ public class JsonReportParser {
         }
     }
 
-    private void addStepRowData(JsonObject source, List<Map<String, String>> rowDataMap) {
+    private void addStepRowData(JsonObject source, List<String> rowData) {
         JsonArray rows = (JsonArray) source.get(ROWS_ATTRIBUTE);
 
-        List<List<String>> cells = new ArrayList<>();
-
         if (rows != null) {
-            rows.iterator().forEachRemaining(cell -> {
-                List<String> cellData = new ArrayList<>();
-                cell.getAsJsonObject().get(CELLS_ATTRIBUTE).getAsJsonArray().iterator().forEachRemaining(c -> cellData.add(c.getAsString()));
+            rows.iterator().forEachRemaining(c -> {
+                JsonArray cellArray = c.getAsJsonObject().get(CELLS_ATTRIBUTE).getAsJsonArray();
 
-                cells.add(cellData);
+                StringBuilder cell = new StringBuilder();
+
+                cellArray.iterator().forEachRemaining(t -> cell.append(t.getAsString()).append(" | "));
+
+                if (cell.length() > 0) {
+                    rowData.add("| " + cell.toString());
+                }
             });
-        }
-
-        if (!cells.isEmpty()) {
-            int cellColumns = cells.get(0).size();
-
-            for (int i = 0; i < cellColumns; i++) {
-                StringBuilder cellDataString = new StringBuilder();
-
-                int finalI = i;
-                cells.stream().skip(1).forEach(c -> cellDataString.append(c.get(finalI)).append(" | "));
-
-                Map<String, String> rowData = new HashMap<>();
-                rowData.put(cells.get(0).get(i), cellDataString.substring(0, cellDataString.lastIndexOf("| ")));
-
-                rowDataMap.add(i, rowData);
-            }
         }
     }
 }

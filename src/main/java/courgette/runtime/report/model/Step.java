@@ -1,7 +1,6 @@
 package courgette.runtime.report.model;
 
 import java.util.List;
-import java.util.Map;
 
 import static cucumber.api.Result.Type.*;
 
@@ -9,14 +8,25 @@ public class Step {
     private String name;
     private String keyword;
     private Result result;
+    private List<Hook> before;
+    private List<Hook> after;
     private List<Embedding> embeddings;
     private List<String> output;
-    private List<Map<String, String>> rowData;
+    private List<String> rowData;
 
-    public Step(String name, String keyword, Result result, List<Embedding> embeddings, List<String> output, List<Map<String, String>> rowData) {
+    public Step(String name,
+                String keyword,
+                Result result,
+                List<Hook> before,
+                List<Hook> after,
+                List<Embedding> embeddings,
+                List<String> output,
+                List<String> rowData) {
         this.name = name;
         this.keyword = keyword;
         this.result = result;
+        this.before = before;
+        this.after = after;
         this.embeddings = embeddings;
         this.output = output;
         this.rowData = rowData;
@@ -34,6 +44,14 @@ public class Step {
         return result;
     }
 
+    public List<Hook> getBefore() {
+        return before;
+    }
+
+    public List<Hook> getAfter() {
+        return after;
+    }
+
     public List<Embedding> getEmbeddings() {
         return embeddings;
     }
@@ -42,7 +60,7 @@ public class Step {
         return output;
     }
 
-    public List<Map<String, String>> getRowData() {
+    public List<String> getRowData() {
         return rowData;
     }
 

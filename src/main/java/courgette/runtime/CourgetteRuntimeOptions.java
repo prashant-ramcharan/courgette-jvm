@@ -85,14 +85,12 @@ public class CourgetteRuntimeOptions {
         return String.format("%s/courgette-report/data/report.json", reportTargetDir);
     }
 
-    @SuppressWarnings("deprecation")
     private Map<String, List<String>> createRuntimeOptions(CucumberOptions cucumberOptions, String path) {
         final Map<String, List<String>> runtimeOptions = new HashMap<>();
 
         runtimeOptions.put("--glue", optionParser.apply("--glue", envCucumberOptionParser.apply("glue", cucumberOptions.glue())));
         runtimeOptions.put("--tags", optionParser.apply("--tags", envCucumberOptionParser.apply("tags", cucumberOptions.tags())));
         runtimeOptions.put("--plugin", optionParser.apply("--plugin", parsePlugins(envCucumberOptionParser.apply("plugin", cucumberOptions.plugin()))));
-        runtimeOptions.put("--format", optionParser.apply("--format", cucumberOptions.format()));
         runtimeOptions.put("--name", optionParser.apply("--name", envCucumberOptionParser.apply("name", cucumberOptions.name())));
         runtimeOptions.put("--junit", optionParser.apply("--junit", envCucumberOptionParser.apply("junit", cucumberOptions.junit())));
         runtimeOptions.put("--snippets", optionParser.apply("--snippets", cucumberOptions.snippets()));
