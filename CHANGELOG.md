@@ -10,7 +10,7 @@ CHANGES IN VERSION 2.4.0
 CHANGES IN VERSION 2.3.2
 ========================
 
-* Add support to use TestNG to run Cucumber features and scenarios in parallel. You can now extend your runner class with TestNGCourgette.
+* Add support to use TestNG to run Cucumber features and scenarios in parallel. You can now extend your runner class with TestNGCourgette. [Enhancement Request](https://github.com/prashant-ramcharan/courgette-jvm/issues/50)
 
 
 CHANGES IN VERSION 2.3.1
