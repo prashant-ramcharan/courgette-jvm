@@ -194,10 +194,7 @@ public class HtmlReportBuilder {
 
         private final String MODAL_BODY_ROW_DATATABLE =
                 "<div class=\"row mt-2\">\n" +
-                        "<div class=\"col-lg-6 text-muted\" style=\"overflow-wrap:break-word;\">\n" +
-                        "%s\n" +
-                        "</div>\n" +
-                        "<div class=\"col-lg-6 text-muted\" style=\"overflow-wrap:break-word;\">\n" +
+                        "<div class=\"col-lg-12 text-muted\" style=\"overflow-wrap:break-word;\">\n" +
                         "%s\n" +
                         "</div>\n" +
                         "</div>";
@@ -247,6 +244,8 @@ public class HtmlReportBuilder {
             scenario.getBefore().forEach(before -> modal.append(hookFunc.apply(before)));
 
             scenario.getSteps().forEach(step -> {
+                step.getBefore().forEach(beforeStep -> modal.append(hookFunc.apply(beforeStep)));
+
                 String stepKeyword = step.getKeyword();
                 String stepName = step.getName();
                 long stepDuration = step.getResult().getDuration();
@@ -254,14 +253,11 @@ public class HtmlReportBuilder {
                 String stepStatusBadge = statusBadge.apply(step.getResult());
 
                 modal.append(String.format(MODEL_BODY_ROW, stepKeyword + stepName));
-
-                step.getRowData().forEach(row -> row.keySet().forEach(cell ->
-                        modal.append(String.format(MODAL_BODY_ROW_DATATABLE, cell, row.get(cell)))
-                ));
-
                 modal.append("</div>\n");
 
                 modal.append(String.format(MODEL_BODY_ROW_RESULT, stepDuration, stepStatusBadge, stepStatus));
+
+                step.getRowData().forEach(row -> modal.append(String.format(MODAL_BODY_ROW_DATATABLE, row)));
 
                 if (step.getResult().getErrorMessage() != null) {
                     modal.append(String.format(MODAL_BODY_ROW_ERROR_MESSAGE, step.getResult().getErrorMessage()));
@@ -272,6 +268,8 @@ public class HtmlReportBuilder {
                 addEmbeddings(modal, step.getEmbeddings());
 
                 modal.append("<hr>\n");
+
+                step.getAfter().forEach(afterStep -> modal.append(hookFunc.apply(afterStep)));
             });
 
             scenario.getAfter().forEach(after -> modal.append(hookFunc.apply(after)));

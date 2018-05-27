@@ -1,3 +1,12 @@
+CHANGES IN VERSION 2.4.0
+========================
+
+* Upgrade to Cucumber-JVM 3.0.1
+* Remove --format Cucumber option when creating Courgette runtime options as this options is no longer supported.
+* Update Courgette-JVM html report to include Before and After step hooks (_new hooks introduced in Cucumber-JVM 3.0.1_)
+* Change the way data table values are displayed in the Courgette-JVM html report.
+* Fixed bug in JsonReportParser which throws an exception when parsing data table rows.
+
 CHANGES IN VERSION 2.3.2
 ========================
 
