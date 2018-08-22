@@ -111,7 +111,9 @@ public class CourgetteHtmlReporter {
         formattedIndexHtml = formattedIndexHtml.replaceAll("id:tags", cucumberTags);
 
         String featureDir = Arrays.asList(courgetteProperties.getCourgetteOptions().cucumberOptions().features()).toString().replace("[", "").replace("]", "");
-        formattedIndexHtml = formattedIndexHtml.replaceAll("id:features", featureDir);
+        String cucumberFeatures = System.getProperty("cucumber.features", featureDir);
+
+        formattedIndexHtml = formattedIndexHtml.replaceAll("id:features", cucumberFeatures);
 
         final Consumer<Embedding> saveImage = (embedding) -> {
             if (embedding.getMimeType().startsWith("image")) {

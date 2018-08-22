@@ -1,3 +1,10 @@
+CHANGES IN VERSION 2.4.1
+========================
+
+* Add support to specify the feature path(s) at runtime using a system property (_multiple feature paths can be specified using a comma_)
+    * -Dcucumber.features="src/test/folder/Test.feature"
+
+
 CHANGES IN VERSION 2.4.0
 ========================
 

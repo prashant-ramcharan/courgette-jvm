@@ -97,7 +97,7 @@ public class CourgetteRuntimeOptions {
         runtimeOptions.put("--dryRun", Collections.singletonList(cucumberOptions.dryRun() ? "--dry-run" : "--no-dry-run"));
         runtimeOptions.put("--strict", Collections.singletonList(cucumberOptions.strict() ? "--strict" : "--no-strict"));
         runtimeOptions.put("--monochrome", Collections.singletonList(cucumberOptions.monochrome() ? "--monochrome" : "--no-monochrome"));
-        runtimeOptions.put(null, featureParser.apply(cucumberOptions.features(), path));
+        runtimeOptions.put(null, featureParser.apply(envCucumberOptionParser.apply("features", cucumberOptions.features()), path));
         runtimeOptions.values().removeIf(Objects::isNull);
 
         return runtimeOptions;
