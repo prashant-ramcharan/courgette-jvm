@@ -1,7 +1,7 @@
 
 [![Build Status](https://travis-ci.org/prashant-ramcharan/courgette-jvm.svg?branch=master)](https://travis-ci.org/prashant-ramcharan/courgette-jvm)
 [ ![Download](https://api.bintray.com/packages/prashantr/Courgette-JVM/courgette-jvm/images/download.svg) ](https://bintray.com/prashantr/Courgette-JVM/courgette-jvm/_latestVersion)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.prashant-ramcharan/courgette-jvm/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.prashant-ramcharan/courgette-jvm)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.prashant-ramcharan/courgette-jvm.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22io.github.prashant-ramcharan%22%20AND%20a:%22courgette-jvm%22)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 # Courgette-JVM #
