@@ -129,8 +129,8 @@ public class CourgetteRunner {
         courgetteReport.create();
     }
 
-    public boolean allFeaturesPassed() {
-        return runResults.stream().noneMatch(result -> result.getStatus() == CourgetteRunResult.Status.FAILED);
+    public boolean hasFailures() {
+        return runResults.stream().anyMatch(result -> result.getStatus() == CourgetteRunResult.Status.FAILED);
     }
 
     public boolean canRunFeatures() {
