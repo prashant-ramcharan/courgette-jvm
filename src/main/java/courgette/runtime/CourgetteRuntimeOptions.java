@@ -106,7 +106,7 @@ public class CourgetteRuntimeOptions {
     private BiFunction<String, String[], String[]> envCucumberOptionParser = (systemPropertyName, cucumberOptions) -> {
         String cucumberOption = System.getProperty("cucumber." + systemPropertyName);
 
-        if (cucumberOption != null) {
+        if (cucumberOption != null && cucumberOption.trim().length() > 0) {
             final List<String> options = new ArrayList<>();
             Arrays.stream(cucumberOption.split(",")).forEach(t -> options.add(t.trim()));
 

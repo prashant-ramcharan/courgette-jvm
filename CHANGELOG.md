@@ -1,3 +1,10 @@
+CHANGES IN VERSION 2.4.2
+========================
+
+* Removed System.exit() from the JUnit runner as this was causing a Gradle MessageIOException on Windows operating systems.
+* Updated runtime options to use the default runner options when empty system properties are provided. (_such as -Dcucumber.tag=' '_)
+
+
 CHANGES IN VERSION 2.4.1
 ========================
 

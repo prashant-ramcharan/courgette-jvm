@@ -13,9 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.fail;
-
 public abstract class TestNGCourgette {
     private CourgetteProperties courgetteProperties;
     private List<CourgetteRunnerInfo> runnerInfoList;
@@ -50,11 +47,9 @@ public abstract class TestNGCourgette {
             courgetteRunner.createCourgetteReport();
         }
 
-        if (courgetteRunner.allFeaturesPassed()) {
-            assertTrue(true);
-        } else {
+        if (courgetteRunner.hasFailures()) {
             courgetteRunner.createRerunFile();
-            fail("There were failures during the test run. Please refer to Courgette / Cucumber reports.");
+            throw new CourgetteTestFailureException("There were failing tests. Refer to the Courgette html report for more details.");
         }
     }
 

@@ -89,11 +89,9 @@ public class Courgette extends ParentRunner<FeatureRunner> {
             courgetteRunner.createCourgetteReport();
         }
 
-        if (courgetteRunner.allFeaturesPassed()) {
-            System.exit(0x0);
-        } else {
+        if (courgetteRunner.hasFailures()) {
             courgetteRunner.createRerunFile();
-            System.exit(0x1);
+            throw new CourgetteTestFailureException("There were failing tests. Refer to the Courgette html report for more details.");
         }
     }
 
