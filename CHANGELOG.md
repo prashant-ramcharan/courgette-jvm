@@ -1,3 +1,10 @@
+CHANGES IN VERSION 2.4.3
+========================
+
+* Add support for multithreaded JUnit reports.
+    * A single xml report will be generated if the Cucumber junit plugin is specified: _plugin = { junit:output-dir-path/cucumber.xml }_
+
+
 CHANGES IN VERSION 2.4.2
 ========================
 
