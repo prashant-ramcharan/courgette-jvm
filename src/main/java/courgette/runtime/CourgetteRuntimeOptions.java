@@ -72,7 +72,7 @@ public class CourgetteRuntimeOptions {
             if (option != null && isReportPlugin.test(option)) {
                 String reportFile = option.substring(option.indexOf(":") + 1);
 
-                if (reportFile.endsWith(".html")) {
+                if (option.startsWith("html:")) {
                     reportFile = reportFile + "/report.js";
                 }
                 reportFiles.add(reportFile);
@@ -139,7 +139,7 @@ public class CourgetteRuntimeOptions {
         return null;
     };
 
-    private final Predicate<String> isReportPlugin = (plugin) -> plugin.startsWith("html:") || plugin.startsWith("json:");
+    private final Predicate<String> isReportPlugin = (plugin) -> plugin.startsWith("html:") || plugin.startsWith("json:") || plugin.startsWith("junit:");
 
     private String[] parsePlugins(String[] plugins) {
         List<String> pluginList = new ArrayList<>();
@@ -155,9 +155,15 @@ public class CourgetteRuntimeOptions {
 
                     String extension = plugin.substring(0, plugin.indexOf(":"));
 
-                    if (!extension.equals("")) {
-                        final String reportPath = String.format("%s:%s.%s", extension, getMultiThreadReportFile(), extension);
+                    if (extension.equalsIgnoreCase("junit")) {
+                        final String reportPath = String.format("junit:%s.xml", getMultiThreadReportFile());
                         pluginList.add(reportPath);
+                    }
+                    else {
+                        if (!extension.equals("")) {
+                            final String reportPath = String.format("%s:%s.%s", extension, getMultiThreadReportFile(), extension);
+                            pluginList.add(reportPath);
+                        }
                     }
                 } else {
                     pluginList.add(plugin);

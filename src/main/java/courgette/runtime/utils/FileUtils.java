@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 public final class FileUtils {
 
@@ -65,10 +66,7 @@ public final class FileUtils {
         try {
             fileReader = new FileReader(rerunFile);
             bufferedReader = new BufferedReader(fileReader);
-
-            StringBuilder fileContents = new StringBuilder();
-            bufferedReader.lines().forEach(fileContents::append);
-            return fileContents.toString();
+            return bufferedReader.lines().collect(Collectors.joining("\n"));
         } catch (Exception ignored) {
             return null;
         } finally {

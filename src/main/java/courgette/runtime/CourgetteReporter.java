@@ -1,8 +1,26 @@
 package courgette.runtime;
 
 import courgette.runtime.utils.FileUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
@@ -39,32 +57,93 @@ public class CourgetteReporter {
                 }
             });
 
-            final Boolean isHtml = reportFile.contains(".html");
+            final boolean isHtml = reportFile.endsWith("report.js");
+            final boolean isJson = reportFile.endsWith(".json");
+            final boolean isXml = reportFile.endsWith(".xml");
 
             if (isHtml) {
                 createHtmlReportImagesFolder();
                 processNewEmbeddedHtmlFiles(reports, reportData);
                 removeExistingEmbeddedHtmlFiles();
-
-                reportData.removeIf(report -> !report.contains("$(document)"));
-            } else {
-                reportData.removeIf(report -> report.contains("$(document)"));
+                reportData.removeIf(report -> !report.startsWith("$(document)"));
+                FileUtils.writeFile(reportFile, reportData);
             }
 
-            if (reportFile.endsWith(".json")) {
+            if (isJson) {
+                reportData.removeIf(report -> !report.startsWith("["));
                 FileUtils.writeFile(reportFile, formatJsonReport(reportData));
-            } else {
-                FileUtils.writeFile(reportFile, reportData);
+            }
+
+            if (isXml) {
+                reportData.removeIf(report -> !report.startsWith("<?xml"));
+                FileUtils.writeFile(reportFile, formatXmlReport(reportData));
             }
         }
     }
 
     private String formatJsonReport(List<String> reports) {
         StringBuilder jsonBuilder = new StringBuilder("[");
-        reports.forEach(data -> jsonBuilder.append(data.substring(1, data.length() - 1)).append(","));
+        reports.forEach(data -> jsonBuilder.append(data, 1, data.length() - 1).append(","));
         jsonBuilder.deleteCharAt(jsonBuilder.lastIndexOf(","));
         jsonBuilder.append("]");
         return jsonBuilder.toString();
+    }
+
+    private String formatXmlReport(List<String> reports) {
+        int failures = 0;
+        int skipped = 0;
+        int tests = 0;
+        double time = 0.0;
+
+        final StringBuilder xmlBuilder = new StringBuilder();
+
+        xmlBuilder.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n");
+        xmlBuilder.append("<testsuite failures=\"%d\" name=\"cucumber.runtime.formatter.JUnitFormatter\" skipped=\"%d\" tests=\"%d\" time=\"%f\">\n\n");
+
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+
+            for (String report : reports) {
+                Document document = builder.parse(new InputSource(new StringReader(report)));
+
+                if (document != null) {
+                    Element node = document.getDocumentElement();
+
+                    failures = failures + Integer.parseInt(node.getAttribute("failures"));
+                    skipped = skipped + Integer.parseInt(node.getAttribute("skipped"));
+                    tests = tests + Integer.parseInt(node.getAttribute("tests"));
+                    time = time + Double.parseDouble(node.getAttribute("time"));
+
+                    NodeList testCases = document.getElementsByTagName("testcase");
+
+                    if (testCases != null) {
+                        for (int i = 0; i < testCases.getLength(); i++) {
+                            Node testcase = testCases.item(i);
+
+                            StringWriter sw = new StringWriter();
+                            try {
+                                Transformer t = TransformerFactory.newInstance().newTransformer();
+                                t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+                                t.setOutputProperty(OutputKeys.INDENT, "yes");
+                                t.transform(new DOMSource(testcase), new StreamResult(sw));
+
+                                xmlBuilder.append(sw.toString()).append("\n");
+
+                            } catch (TransformerException te) {
+                                te.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (SAXException | IOException | ParserConfigurationException e) {
+            e.printStackTrace();
+        }
+
+        xmlBuilder.append("</testsuite>");
+
+        return String.format(xmlBuilder.toString(), failures, skipped, tests, time);
     }
 
     private void processNewEmbeddedHtmlFiles(Map<String, CopyOnWriteArrayList<String>> sortedReports, List<String> reportData) {
