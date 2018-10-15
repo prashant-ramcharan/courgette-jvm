@@ -199,6 +199,45 @@ gradle regressionSuite -Dcourgette.vmoptions="-Xms256m -Xmx512m"
 
 ````
 
+## Callbacks
+
+You can add global setup and tear-down code to your Courgette test runner using the `@CourgetteBeforeAll` and `@CourgetteAfterAll` annotations. For example:
+
+```java
+@RunWith(Courgette.class)
+@CourgetteOptions(
+        threads = 10,
+        runLevel = CourgetteRunLevel.SCENARIO,
+        rerunFailedScenarios = true,
+        showTestOutput = true,
+        reportTargetDir = "build",
+        cucumberOptions = @CucumberOptions(
+                features = "src/test/resources/features",
+                glue = "steps",
+                tags = {"@regression", "not @wip"},
+                plugin = {
+                        "pretty",
+                        "json:build/cucumber-report/cucumber.json",
+                        "html:build/cucumber-report/cucumber.html",
+                        "junit:build/cucumber-report/cucumber.xml"},
+                strict = true
+        ))
+public class RegressionTestSuite {
+    @CourgetteBeforeAll
+    public static void setUp() {
+        System.out.println("I will run before any tests execute");
+    }
+    
+    @CourgetteAfterAll
+    public static void tearDown() {
+        System.out.println("I will run after all of the tests execute");
+    }
+}
+```
+
+You can add any number of annotated methods to your test suite class. 
+If you need your callbacks to run in a specific order, pass `order` to the annotation: `@CourgetteBeforeAll(order = 2)`.
+
 ## Limitations and Known Issues
 
 * JUnit test notifier is not updated when running features in the IDE during parallel test execution.
