@@ -205,23 +205,7 @@ You can add global setup and tear-down code to your Courgette test runner using 
 
 ```java
 @RunWith(Courgette.class)
-@CourgetteOptions(
-        threads = 10,
-        runLevel = CourgetteRunLevel.SCENARIO,
-        rerunFailedScenarios = true,
-        showTestOutput = true,
-        reportTargetDir = "build",
-        cucumberOptions = @CucumberOptions(
-                features = "src/test/resources/features",
-                glue = "steps",
-                tags = {"@regression", "not @wip"},
-                plugin = {
-                        "pretty",
-                        "json:build/cucumber-report/cucumber.json",
-                        "html:build/cucumber-report/cucumber.html",
-                        "junit:build/cucumber-report/cucumber.xml"},
-                strict = true
-        ))
+@CourgetteOptions(/* Your Courgette options here... */)
 public class RegressionTestSuite {
     @CourgetteBeforeAll
     public static void setUp() {
