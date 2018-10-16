@@ -26,12 +26,15 @@ public class Courgette extends ParentRunner<FeatureRunner> {
     private final CourgetteProperties courgetteProperties;
     private final List<CucumberFeature> cucumberFeatures;
     private final List<CourgetteRunnerInfo> runnerInfoList;
+    private final CourgetteCallbacks callbacks;
 
     public Courgette(Class clazz) throws InitializationError {
         super(clazz);
 
         final CourgetteOptions courgetteOptions = new CourgetteRunOptions(clazz);
         courgetteProperties = new CourgetteProperties(courgetteOptions, createSessionId(), courgetteOptions.threads());
+
+        callbacks = new CourgetteCallbacks(clazz);
 
         courgetteFeatureLoader = new CourgetteFeatureLoader(courgetteProperties, clazz.getClassLoader());
         cucumberFeatures = courgetteFeatureLoader.getCucumberFeatures();
@@ -83,16 +86,23 @@ public class Courgette extends ParentRunner<FeatureRunner> {
     public void run(RunNotifier notifier) {
         final CourgetteRunner courgetteRunner = new CourgetteRunner(runnerInfoList, courgetteProperties);
 
-        if (courgetteRunner.canRunFeatures()) {
-            courgetteRunner.run();
-            courgetteRunner.createReport();
-            courgetteRunner.createCourgetteReport();
+        try {
+            callbacks.beforeAll();
+
+            if (courgetteRunner.canRunFeatures()) {
+                courgetteRunner.run();
+                courgetteRunner.createReport();
+                courgetteRunner.createCourgetteReport();
+            }
+
+            if (courgetteRunner.hasFailures()) {
+                courgetteRunner.createRerunFile();
+                throw new CourgetteTestFailureException("There were failing tests. Refer to the Courgette html report for more details.");
+            }
+        } finally {
+            callbacks.afterAll();
         }
 
-        if (courgetteRunner.hasFailures()) {
-            courgetteRunner.createRerunFile();
-            throw new CourgetteTestFailureException("There were failing tests. Refer to the Courgette html report for more details.");
-        }
     }
 
     private String createSessionId() {
