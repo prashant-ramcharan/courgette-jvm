@@ -1,3 +1,9 @@
+CHANGES IN VERSION 2.4.4
+========================
+
+* Add setup and teardown hooks to Courgette (PR from jamsesso)
+
+
 CHANGES IN VERSION 2.4.3
 ========================
 
