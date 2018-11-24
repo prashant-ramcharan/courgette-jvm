@@ -1,6 +1,6 @@
 package courgette.runtime;
 
-import cucumber.runtime.Runtime;
+import cucumber.runtime.filter.Filters;
 import cucumber.runtime.model.CucumberFeature;
 import gherkin.events.PickleEvent;
 import gherkin.pickles.Compiler;
@@ -13,12 +13,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class CourgettePickleMatcher {
     private final Compiler compiler;
     private final CucumberFeature cucumberFeature;
-    private final Runtime runtime;
+    private final Filters filters;
 
-    public CourgettePickleMatcher(CucumberFeature cucumberFeature, Runtime runtime) {
+    public CourgettePickleMatcher(CucumberFeature cucumberFeature, Filters filters) {
         this.compiler = new Compiler();
         this.cucumberFeature = cucumberFeature;
-        this.runtime = runtime;
+        this.filters = filters;
     }
 
     public boolean matches() {
@@ -26,7 +26,7 @@ public class CourgettePickleMatcher {
 
         try {
             compiler.compile(cucumberFeature.getGherkinFeature()).forEach(pickle -> {
-                matched.set(runtime.matchesFilters(new PickleEvent(cucumberFeature.getUri(), pickle)));
+                matched.set(filters.matchesFilters(new PickleEvent(cucumberFeature.getUri(), pickle)));
 
                 if (matched.get()) {
                     throw new ConditionSatisfiedException();
@@ -48,7 +48,7 @@ public class CourgettePickleMatcher {
                 PickleLocation pickleLocation = pickle.getLocations().stream().filter(l -> l.getLine() == pickleLocationLine).findFirst().orElse(null);
 
                 if (pickleLocation != null) {
-                    if (runtime.matchesFilters(new PickleEvent(cucumberFeature.getUri(), pickle))) {
+                    if (filters.matchesFilters(new PickleEvent(cucumberFeature.getUri(), pickle))) {
                         location[0] = pickleLocation;
                         throw new ConditionSatisfiedException();
                     }

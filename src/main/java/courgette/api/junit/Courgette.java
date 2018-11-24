@@ -4,11 +4,12 @@ import courgette.api.CourgetteOptions;
 import courgette.api.CourgetteRunLevel;
 import courgette.runtime.*;
 import cucumber.runner.EventBus;
-import cucumber.runtime.Runtime;
-import cucumber.runtime.RuntimeOptions;
+import cucumber.runner.ThreadLocalRunnerSupplier;
+import cucumber.runtime.*;
+import cucumber.runtime.filter.Filters;
+import cucumber.runtime.io.ResourceLoader;
 import cucumber.runtime.junit.FeatureRunner;
 import cucumber.runtime.junit.JUnitOptions;
-import cucumber.runtime.junit.JUnitReporter;
 import cucumber.runtime.model.CucumberFeature;
 import gherkin.pickles.PickleLocation;
 import org.junit.runner.Description;
@@ -22,7 +23,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public class Courgette extends ParentRunner<FeatureRunner> {
-    private final CourgetteFeatureLoader courgetteFeatureLoader;
+    private final CourgetteLoader courgetteLoader;
     private final CourgetteProperties courgetteProperties;
     private final List<CucumberFeature> cucumberFeatures;
     private final List<CourgetteRunnerInfo> runnerInfoList;
@@ -36,15 +37,15 @@ public class Courgette extends ParentRunner<FeatureRunner> {
 
         callbacks = new CourgetteCallbacks(clazz);
 
-        courgetteFeatureLoader = new CourgetteFeatureLoader(courgetteProperties, clazz.getClassLoader());
-        cucumberFeatures = courgetteFeatureLoader.getCucumberFeatures();
+        courgetteLoader = new CourgetteLoader(courgetteProperties, clazz.getClassLoader());
+        cucumberFeatures = courgetteLoader.getCucumberFeatures();
 
         runnerInfoList = new ArrayList<>();
 
         if (courgetteOptions.runLevel().equals(CourgetteRunLevel.FEATURE)) {
             cucumberFeatures.forEach(feature -> runnerInfoList.add(new CourgetteRunnerInfo(courgetteProperties, feature, null)));
         } else {
-            final Map<PickleLocation, CucumberFeature> scenarios = courgetteFeatureLoader.getCucumberScenarios();
+            final Map<PickleLocation, CucumberFeature> scenarios = courgetteLoader.getCucumberScenarios();
             scenarios
                     .keySet()
                     .forEach(location -> runnerInfoList.add(new CourgetteRunnerInfo(courgetteProperties, scenarios.get(location), location.getLine())));
@@ -53,16 +54,20 @@ public class Courgette extends ParentRunner<FeatureRunner> {
 
     @Override
     public List<FeatureRunner> getChildren() {
-        final Runtime runtime = courgetteFeatureLoader.getRuntime();
-        final RuntimeOptions runtimeOptions = courgetteFeatureLoader.getRuntimeOptions();
-        final EventBus eventBus = runtime.getEventBus();
+        final RuntimeOptions runtimeOptions = courgetteLoader.getRuntimeOptions();
+        final EventBus eventBus = courgetteLoader.getEventBus();
+        final ResourceLoader resourceLoader = courgetteLoader.getResourceLoader();
+        final ClassFinder classFinder = courgetteLoader.getClassFinder();
+        final Filters filters = courgetteLoader.getFilters();
 
-        final JUnitReporter jUnitReporter = new JUnitReporter(eventBus, runtimeOptions.isStrict(), new JUnitOptions(runtimeOptions.getJunitOptions()));
+        final JUnitOptions jUnitOptions = new JUnitOptions(runtimeOptions.isStrict(), runtimeOptions.getJunitOptions());
+        final BackendSupplier backendSupplier = new BackendModuleBackendSupplier(resourceLoader, classFinder, runtimeOptions);
+        final ThreadLocalRunnerSupplier runnerSupplier = new ThreadLocalRunnerSupplier(runtimeOptions, eventBus, backendSupplier);
 
         final List<FeatureRunner> children = new ArrayList<>();
         this.cucumberFeatures.forEach(cucumberFeature -> {
             try {
-                FeatureRunner runner = new FeatureRunner(cucumberFeature, runtime, jUnitReporter);
+                FeatureRunner runner = new FeatureRunner(cucumberFeature, filters, runnerSupplier, jUnitOptions);
                 runner.getDescription();
                 children.add(runner);
             } catch (InitializationError error) {
@@ -102,7 +107,6 @@ public class Courgette extends ParentRunner<FeatureRunner> {
         } finally {
             callbacks.afterAll();
         }
-
     }
 
     private String createSessionId() {

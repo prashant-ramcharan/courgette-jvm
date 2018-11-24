@@ -51,7 +51,7 @@ public class CourgetteFeatureRunner {
                 commands.add("\"" + getClassPath() + "\"");
             } else {
                 commands.add("-p");
-                commands.add("jrt:/modules");
+                commands.add("jrt");
             }
 
             commands.addAll(getSystemProperties());
