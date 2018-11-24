@@ -237,7 +237,7 @@ If you need your callbacks to run in a specific order, pass `order` to the annot
 
 
 * The following error is returned: "java.io.IOException: Cannot run program "java": CreateProcess error=206, The filename or extension is too long" [Windows OS Only]
-    * _This is a known Windows Create Process issue and is related to the classpath exceeding the maximum length of 32K characters. To workaround this, please upgrade to Java 9 / 10 as Courgette uses the Java Platform Module System instead of the URL classloader._
+    * _This is a known Windows Create Process issue and is related to the classpath exceeding the maximum length of 32K characters. To workaround this, please upgrade to either Java 9/10/11 and Courgette 3.0.0 as Courgette uses the Java Platform Module System instead of the URL classloader._
 
 
 ## Submitting Issues
