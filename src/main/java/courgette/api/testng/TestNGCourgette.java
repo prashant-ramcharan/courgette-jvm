@@ -22,7 +22,7 @@ public abstract class TestNGCourgette {
         final CourgetteOptions courgetteOptions = new CourgetteRunOptions(this.getClass());
         courgetteProperties = new CourgetteProperties(courgetteOptions, createSessionId(), courgetteOptions.threads());
 
-        CourgetteFeatureLoader courgetteFeatureLoader = new CourgetteFeatureLoader(courgetteProperties, this.getClass().getClassLoader());
+        CourgetteLoader courgetteFeatureLoader = new CourgetteLoader(courgetteProperties, this.getClass().getClassLoader());
         List<CucumberFeature> cucumberFeatures = courgetteFeatureLoader.getCucumberFeatures();
 
         runnerInfoList = new ArrayList<>();

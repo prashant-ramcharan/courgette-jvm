@@ -1,3 +1,11 @@
+CHANGES IN VERSION 3.0.0
+========================
+
+* Upgrade to Cucumber-JVM 4.2.0
+* Add support for JDK 11.
+* Fixed jrt module path which raised an error on Windows OS.
+
+
 CHANGES IN VERSION 2.4.4
 ========================
 
