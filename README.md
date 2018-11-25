@@ -155,7 +155,7 @@ public class RegressionTestSuite extends TestNGCourgette {
 ````gradle
 tasks.withType(Test) {
     systemProperties = System.getProperties()
-    systemProperties.remove("java.endorsed.dirs") // required from Java 9
+    systemProperties.remove("java.endorsed.dirs") // needs to be removed from Java 9
 }
 
 // JUnit
