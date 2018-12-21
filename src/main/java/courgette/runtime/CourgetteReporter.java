@@ -98,7 +98,7 @@ public class CourgetteReporter {
         final StringBuilder xmlBuilder = new StringBuilder();
 
         xmlBuilder.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n");
-        xmlBuilder.append("<testsuite failures=\"%d\" name=\"cucumber.runtime.formatter.JUnitFormatter\" skipped=\"%d\" tests=\"%d\" time=\"%f\">\n\n");
+        xmlBuilder.append("<testsuite failures=\"id:failures\" name=\"cucumber.runtime.formatter.JUnitFormatter\" skipped=\"id:skipped\" tests=\"id:tests\" time=\"id:time\">\n\n");
 
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -143,7 +143,11 @@ public class CourgetteReporter {
 
         xmlBuilder.append("</testsuite>");
 
-        return String.format(xmlBuilder.toString(), failures, skipped, tests, time);
+        return xmlBuilder.toString()
+                .replace("id:failures", String.valueOf(failures))
+                .replace("id:skipped", String.valueOf(skipped))
+                .replace("id:tests", String.valueOf(tests))
+                .replace("id:time", String.valueOf(time));
     }
 
     private void processNewEmbeddedHtmlFiles(Map<String, CopyOnWriteArrayList<String>> sortedReports, List<String> reportData) {
