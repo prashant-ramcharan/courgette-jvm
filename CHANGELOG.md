@@ -1,3 +1,9 @@
+CHANGES IN VERSION 3.0.1
+========================
+
+* Fixed bug in JUnit xml parser which caused a MissingFormatArgumentException.
+
+
 CHANGES IN VERSION 3.0.0
 ========================
 
