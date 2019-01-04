@@ -156,6 +156,8 @@ public class CourgetteRuntimeOptions {
                     String extension = plugin.substring(0, plugin.indexOf(":"));
 
                     if (extension.equalsIgnoreCase("junit")) {
+                        pluginList.remove(plugin);
+
                         final String reportPath = String.format("junit:%s.xml", getMultiThreadReportFile());
                         pluginList.add(reportPath);
                     }

@@ -42,12 +42,14 @@ public class CourgetteRunner {
 
             final Map<String, List<String>> cucumberArgs = runnerInfo.getRuntimeOptions();
 
+            final String featureUri = cucumberArgs.get(null).get(0);
+
             this.runners.add(() -> {
                 try {
                     boolean isPassed = runFeature(cucumberArgs);
 
                     if (isPassed) {
-                        runResults.add(new CourgetteRunResult(CourgetteRunResult.Status.PASSED));
+                        runResults.add(new CourgetteRunResult(featureUri, CourgetteRunResult.Status.PASSED));
                         return true;
                     }
 
@@ -57,17 +59,20 @@ public class CourgetteRunner {
                     if (rerunFailedScenarios && rerun != null) {
                         final Map<String, List<String>> rerunCucumberArgs = runnerInfo.getRerunRuntimeOptions(rerun);
 
-                        runResults.add(new CourgetteRunResult(CourgetteRunResult.Status.RERUN));
+                        final String rerunFeatureUri = rerunCucumberArgs.get(null).get(0);
+
+                        runResults.add(new CourgetteRunResult(rerunFeatureUri, CourgetteRunResult.Status.RERUN));
 
                         isPassed = runFeature(rerunCucumberArgs);
 
                         if (isPassed) {
+                            runResults.add(new CourgetteRunResult(rerunFeatureUri, CourgetteRunResult.Status.PASSED_AFTER_RERUN));
                             return true;
                         } else {
-                            runResults.add(new CourgetteRunResult(CourgetteRunResult.Status.FAILED));
+                            runResults.add(new CourgetteRunResult(rerunFeatureUri, CourgetteRunResult.Status.FAILED));
                         }
                     } else {
-                        runResults.add(new CourgetteRunResult(CourgetteRunResult.Status.FAILED));
+                        runResults.add(new CourgetteRunResult(featureUri, CourgetteRunResult.Status.FAILED));
                     }
 
                     if (rerun != null) {

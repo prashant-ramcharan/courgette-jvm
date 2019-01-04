@@ -1,3 +1,11 @@
+CHANGES IN VERSION 3.1.0
+========================
+
+* Add new status labels for _Passed after Rerun_ and _Failed after Rerun_ statuses in the Courgette html report.
+* Add functionality to filter reruns in the Courgette html report.
+* Fixed issued where the number "2" is appended to the scenario name in the Cucumber xml report.
+
+
 CHANGES IN VERSION 3.0.1
 ========================
 
