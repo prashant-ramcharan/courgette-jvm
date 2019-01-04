@@ -135,7 +135,7 @@ public class CourgetteHtmlReporter {
                     scenarioSteps.forEach(step -> step.getAfter().forEach(after -> after.getEmbeddings().forEach(saveImage)));
                 }));
 
-        final HtmlReportBuilder htmlReportBuilder = HtmlReportBuilder.create(features, isStrict);
+        final HtmlReportBuilder htmlReportBuilder = HtmlReportBuilder.create(features, courgetteRunResults, isStrict);
 
         final String results = courgetteProperties.getCourgetteOptions().runLevel() == CourgetteRunLevel.FEATURE ?
                 htmlReportBuilder.getHtmlTableFeatureRows() :

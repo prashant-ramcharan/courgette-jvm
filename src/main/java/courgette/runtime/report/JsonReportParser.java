@@ -107,7 +107,7 @@ public class JsonReportParser {
                 final List<Step> scenarioSteps = new ArrayList<>();
                 allSteps.forEach(steps -> addSteps(steps, scenarioSteps));
 
-                scenarioElements.add(new Scenario(scenarioName, scenarioKeyword, scenarioLine, scenarioBefore, scenarioAfter, scenarioSteps));
+                scenarioElements.add(new Scenario(featureUri, scenarioName, scenarioKeyword, scenarioLine, scenarioBefore, scenarioAfter, scenarioSteps));
             }
             features.add(new Feature(featureName, featureUri, scenarioElements));
         }

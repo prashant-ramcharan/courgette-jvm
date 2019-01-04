@@ -1,38 +1,44 @@
 package courgette.runtime.report.builder;
 
+import courgette.runtime.CourgetteRunResult;
 import courgette.runtime.report.model.*;
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class HtmlReportBuilder {
     private List<Feature> featureList;
+    private List<CourgetteRunResult> courgetteRunResults;
     private boolean isStrict;
 
     private static final String PASSED = "Passed";
+    private static final String PASSED_AFTER_RERUN = "Passed after Rerun";
     private static final String FAILED = "Failed";
+    private static final String FAILED_AFTER_RERUN = "Failed after Rerun";
     private static final String SUCCESS = "success";
     private static final String DANGER = "danger";
     private static final String WARNING = "warning";
 
-    private HtmlReportBuilder(List<Feature> featureList, boolean isStrict) {
+    private HtmlReportBuilder(List<Feature> featureList, List<CourgetteRunResult> courgetteRunResults, boolean isStrict) {
         this.featureList = featureList;
+        this.courgetteRunResults = courgetteRunResults;
         this.isStrict = isStrict;
     }
 
-    public static HtmlReportBuilder create(List<Feature> featureList, boolean isStrict) {
-        return new HtmlReportBuilder(featureList, isStrict);
+    public static HtmlReportBuilder create(List<Feature> featureList, List<CourgetteRunResult> courgetteRunResults, boolean isStrict) {
+        return new HtmlReportBuilder(featureList, courgetteRunResults, isStrict);
     }
 
     public String getHtmlTableFeatureRows() {
         final StringBuilder tableRows = new StringBuilder();
-        featureList.forEach(feature -> tableRows.append(TableRowBuilder.create(feature, isStrict).getFeatureRow()));
+        featureList.forEach(feature -> tableRows.append(TableRowBuilder.create(feature, courgetteRunResults, isStrict).getFeatureRow()));
         return tableRows.toString();
     }
 
     public String getHtmlTableScenarioRows() {
         final StringBuilder tableRows = new StringBuilder();
-        featureList.forEach(feature -> tableRows.append(TableRowBuilder.create(feature, isStrict).getScenarioRow()));
+        featureList.forEach(feature -> tableRows.append(TableRowBuilder.create(feature, courgetteRunResults, isStrict).getScenarioRow()));
         return tableRows.toString();
     }
 
@@ -58,14 +64,18 @@ public class HtmlReportBuilder {
     static class TableRowBuilder {
         private Feature feature;
         private boolean isStrict;
+        private List<CourgetteRunResult> courgetteRunResults;
+        private boolean hasReruns;
 
-        private TableRowBuilder(Feature feature, boolean isStrict) {
+        private TableRowBuilder(Feature feature, List<CourgetteRunResult> courgetteRunResults, boolean isStrict) {
             this.feature = feature;
             this.isStrict = isStrict;
+            this.courgetteRunResults = courgetteRunResults;
+            this.hasReruns = this.courgetteRunResults.stream().anyMatch(result -> result.getStatus() == CourgetteRunResult.Status.RERUN);
         }
 
-        public static TableRowBuilder create(Feature feature, boolean isStrict) {
-            return new TableRowBuilder(feature, isStrict);
+        public static TableRowBuilder create(Feature feature, List<CourgetteRunResult> courgetteRunResults, boolean isStrict) {
+            return new TableRowBuilder(feature, courgetteRunResults, isStrict);
         }
 
         private final String FEATURE_ROW_START = "<tr>\n" +
@@ -126,6 +136,25 @@ public class HtmlReportBuilder {
                     String scenarioName = scenario.getName();
                     String scenarioBadge = scenario.passed(isStrict) ? SUCCESS : DANGER;
                     String scenarioStatus = scenarioBadge.equals(SUCCESS) ? PASSED : FAILED;
+
+                    switch (scenarioBadge) {
+                        case DANGER:
+                            if (hasReruns) {
+                                scenarioStatus = FAILED_AFTER_RERUN;
+                            }
+                            break;
+
+                        case SUCCESS:
+                            if (hasReruns) {
+                                List<CourgetteRunResult> scenarioRunResults = courgetteRunResults.stream().filter(result -> result.getFeatureUri().equalsIgnoreCase(scenario.getFeatureUri() + ":" + scenario.getLine())).collect(Collectors.toList());
+
+                                if (scenarioRunResults.stream().anyMatch(result -> result.getStatus() == CourgetteRunResult.Status.PASSED_AFTER_RERUN)) {
+                                    scenarioStatus = PASSED_AFTER_RERUN;
+                                }
+                            }
+                            break;
+                    }
+
                     source.append(String.format(format, scenarioId, scenarioName, scenarioBadge, scenarioStatus));
                 }
             });

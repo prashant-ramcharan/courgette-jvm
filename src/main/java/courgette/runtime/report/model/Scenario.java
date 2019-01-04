@@ -5,6 +5,7 @@ import java.util.UUID;
 
 public class Scenario {
     private String courgetteScenarioId;
+    private String featureUri;
     private String name;
     private int line;
     private String keyword;
@@ -12,8 +13,9 @@ public class Scenario {
     private List<Hook> after;
     private List<Step> steps;
 
-    public Scenario(String name, String keyword, int line, List<Hook> before, List<Hook> after, List<Step> steps) {
+    public Scenario(String featureUri, String name, String keyword, int line, List<Hook> before, List<Hook> after, List<Step> steps) {
         this.courgetteScenarioId = UUID.randomUUID().toString();
+        this.featureUri = featureUri;
         this.name = name;
         this.keyword = keyword;
         this.line = line;
@@ -24,6 +26,10 @@ public class Scenario {
 
     public String getCourgetteScenarioId() {
         return courgetteScenarioId;
+    }
+
+    public String getFeatureUri() {
+        return featureUri;
     }
 
     public String getName() {
