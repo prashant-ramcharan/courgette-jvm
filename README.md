@@ -201,7 +201,7 @@ gradle regressionSuite -Dcourgette.vmoptions="-Xms256m -Xmx512m"
 
 ````
 
-## Callbacks
+## JUnit Callbacks
 
 You can add global setup and tear-down code to your Courgette test runner using the `@CourgetteBeforeAll` and `@CourgetteAfterAll` annotations. For example:
 
