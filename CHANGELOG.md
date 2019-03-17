@@ -1,3 +1,9 @@
+CHANGES IN VERSION 3.2.0
+========================
+
+* Add new Courgette Option "rerunAttempts" to enable Courgette to rerun failed scenarios 'X' number of times before failing the test if does not succeed (_default is 1_).
+
+
 CHANGES IN VERSION 3.1.0
 ========================
 

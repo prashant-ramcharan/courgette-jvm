@@ -44,7 +44,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>3.1.0</version>
+  <version>3.2.0</version>
 </dependency>
 ````
 
@@ -54,7 +54,7 @@ repositories {
     jcenter()
 }
 
-compile 'io.github.prashant-ramcharan:courgette-jvm:3.1.0'
+compile 'io.github.prashant-ramcharan:courgette-jvm:3.2.0'
 ````
 
 #### Included Dependencies
@@ -85,6 +85,8 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
     
 * **rerunFailedScenarios** : If set to true, any failed scenario will be immediately re-run in the same thread. If the re-run succeeds, the initial failure will be ignored and not cause the build to fail.
 
+* **rerunAttempts** : The number of re-run attempts for a failed scenario. (_rerunFailedScenarios must be set to true_)
+
 * **showTestOutput** : If set to true, the output for each feature will be redirected to the current I/O source or destination.
 
 * **reportTargetDir** : Target directory where courgette-report is generated. Set to target by default.
@@ -107,6 +109,7 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
         threads = 10,
         runLevel = CourgetteRunLevel.SCENARIO,
         rerunFailedScenarios = true,
+        rerunAttempts = 1,
         showTestOutput = true,
         reportTargetDir = "build",
         cucumberOptions = @CucumberOptions(
@@ -133,6 +136,7 @@ public class RegressionTestSuite {
         threads = 10,
         runLevel = CourgetteRunLevel.SCENARIO,
         rerunFailedScenarios = true,
+        rerunAttempts = 1,
         showTestOutput = true,
         reportTargetDir = "build",
         cucumberOptions = @CucumberOptions(
