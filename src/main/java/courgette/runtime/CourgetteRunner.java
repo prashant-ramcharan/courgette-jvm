@@ -63,14 +63,19 @@ public class CourgetteRunner {
 
                         runResults.add(new CourgetteRunResult(rerunFeatureUri, CourgetteRunResult.Status.RERUN));
 
-                        isPassed = runFeature(rerunCucumberArgs);
+                        int rerunAttempts = courgetteProperties.getCourgetteOptions().rerunAttempts();
 
-                        if (isPassed) {
-                            runResults.add(new CourgetteRunResult(rerunFeatureUri, CourgetteRunResult.Status.PASSED_AFTER_RERUN));
-                            return true;
-                        } else {
-                            runResults.add(new CourgetteRunResult(rerunFeatureUri, CourgetteRunResult.Status.FAILED));
+                        rerunAttempts = rerunAttempts < 1 ? 1 : rerunAttempts;
+
+                        while (rerunAttempts-- > 0) {
+                            isPassed = runFeature(rerunCucumberArgs);
+
+                            if (isPassed) {
+                                runResults.add(new CourgetteRunResult(rerunFeatureUri, CourgetteRunResult.Status.PASSED_AFTER_RERUN));
+                                return true;
+                            }
                         }
+                        runResults.add(new CourgetteRunResult(rerunFeatureUri, CourgetteRunResult.Status.FAILED));
                     } else {
                         runResults.add(new CourgetteRunResult(featureUri, CourgetteRunResult.Status.FAILED));
                     }

@@ -31,6 +31,11 @@ public class CourgetteRunOptions implements CourgetteOptions {
     }
 
     @Override
+    public int rerunAttempts() {
+        return SystemPropertyUtils.getIntProperty(CourgetteSystemProperty.RERUN_ATTEMPTS, courgetteOptions.rerunAttempts());
+    }
+
+    @Override
     public boolean showTestOutput() {
         return SystemPropertyUtils.getBoolProperty(CourgetteSystemProperty.SHOW_TEST_OUTPUT, courgetteOptions.showTestOutput());
     }

@@ -26,6 +26,11 @@ public @interface CourgetteOptions {
     boolean rerunFailedScenarios() default false;
 
     /**
+     * @return the number of re-run attempts
+     */
+    int rerunAttempts() default 1;
+
+    /**
      * @return true to show test output
      */
     boolean showTestOutput() default false;
