@@ -14,10 +14,10 @@ repositories {
 }
 
 dependencies {
-    compile 'io.cucumber:cucumber-core:4.2.0'
-    compile 'io.cucumber:cucumber-java:4.2.0'
-    compile 'io.cucumber:cucumber-java8:4.2.0'
-    compile 'io.cucumber:cucumber-junit:4.2.0'
+    compile 'io.cucumber:cucumber-core:4.2.6'
+    compile 'io.cucumber:cucumber-java:4.2.6'
+    compile 'io.cucumber:cucumber-java8:4.2.6'
+    compile 'io.cucumber:cucumber-junit:4.2.6'
     compile 'org.testng:testng:6.14.3'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.8.8'
 }

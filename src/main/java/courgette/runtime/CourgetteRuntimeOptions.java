@@ -29,7 +29,7 @@ public class CourgetteRuntimeOptions {
         this.courgetteProperties = courgetteProperties;
         this.cucumberFeature = cucumberFeature;
         this.cucumberOptions = courgetteProperties.getCourgetteOptions().cucumberOptions();
-        this.cucumberResourcePath = cucumberFeature.getUri();
+        this.cucumberResourcePath = cucumberFeature.getUri().toString();
         this.reportTargetDir = courgetteProperties.getCourgetteOptions().reportTargetDir();
 
         createRuntimeOptions(cucumberOptions, cucumberResourcePath).forEach((key, value) -> runtimeOptions.addAll(value));
