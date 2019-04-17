@@ -7,7 +7,6 @@ import cucumber.runtime.ClassFinder;
 import cucumber.runtime.FeaturePathFeatureSupplier;
 import cucumber.runtime.RuntimeOptions;
 import cucumber.runtime.filter.Filters;
-import cucumber.runtime.filter.RerunFilters;
 import cucumber.runtime.io.MultiLoader;
 import cucumber.runtime.io.ResourceLoader;
 import cucumber.runtime.io.ResourceLoaderClassFinder;
@@ -37,8 +36,7 @@ public class CourgetteLoader {
         this.runtimeOptions = createRuntimeOptions();
         this.featureSupplier = new FeaturePathFeatureSupplier(featureLoader, runtimeOptions);
         this.eventBus = new TimeServiceEventBus(TimeService.SYSTEM);
-        final RerunFilters rerunFilters = new RerunFilters(runtimeOptions, featureLoader);
-        this.filters = new Filters(runtimeOptions, rerunFilters);
+        this.filters = new Filters(runtimeOptions);
         this.classFinder = new ResourceLoaderClassFinder(resourceLoader, classLoader);
     }
 
