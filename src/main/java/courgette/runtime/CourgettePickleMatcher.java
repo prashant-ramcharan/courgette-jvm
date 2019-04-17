@@ -26,7 +26,7 @@ public class CourgettePickleMatcher {
 
         try {
             compiler.compile(cucumberFeature.getGherkinFeature()).forEach(pickle -> {
-                matched.set(filters.matchesFilters(new PickleEvent(cucumberFeature.getUri(), pickle)));
+                matched.set(filters.matchesFilters(new PickleEvent(cucumberFeature.getUri().getSchemeSpecificPart(), pickle)));
 
                 if (matched.get()) {
                     throw new ConditionSatisfiedException();
@@ -48,7 +48,7 @@ public class CourgettePickleMatcher {
                 PickleLocation pickleLocation = pickle.getLocations().stream().filter(l -> l.getLine() == pickleLocationLine).findFirst().orElse(null);
 
                 if (pickleLocation != null) {
-                    if (filters.matchesFilters(new PickleEvent(cucumberFeature.getUri(), pickle))) {
+                    if (filters.matchesFilters(new PickleEvent(cucumberFeature.getUri().getSchemeSpecificPart(), pickle))) {
                         location[0] = pickleLocation;
                         throw new ConditionSatisfiedException();
                     }
