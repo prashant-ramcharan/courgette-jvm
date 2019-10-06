@@ -2,8 +2,8 @@ package courgette.runtime;
 
 import courgette.api.CourgetteOptions;
 import courgette.api.CourgetteRunLevel;
+import courgette.api.CucumberOptions;
 import courgette.runtime.utils.SystemPropertyUtils;
-import cucumber.api.CucumberOptions;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;

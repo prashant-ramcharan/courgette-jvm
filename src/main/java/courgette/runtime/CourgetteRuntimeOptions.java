@@ -1,7 +1,9 @@
 package courgette.runtime;
 
-import cucumber.api.CucumberOptions;
-import cucumber.runtime.model.CucumberFeature;
+import courgette.api.CucumberOptions;
+import io.cucumber.core.feature.CucumberFeature;
+import io.cucumber.core.options.CommandlineOptionsParser;
+import io.cucumber.core.options.RuntimeOptions;
 
 import java.io.File;
 import java.net.URL;
@@ -44,8 +46,8 @@ public class CourgetteRuntimeOptions {
         createRuntimeOptions(cucumberOptions, null).forEach((key, value) -> runtimeOptions.addAll(value));
     }
 
-    public String[] getRuntimeOptions() {
-        return copyOf(runtimeOptions.toArray(), runtimeOptions.size(), String[].class);
+    public RuntimeOptions getRuntimeOptions() {
+        return new CommandlineOptionsParser().parse(runtimeOptions).build();
     }
 
     public Map<String, List<String>> mapRuntimeOptions() {
@@ -89,11 +91,11 @@ public class CourgetteRuntimeOptions {
         final Map<String, List<String>> runtimeOptions = new HashMap<>();
 
         runtimeOptions.put("--glue", optionParser.apply("--glue", envCucumberOptionParser.apply("glue", cucumberOptions.glue())));
+        runtimeOptions.put("--extraGlue", optionParser.apply("--glue", envCucumberOptionParser.apply("extraGlue", cucumberOptions.extraGlue())));
         runtimeOptions.put("--tags", optionParser.apply("--tags", envCucumberOptionParser.apply("tags", cucumberOptions.tags())));
         runtimeOptions.put("--plugin", optionParser.apply("--plugin", parsePlugins(envCucumberOptionParser.apply("plugin", cucumberOptions.plugin()))));
         runtimeOptions.put("--name", optionParser.apply("--name", envCucumberOptionParser.apply("name", cucumberOptions.name())));
-        runtimeOptions.put("--junit", optionParser.apply("--junit", envCucumberOptionParser.apply("junit", cucumberOptions.junit())));
-        runtimeOptions.put("--snippets", optionParser.apply("--snippets", cucumberOptions.snippets()));
+        runtimeOptions.put("--snippets", optionParser.apply("--snippets", cucumberOptions.snippets().name().toLowerCase()));
         runtimeOptions.put("--dryRun", Collections.singletonList(cucumberOptions.dryRun() ? "--dry-run" : "--no-dry-run"));
         runtimeOptions.put("--strict", Collections.singletonList(cucumberOptions.strict() ? "--strict" : "--no-strict"));
         runtimeOptions.put("--monochrome", Collections.singletonList(cucumberOptions.monochrome() ? "--monochrome" : "--no-monochrome"));
@@ -125,7 +127,7 @@ public class CourgetteRuntimeOptions {
     }
 
     private String getFeatureId(CucumberFeature cucumberFeature) {
-        return String.format("%s_%s", cucumberFeature.getGherkinFeature().getFeature().hashCode(), instanceId);
+        return String.format("%s_%s", cucumberFeature.hashCode(), instanceId);
     }
 
     private Function<CourgetteProperties, String> cucumberRerunPlugin = (courgetteProperties) -> {

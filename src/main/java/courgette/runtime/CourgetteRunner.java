@@ -2,6 +2,7 @@ package courgette.runtime;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import courgette.runtime.utils.FileUtils;
+import io.cucumber.core.feature.CucumberFeature;
 
 import java.io.IOException;
 import java.util.*;
@@ -42,6 +43,8 @@ public class CourgetteRunner {
 
             final Map<String, List<String>> cucumberArgs = runnerInfo.getRuntimeOptions();
 
+            final CucumberFeature cucumberFeature = runnerInfo.getCucumberFeature();
+            final Integer lineId = runnerInfo.getLineId();
             final String featureUri = cucumberArgs.get(null).get(0);
 
             this.runners.add(() -> {
@@ -49,7 +52,7 @@ public class CourgetteRunner {
                     boolean isPassed = runFeature(cucumberArgs);
 
                     if (isPassed) {
-                        runResults.add(new CourgetteRunResult(featureUri, CourgetteRunResult.Status.PASSED));
+                        runResults.add(new CourgetteRunResult(cucumberFeature, lineId, featureUri, CourgetteRunResult.Status.PASSED));
                         return true;
                     }
 
@@ -61,7 +64,7 @@ public class CourgetteRunner {
 
                         final String rerunFeatureUri = rerunCucumberArgs.get(null).get(0);
 
-                        runResults.add(new CourgetteRunResult(rerunFeatureUri, CourgetteRunResult.Status.RERUN));
+                        runResults.add(new CourgetteRunResult(cucumberFeature, lineId, rerunFeatureUri, CourgetteRunResult.Status.RERUN));
 
                         int rerunAttempts = courgetteProperties.getCourgetteOptions().rerunAttempts();
 
@@ -71,13 +74,14 @@ public class CourgetteRunner {
                             isPassed = runFeature(rerunCucumberArgs);
 
                             if (isPassed) {
-                                runResults.add(new CourgetteRunResult(rerunFeatureUri, CourgetteRunResult.Status.PASSED_AFTER_RERUN));
+                                runResults.add(new CourgetteRunResult(cucumberFeature, lineId, rerunFeatureUri, CourgetteRunResult.Status.PASSED_AFTER_RERUN));
                                 return true;
                             }
                         }
-                        runResults.add(new CourgetteRunResult(rerunFeatureUri, CourgetteRunResult.Status.FAILED));
-                    } else {
-                        runResults.add(new CourgetteRunResult(featureUri, CourgetteRunResult.Status.FAILED));
+                        runResults.add(new CourgetteRunResult(cucumberFeature, lineId, rerunFeatureUri, CourgetteRunResult.Status.FAILED));
+                    }
+                    else {
+                        runResults.add(new CourgetteRunResult(cucumberFeature, lineId, featureUri, CourgetteRunResult.Status.FAILED));
                     }
 
                     if (rerun != null) {
@@ -141,6 +145,10 @@ public class CourgetteRunner {
 
     public boolean hasFailures() {
         return runResults.stream().anyMatch(result -> result.getStatus() == CourgetteRunResult.Status.FAILED);
+    }
+
+    public List<CourgetteRunResult> getRunResults() {
+        return runResults;
     }
 
     public boolean canRunFeatures() {
