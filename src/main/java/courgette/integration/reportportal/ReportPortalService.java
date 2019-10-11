@@ -1,6 +1,5 @@
 package courgette.integration.reportportal;
 
-import courgette.runtime.CourgetteException;
 import courgette.runtime.utils.FileUtils;
 import io.restassured.response.Response;
 
@@ -24,20 +23,16 @@ public class ReportPortalService {
     public void publishReport(String reportFilename) {
         String projectEndpoint = reportPortalProperties.getEndpoint() + String.format(API_RESOURCE, reportPortalProperties.getProject());
 
-        try {
-            File zipFile = FileUtils.zipFile(reportFilename);
-            if (zipFile.exists()) {
-                final Response response = given()
-                        .header("Authorization", "bearer " + reportPortalProperties.getApiKey())
-                        .multiPart(zipFile)
-                        .post(projectEndpoint);
+        File zipFile = FileUtils.zipFile(reportFilename);
+        if (zipFile.exists()) {
+            final Response response = given()
+                    .header("Authorization", "bearer " + reportPortalProperties.getApiKey())
+                    .multiPart(zipFile)
+                    .post(projectEndpoint);
 
-                if (response.getStatusCode() != 200) {
-                    System.err.format("Unable to send the report to report portal server, reason: %s", response.getBody().print());
-                }
+            if (response.getStatusCode() != 200) {
+                System.err.format("Unable to send the report to report portal server, reason: %s", response.getBody().print());
             }
-        } catch (CourgetteException ex) {
-            System.err.format("Unable to send the report to report portal server, reason: %s", ex.getMessage());
         }
     }
 }

@@ -159,12 +159,16 @@ public class CourgetteRunner {
     }
 
     public void publishReportToReportPortal() {
-        final ReportPortalProperties reportPortalProperties = new ReportPortalProperties();
+        try {
+            final ReportPortalProperties reportPortalProperties = new ReportPortalProperties();
 
-        final CourgetteRuntimeOptions courgetteRuntimeOptions = new CourgetteRuntimeOptions(courgetteProperties);
-        final String reportFilename = courgetteRuntimeOptions.getCourgetteReportXml();
+            final CourgetteRuntimeOptions courgetteRuntimeOptions = new CourgetteRuntimeOptions(courgetteProperties);
+            final String reportFilename = courgetteRuntimeOptions.getCourgetteReportXml();
 
-        ReportPortalService.create(reportPortalProperties).publishReport(reportFilename);
+            ReportPortalService.create(reportPortalProperties).publishReport(reportFilename);
+        } catch (Exception ex) {
+            System.err.format("There was a problem publishing the report to report portal, reason: %s", ex.getMessage());
+        }
     }
 
     private boolean runFeature(Map<String, List<String>> args) {
