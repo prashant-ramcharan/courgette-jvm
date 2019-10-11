@@ -26,7 +26,7 @@ public class ReportPortalService {
         File zipFile = FileUtils.zipFile(reportFilename);
         if (zipFile.exists()) {
             final Response response = given()
-                    .header("Authorization", "bearer " + reportPortalProperties.getApiKey())
+                    .header("Authorization", "bearer " + reportPortalProperties.getApiToken())
                     .multiPart(zipFile)
                     .post(projectEndpoint);
 

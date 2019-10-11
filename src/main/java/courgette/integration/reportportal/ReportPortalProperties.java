@@ -20,8 +20,8 @@ public class ReportPortalProperties {
         }
     }
 
-    public String getApiKey() {
-        return reportPortalProperties.getProperty("rp.apikey");
+    public String getApiToken() {
+        return reportPortalProperties.getProperty("rp.apitoken");
     }
 
 
@@ -39,9 +39,9 @@ public class ReportPortalProperties {
     }
 
     public void validate() {
-        String apiKey = getApiKey();
-        if (apiKey == null) {
-            throw new CourgetteException("Report portal endpoint (rp.apikey) is missing from the reportportal.properties");
+        String apiToken = getApiToken();
+        if (apiToken == null) {
+            throw new CourgetteException("Report portal api token (rp.apitoken) is missing from the reportportal.properties");
         }
 
         String endpoint = getEndpoint();
