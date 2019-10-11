@@ -39,6 +39,11 @@ public @interface CourgetteOptions {
     String reportTargetDir() default "";
 
     /**
+     * @return the Courgette plugin
+     */
+    String[] courgettePlugin() default {};
+
+    /**
      * @return the Cucumber options
      */
     CucumberOptions cucumberOptions();

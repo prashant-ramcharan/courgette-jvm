@@ -4,14 +4,12 @@ import courgette.api.CourgetteOptions;
 import courgette.api.CourgetteRunLevel;
 import courgette.runtime.*;
 import courgette.runtime.junit.CourgetteJUnitRunner;
-import courgette.runtime.junit.TestDescription;
 import gherkin.pickles.PickleLocation;
 import io.cucumber.core.feature.CucumberFeature;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 public class Courgette extends CourgetteJUnitRunner {
@@ -50,6 +48,10 @@ public class Courgette extends CourgetteJUnitRunner {
                 courgetteRunner.run();
                 courgetteRunner.createReport();
                 courgetteRunner.createCourgetteReport();
+
+                if (courgetteRunner.isReportPortalPluginEnabled()) {
+                    courgetteRunner.publishReportToReportPortal();
+                }
             }
 
             if (courgetteRunner.hasFailures()) {
@@ -59,8 +61,8 @@ public class Courgette extends CourgetteJUnitRunner {
             callbacks.afterAll();
 
             notifyTestStarted(notifier);
-            List<TestDescription> failedTestDescriptions = notifyTestFailure(notifier, courgetteRunner.getRunResults());
-            notifyTestSuccess(notifier, failedTestDescriptions);
+            notifyTestFailure(notifier, courgetteRunner.getFailures());
+            notifyTestSuccess(notifier);
         }
     }
 }

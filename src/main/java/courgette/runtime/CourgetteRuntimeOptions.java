@@ -31,7 +31,7 @@ public class CourgetteRuntimeOptions {
         this.courgetteProperties = courgetteProperties;
         this.cucumberFeature = cucumberFeature;
         this.cucumberOptions = courgetteProperties.getCourgetteOptions().cucumberOptions();
-        this.cucumberResourcePath = cucumberFeature.getUri();
+        this.cucumberResourcePath = cucumberFeature.getUri().getSchemeSpecificPart();
         this.reportTargetDir = courgetteProperties.getCourgetteOptions().reportTargetDir();
 
         createRuntimeOptions(cucumberOptions, cucumberResourcePath).forEach((key, value) -> runtimeOptions.addAll(value));
@@ -85,6 +85,10 @@ public class CourgetteRuntimeOptions {
 
     public String getCourgetteReportJson() {
         return String.format("%s/courgette-report/data/report.json", reportTargetDir);
+    }
+
+    public String getCourgetteReportXml() {
+        return String.format("%s/courgette-report/data/courgette_test_execution.xml", reportTargetDir);
     }
 
     private Map<String, List<String>> createRuntimeOptions(CucumberOptions cucumberOptions, String path) {
@@ -162,8 +166,7 @@ public class CourgetteRuntimeOptions {
 
                         final String reportPath = String.format("junit:%s.xml", getMultiThreadReportFile());
                         pluginList.add(reportPath);
-                    }
-                    else {
+                    } else {
                         if (!extension.equals("")) {
                             final String reportPath = String.format("%s:%s.%s", extension, getMultiThreadReportFile(), extension);
                             pluginList.add(reportPath);
@@ -191,6 +194,17 @@ public class CourgetteRuntimeOptions {
 
         if (pluginList.stream().noneMatch(plugin -> plugin.contains(getCourgetteReportJson()))) {
             pluginList.add("json:" + getCourgetteReportJson());
+        }
+
+        if (pluginList.stream().noneMatch(plugin -> plugin.contains(getCourgetteReportXml()))) {
+            pluginList.add("junit:" + getCourgetteReportXml());
+        }
+
+        if (cucumberFeature != null) {
+            final String junitReportPlugin = String.format("junit:%s.xml", getMultiThreadReportFile());
+            if (pluginList.stream().noneMatch(plugin -> plugin.equals(junitReportPlugin))) {
+                pluginList.add(junitReportPlugin);
+            }
         }
 
         return copyOf(pluginList.toArray(), pluginList.size(), String[].class);

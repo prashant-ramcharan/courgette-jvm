@@ -1,15 +1,15 @@
 package courgette.runtime;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import courgette.integration.reportportal.ReportPortalProperties;
+import courgette.integration.reportportal.ReportPortalService;
 import courgette.runtime.utils.FileUtils;
 import io.cucumber.core.feature.CucumberFeature;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 public class CourgetteRunner {
     private final List<Callable<Boolean>> runners = new ArrayList<>();
@@ -79,8 +79,7 @@ public class CourgetteRunner {
                             }
                         }
                         runResults.add(new CourgetteRunResult(cucumberFeature, lineId, rerunFeatureUri, CourgetteRunResult.Status.FAILED));
-                    }
-                    else {
+                    } else {
                         runResults.add(new CourgetteRunResult(cucumberFeature, lineId, featureUri, CourgetteRunResult.Status.FAILED));
                     }
 
@@ -147,12 +146,25 @@ public class CourgetteRunner {
         return runResults.stream().anyMatch(result -> result.getStatus() == CourgetteRunResult.Status.FAILED);
     }
 
-    public List<CourgetteRunResult> getRunResults() {
-        return runResults;
+    public List<CourgetteRunResult> getFailures() {
+        return runResults.stream().filter(t -> t.getStatus() == CourgetteRunResult.Status.FAILED).collect(Collectors.toList());
     }
 
     public boolean canRunFeatures() {
         return canRunFeatures;
+    }
+
+    public boolean isReportPortalPluginEnabled() {
+        return Arrays.stream(courgetteProperties.getCourgetteOptions().courgettePlugin()).anyMatch(plugin -> plugin.equalsIgnoreCase("reportportal"));
+    }
+
+    public void publishReportToReportPortal() {
+        final ReportPortalProperties reportPortalProperties = new ReportPortalProperties();
+
+        final CourgetteRuntimeOptions courgetteRuntimeOptions = new CourgetteRuntimeOptions(courgetteProperties);
+        final String reportFilename = courgetteRuntimeOptions.getCourgetteReportXml();
+
+        ReportPortalService.create(reportPortalProperties).publishReport(reportFilename);
     }
 
     private boolean runFeature(Map<String, List<String>> args) {

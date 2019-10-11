@@ -98,7 +98,7 @@ public class CourgetteReporter {
         final StringBuilder xmlBuilder = new StringBuilder();
 
         xmlBuilder.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n");
-        xmlBuilder.append("<testsuite failures=\"id:failures\" name=\"cucumber.runtime.formatter.JUnitFormatter\" skipped=\"id:skipped\" tests=\"id:tests\" time=\"id:time\">\n\n");
+        xmlBuilder.append("<testsuite failures=\"id:failures\" name=\"Test Suite\" skipped=\"id:skipped\" tests=\"id:tests\" time=\"id:time\">\n\n");
 
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();

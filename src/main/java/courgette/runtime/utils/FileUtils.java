@@ -1,8 +1,13 @@
 package courgette.runtime.utils;
 
+import courgette.runtime.CourgetteException;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
@@ -10,6 +15,8 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public final class FileUtils {
 
@@ -48,6 +55,38 @@ public final class FileUtils {
 
     public static List<File> getParentFiles(String path) {
         return Arrays.asList(new File(path).getParentFile().listFiles());
+    }
+
+    public static File getClassPathFile(String path) {
+        URL classPathResource = Thread.currentThread().getContextClassLoader().getResource(path);
+
+        if (classPathResource != null) {
+            return new File(classPathResource.getFile());
+        }
+        return null;
+    }
+
+    public static File zipFile(String filePath) {
+        try {
+            File file = new File(filePath);
+            String zipFilename = filePath + ".zip";
+
+            FileOutputStream fileOutputStream = new FileOutputStream(zipFilename);
+            ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream);
+
+            zipOutputStream.putNextEntry(new ZipEntry(file.getName()));
+
+            byte[] bytes = Files.readAllBytes(Paths.get(filePath));
+            zipOutputStream.write(bytes, 0, bytes.length);
+            zipOutputStream.closeEntry();
+            zipOutputStream.close();
+            return new File(zipFilename);
+
+        } catch (FileNotFoundException ex) {
+            throw new CourgetteException(String.format("The file %s does not exist", filePath));
+        } catch (IOException ex) {
+            throw new CourgetteException("Unable to zip file: " + ex);
+        }
     }
 
     private static BiFunction<String, Boolean, String> fileReader = (file, deleteOnExit) -> {
