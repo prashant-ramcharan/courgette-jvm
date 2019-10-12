@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -122,11 +123,16 @@ public class CourgetteReporter {
                             Node testcase = testCases.item(i);
 
                             if (mergeTestCaseName) {
+                                Node testClassName = testcase.getAttributes().getNamedItem("classname");
                                 Node testName = testcase.getAttributes().getNamedItem("name");
-                                String classNameValue = testcase.getAttributes().getNamedItem("classname").getNodeValue();
+                                Node testTime = testcase.getAttributes().getNamedItem("time");
+
+                                String classNameValue = testClassName.getNodeValue();
                                 String testNameValue = testName.getNodeValue();
+                                double timeValue = Double.valueOf(testTime.getNodeValue());
 
                                 testName.setNodeValue(classNameValue + ": " + testNameValue);
+                                testTime.setNodeValue(String.valueOf(TimeUnit.SECONDS.toSeconds((long) timeValue)));
                             }
 
                             StringWriter sw = new StringWriter();
