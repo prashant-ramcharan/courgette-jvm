@@ -28,6 +28,7 @@ public class ReportPortalService {
             final Response response = given()
                     .header("Authorization", "bearer " + reportPortalProperties.getApiToken())
                     .multiPart(zipFile)
+                    .relaxedHTTPSValidation()
                     .post(projectEndpoint);
 
             if (response.getStatusCode() != 200) {

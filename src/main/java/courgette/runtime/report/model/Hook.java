@@ -2,7 +2,7 @@ package courgette.runtime.report.model;
 
 import java.util.List;
 
-import static io.cucumber.core.event.Status.*;
+import static io.cucumber.core.backend.Status.*;
 
 public class Hook {
     private String location;

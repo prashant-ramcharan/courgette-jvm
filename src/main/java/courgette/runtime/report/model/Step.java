@@ -2,10 +2,7 @@ package courgette.runtime.report.model;
 
 import java.util.List;
 
-import static io.cucumber.core.event.Status.PASSED;
-import static io.cucumber.core.event.Status.SKIPPED;
-import static io.cucumber.core.event.Status.FAILED;
-import static io.cucumber.core.event.Status.AMBIGUOUS;
+import static io.cucumber.core.backend.Status.*;
 
 public class Step {
     private String name;

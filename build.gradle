@@ -10,15 +10,11 @@ compileJava {
 }
 
 ext {
-    cucumberVersion='5.0.0-SNAPSHOT'
+    cucumberVersion='5.0.0-RC1'
 }
 
 repositories {
     jcenter()
-    maven {
-        url 'https://oss.sonatype.org/content/repositories/snapshots'
-    }
-    mavenLocal()
 }
 
 dependencies {
