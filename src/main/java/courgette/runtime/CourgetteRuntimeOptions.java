@@ -104,8 +104,12 @@ public class CourgetteRuntimeOptions {
         runtimeOptions.put("--strict", Collections.singletonList(cucumberOptions.strict() ? "--strict" : "--no-strict"));
         runtimeOptions.put("--monochrome", Collections.singletonList(cucumberOptions.monochrome() ? "--monochrome" : "--no-monochrome"));
         runtimeOptions.put(null, featureParser.apply(envCucumberOptionParser.apply("features", cucumberOptions.features()), path));
-        runtimeOptions.values().removeIf(Objects::isNull);
 
+        if (!cucumberOptions.objectFactory().getName().equals("courgette.runtime.CourgetteNoObjectFactory")) {
+            runtimeOptions.put("--object-factory", optionParser.apply("--object-factory", cucumberOptions.objectFactory().getName()));
+        }
+
+        runtimeOptions.values().removeIf(Objects::isNull);
         return runtimeOptions;
     }
 

@@ -1,8 +1,8 @@
-package courgette.runtime.junit;
+package courgette.runtime;
 
 import io.cucumber.core.backend.ObjectFactory;
 
-public class NoObjectFactory implements ObjectFactory {
+public class CourgetteNoObjectFactory implements ObjectFactory {
     @Override
     public void start() {
     }

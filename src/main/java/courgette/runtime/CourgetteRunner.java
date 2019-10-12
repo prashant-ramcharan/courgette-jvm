@@ -120,7 +120,8 @@ public class CourgetteRunner {
 
         reportFiles.forEach(reportFile -> {
             CourgetteReporter reporter = new CourgetteReporter(reportFile, reports);
-            reporter.createReport();
+            boolean mergeTestCaseName = isReportPortalPluginEnabled() && reportFile.equalsIgnoreCase(defaultRuntimeOptions.getCourgetteReportXml());
+            reporter.createReport(mergeTestCaseName);
         });
     }
 
@@ -155,17 +156,13 @@ public class CourgetteRunner {
     }
 
     public boolean isReportPortalPluginEnabled() {
-        return Arrays.stream(courgetteProperties.getCourgetteOptions().courgettePlugin()).anyMatch(plugin -> plugin.equalsIgnoreCase("reportportal"));
+        return Arrays.stream(courgetteProperties.getCourgetteOptions().plugin()).anyMatch(plugin -> plugin.equalsIgnoreCase("reportportal"));
     }
 
     public void publishReportToReportPortal() {
         try {
             final ReportPortalProperties reportPortalProperties = new ReportPortalProperties();
-
-            final CourgetteRuntimeOptions courgetteRuntimeOptions = new CourgetteRuntimeOptions(courgetteProperties);
-            final String reportFilename = courgetteRuntimeOptions.getCourgetteReportXml();
-
-            ReportPortalService.create(reportPortalProperties).publishReport(reportFilename);
+            ReportPortalService.create(reportPortalProperties).publishReport(defaultRuntimeOptions.getCourgetteReportXml());
         } catch (Exception ex) {
             System.err.format("There was a problem publishing the report to report portal, reason: %s", ex.getMessage());
         }

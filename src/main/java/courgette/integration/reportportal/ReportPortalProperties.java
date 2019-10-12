@@ -24,7 +24,6 @@ public class ReportPortalProperties {
         return reportPortalProperties.getProperty("rp.apitoken");
     }
 
-
     public String getEndpoint() {
         String endpoint = reportPortalProperties.getProperty("rp.endpoint");
 

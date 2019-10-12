@@ -39,7 +39,7 @@ public class CourgetteReporter {
         this.reports = reports;
     }
 
-    public void createReport() {
+    public void createReport(boolean mergeTestCaseName) {
         if (reportFile != null && !reports.isEmpty()) {
             final Map<String, CopyOnWriteArrayList<String>> reports = new LinkedHashMap<>();
 
@@ -76,7 +76,7 @@ public class CourgetteReporter {
 
             if (isXml) {
                 reportData.removeIf(report -> !report.startsWith("<?xml"));
-                FileUtils.writeFile(reportFile, formatXmlReport(reportData));
+                FileUtils.writeFile(reportFile, formatXmlReport(reportData, mergeTestCaseName));
             }
         }
     }
@@ -89,7 +89,7 @@ public class CourgetteReporter {
         return jsonBuilder.toString();
     }
 
-    private String formatXmlReport(List<String> reports) {
+    private String formatXmlReport(List<String> reports, boolean mergeTestCaseName) {
         int failures = 0;
         int skipped = 0;
         int tests = 0;
@@ -120,6 +120,14 @@ public class CourgetteReporter {
                     if (testCases != null) {
                         for (int i = 0; i < testCases.getLength(); i++) {
                             Node testcase = testCases.item(i);
+
+                            if (mergeTestCaseName) {
+                                Node testName = testcase.getAttributes().getNamedItem("name");
+                                String classNameValue = testcase.getAttributes().getNamedItem("classname").getNodeValue();
+                                String testNameValue = testName.getNodeValue();
+
+                                testName.setNodeValue(classNameValue + ": " + testNameValue);
+                            }
 
                             StringWriter sw = new StringWriter();
                             try {

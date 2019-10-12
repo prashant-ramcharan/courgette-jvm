@@ -1,6 +1,6 @@
 package courgette.api;
 
-import courgette.runtime.junit.NoObjectFactory;
+import courgette.runtime.CourgetteNoObjectFactory;
 import io.cucumber.core.snippets.SnippetType;
 
 import java.lang.annotation.ElementType;
@@ -32,5 +32,5 @@ public @interface CucumberOptions {
 
     SnippetType snippets() default SnippetType.UNDERSCORE;
 
-    Class<? extends io.cucumber.core.backend.ObjectFactory> objectFactory() default NoObjectFactory.class;
+    Class<? extends io.cucumber.core.backend.ObjectFactory> objectFactory() default CourgetteNoObjectFactory.class;
 }

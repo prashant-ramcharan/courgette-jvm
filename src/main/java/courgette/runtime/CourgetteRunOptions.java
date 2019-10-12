@@ -55,8 +55,8 @@ public class CourgetteRunOptions implements CourgetteOptions {
     }
 
     @Override
-    public String[] courgettePlugin() {
-        return courgetteOptions.courgettePlugin();
+    public String[] plugin() {
+        return courgetteOptions.plugin();
     }
 
     @Override
@@ -72,7 +72,7 @@ public class CourgetteRunOptions implements CourgetteOptions {
     }
 
     private void validatePlugins() {
-        if (courgettePlugin().length > 0) {
+        if (plugin().length > 0) {
             validateReportPortalPlugin();
         }
     }
@@ -80,13 +80,12 @@ public class CourgetteRunOptions implements CourgetteOptions {
     private void validateReportPortalPlugin() {
         final String reportPortalPropertiesFilename = "reportportal.properties";
 
-        if (Arrays.stream(courgetteOptions.courgettePlugin()).anyMatch(plugin -> plugin.equalsIgnoreCase("reportportal"))) {
+        if (Arrays.stream(courgetteOptions.plugin()).anyMatch(plugin -> plugin.equalsIgnoreCase("reportportal"))) {
             File reportPortalPropertiesFile = FileUtils.getClassPathFile(reportPortalPropertiesFilename);
 
             if (reportPortalPropertiesFile == null) {
                 throw new CourgetteException("The " + reportPortalPropertiesFilename + " file must be in your classpath to use the Courgette reportportal plugin");
             }
-
             new ReportPortalProperties().validate();
         }
     }
