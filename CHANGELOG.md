@@ -1,3 +1,9 @@
+CHANGES IN VERSION 3.3.0
+========================
+
+* Upgrade to Cucumber-JVM 4.3.0
+
+
 CHANGES IN VERSION 3.2.0
 ========================
 
