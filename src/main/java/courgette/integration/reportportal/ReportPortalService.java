@@ -32,7 +32,7 @@ public class ReportPortalService {
                     .post(projectEndpoint);
 
             if (response.getStatusCode() != 200) {
-                System.err.format("Unable to send the report to report portal server, reason: %s", response.getBody().print());
+                System.err.format("Unable to send the report to report portal server, reason: %s", response.getBody().asString());
             }
         }
     }
