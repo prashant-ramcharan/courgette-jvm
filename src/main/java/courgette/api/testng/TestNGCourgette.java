@@ -3,8 +3,8 @@ package courgette.api.testng;
 import courgette.api.CourgetteOptions;
 import courgette.api.CourgetteRunLevel;
 import courgette.runtime.*;
-import cucumber.runtime.model.CucumberFeature;
 import gherkin.pickles.PickleLocation;
+import io.cucumber.core.feature.CucumberFeature;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -45,6 +45,10 @@ public abstract class TestNGCourgette {
             courgetteRunner.run();
             courgetteRunner.createReport();
             courgetteRunner.createCourgetteReport();
+
+            if (courgetteRunner.isReportPortalPluginEnabled()) {
+                courgetteRunner.publishReportToReportPortal();
+            }
         }
 
         if (courgetteRunner.hasFailures()) {

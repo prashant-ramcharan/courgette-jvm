@@ -1,7 +1,5 @@
 package courgette.api;
 
-import cucumber.api.CucumberOptions;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -39,6 +37,11 @@ public @interface CourgetteOptions {
      * @return target directory of courgette-report (this defaults to 'target' directory)
      */
     String reportTargetDir() default "";
+
+    /**
+     * @return the collection of Courgette plugin
+     */
+    String[] plugin() default {};
 
     /**
      * @return the Cucumber options

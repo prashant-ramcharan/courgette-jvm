@@ -1,3 +1,13 @@
+CHANGES IN VERSION 4.0.0-SNAPSHOT
+=================================
+
+* Upgrade to Cucumber-JVM 5.0.0-RC1
+* Add new Courgette Option "plugin" to support additional Courgette integrations.
+    * Add "reportportal" plugin which integrates with https://reportportal.io/ to publish the report after the test run.
+* Changed CourgetteOptions to use the courgette.api.CucumberOptions class instead of Cucumber provided classes.
+* When the JUnit Courgette runner is invoked from the IDE, the run notifier is now updated with the result (_pass or fail_) after the test run.
+    
+
 CHANGES IN VERSION 3.3.0
 ========================
 

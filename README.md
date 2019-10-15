@@ -15,11 +15,12 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 - **Requires only 1 annotated class** to run all feature files in parallel.
 - **Single report generation** for all executed features including embedded files (Json and Html reports)
 - **Single re-run file** listing all failed scenarios that occured during parallel execution.
-- Supports **Cucumber-JVM 4**
+- Supports **Cucumber-JVM 5**
 - Supports **JUnit** and **TestNG**
+- Integrates with **Report Portal** to support AI powered dashboards.
 - Can be used with **Gradle** and **Maven**.
 - Searchable and paginated **Courgette-JVM Html Report** which includes all step definitions, embedded screenshots, thrown exceptions, pie chart and Courgette run information.
-![CourgetteJVM_Report.png](CourgetteJVM_Report.png)
+![CourgetteJVM_Report.png](images/CourgetteJVM_Report.png)
 
 ## Requirements
 - Java 8
@@ -44,7 +45,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>3.3.0</version>
+  <version>4.0.0-snapshot</version>
 </dependency>
 ````
 
@@ -54,7 +55,7 @@ repositories {
     jcenter()
 }
 
-compile 'io.github.prashant-ramcharan:courgette-jvm:3.3.0'
+compile 'io.github.prashant-ramcharan:courgette-jvm:4.0.0-snapshot'
 ````
 
 #### Included Dependencies
@@ -64,6 +65,7 @@ compile 'io.github.prashant-ramcharan:courgette-jvm:3.3.0'
 * cucumber-junit 4.3.0
 * testng 6.14.3
 * jackson-databind 2.8.8
+* rest-assured 4.1.2
 
 
 ## Usage
@@ -90,6 +92,10 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
 * **showTestOutput** : If set to true, the output for each feature will be redirected to the current I/O source or destination.
 
 * **reportTargetDir** : Target directory where courgette-report is generated. Set to target by default.
+
+* **plugin** : Courgette supported plugins
+    
+    * _reportportal: Allows the test results to be published to [Report Portal](https://reportportal.io/) at the end of the test run._
     
 * **cucumberOptions** : The standard cucumber options for specifying feature paths, glue, tags etc..
 
@@ -227,6 +233,38 @@ public class RegressionTestSuite {
 
 You can add any number of annotated methods to your test suite class. 
 If you need your callbacks to run in a specific order, pass `order` to the annotation: `@CourgetteBeforeAll(order = 2)`.
+
+## Report Portal Integration
+
+Courgette allows test results to be published to the [Report Portal](https://reportportal.io/) server at the end of the test run. 
+
+To enable this feature, add the following Courgette option to the Courgette runner:
+
+````java
+@CourgetteOptions(
+      ...  
+      plugin = { "reportportal" }
+)
+````
+
+You must have the **reportportal.properties** file in your classpath and the following properties must be defined:
+````properties
+# Report Portal server
+rp.endpoint = http://localhost:8080
+
+# Report Portal project
+rp.project = courgette_example
+
+# Report Portal API access token
+rp.apitoken=a1e5ee78-317c-477d-b27e-f174c562aedc
+````
+
+An API access token is required to allow Courgette to publish the report. To obtain an API access token, log in to Report Portal UI and navigate to http://localhost:8080/ui/#api -> UAT -> sso-endpoint -> Get api token
+
+After the test run is complete, the test results will be published to the Report Portal server.
+
+![CourgetteJVM_ReportPortal.png](images/CourgetteJVM_ReportPortal.png)
+
 
 ## Limitations and Known Issues
 

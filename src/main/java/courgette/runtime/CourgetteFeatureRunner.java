@@ -56,7 +56,7 @@ public class CourgetteFeatureRunner {
 
             commands.addAll(getSystemProperties());
 
-            commands.add("cucumber.api.cli.Main");
+            commands.add("io.cucumber.core.cli.Main");
             runnerArgs.forEach((key, value) -> commands.addAll(value));
 
             builder.command(commands);
@@ -80,7 +80,7 @@ public class CourgetteFeatureRunner {
             final List<String> systemPropertyList = new ArrayList<>();
 
             System.getProperties().keySet().forEach(property -> systemPropertyList.add(String.format("-D%s=%s", property, System.getProperty(property.toString()))));
-            systemPropertyList.removeIf(systemProperty -> systemProperty.startsWith("-Dcucumber.options"));
+            systemPropertyList.removeIf(systemProperty -> systemProperty.startsWith("-Dcucumber"));
 
             return systemPropertyList;
         }

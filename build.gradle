@@ -1,5 +1,5 @@
 group 'io.github.prashant-ramcharan'
-version '3.3.0'
+version '4.0.0-snapshot'
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'
@@ -10,7 +10,7 @@ compileJava {
 }
 
 ext {
-    cucumberVersion='4.3.0'
+    cucumberVersion='5.0.0-RC1'
 }
 
 repositories {
@@ -22,8 +22,10 @@ dependencies {
     compile "io.cucumber:cucumber-java:$cucumberVersion"
     compile "io.cucumber:cucumber-java8:$cucumberVersion"
     compile "io.cucumber:cucumber-junit:$cucumberVersion"
+    compile "io.cucumber:cucumber-testng:$cucumberVersion"
     compile "org.testng:testng:6.14.3"
     compile "com.fasterxml.jackson.core:jackson-databind:2.8.8"
+    compile "io.rest-assured:rest-assured:4.1.2"
 }
 
 task buildJar(type: Jar, dependsOn: classes) {

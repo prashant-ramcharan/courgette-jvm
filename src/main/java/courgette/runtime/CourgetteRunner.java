@@ -1,14 +1,15 @@
 package courgette.runtime;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import courgette.integration.reportportal.ReportPortalProperties;
+import courgette.integration.reportportal.ReportPortalService;
 import courgette.runtime.utils.FileUtils;
+import io.cucumber.core.feature.CucumberFeature;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 public class CourgetteRunner {
     private final List<Callable<Boolean>> runners = new ArrayList<>();
@@ -42,6 +43,8 @@ public class CourgetteRunner {
 
             final Map<String, List<String>> cucumberArgs = runnerInfo.getRuntimeOptions();
 
+            final CucumberFeature cucumberFeature = runnerInfo.getCucumberFeature();
+            final Integer lineId = runnerInfo.getLineId();
             final String featureUri = cucumberArgs.get(null).get(0);
 
             this.runners.add(() -> {
@@ -49,7 +52,7 @@ public class CourgetteRunner {
                     boolean isPassed = runFeature(cucumberArgs);
 
                     if (isPassed) {
-                        runResults.add(new CourgetteRunResult(featureUri, CourgetteRunResult.Status.PASSED));
+                        runResults.add(new CourgetteRunResult(cucumberFeature, lineId, featureUri, CourgetteRunResult.Status.PASSED));
                         return true;
                     }
 
@@ -61,7 +64,7 @@ public class CourgetteRunner {
 
                         final String rerunFeatureUri = rerunCucumberArgs.get(null).get(0);
 
-                        runResults.add(new CourgetteRunResult(rerunFeatureUri, CourgetteRunResult.Status.RERUN));
+                        runResults.add(new CourgetteRunResult(cucumberFeature, lineId, rerunFeatureUri, CourgetteRunResult.Status.RERUN));
 
                         int rerunAttempts = courgetteProperties.getCourgetteOptions().rerunAttempts();
 
@@ -71,13 +74,13 @@ public class CourgetteRunner {
                             isPassed = runFeature(rerunCucumberArgs);
 
                             if (isPassed) {
-                                runResults.add(new CourgetteRunResult(rerunFeatureUri, CourgetteRunResult.Status.PASSED_AFTER_RERUN));
+                                runResults.add(new CourgetteRunResult(cucumberFeature, lineId, rerunFeatureUri, CourgetteRunResult.Status.PASSED_AFTER_RERUN));
                                 return true;
                             }
                         }
-                        runResults.add(new CourgetteRunResult(rerunFeatureUri, CourgetteRunResult.Status.FAILED));
+                        runResults.add(new CourgetteRunResult(cucumberFeature, lineId, rerunFeatureUri, CourgetteRunResult.Status.FAILED));
                     } else {
-                        runResults.add(new CourgetteRunResult(featureUri, CourgetteRunResult.Status.FAILED));
+                        runResults.add(new CourgetteRunResult(cucumberFeature, lineId, featureUri, CourgetteRunResult.Status.FAILED));
                     }
 
                     if (rerun != null) {
@@ -117,7 +120,8 @@ public class CourgetteRunner {
 
         reportFiles.forEach(reportFile -> {
             CourgetteReporter reporter = new CourgetteReporter(reportFile, reports);
-            reporter.createReport();
+            boolean mergeTestCaseName = isReportPortalPluginEnabled() && reportFile.equalsIgnoreCase(defaultRuntimeOptions.getCourgetteReportXml());
+            reporter.createReport(mergeTestCaseName);
         });
     }
 
@@ -143,8 +147,25 @@ public class CourgetteRunner {
         return runResults.stream().anyMatch(result -> result.getStatus() == CourgetteRunResult.Status.FAILED);
     }
 
+    public List<CourgetteRunResult> getFailures() {
+        return runResults.stream().filter(t -> t.getStatus() == CourgetteRunResult.Status.FAILED).collect(Collectors.toList());
+    }
+
     public boolean canRunFeatures() {
         return canRunFeatures;
+    }
+
+    public boolean isReportPortalPluginEnabled() {
+        return Arrays.stream(courgetteProperties.getCourgetteOptions().plugin()).anyMatch(plugin -> plugin.equalsIgnoreCase("reportportal"));
+    }
+
+    public void publishReportToReportPortal() {
+        try {
+            final ReportPortalProperties reportPortalProperties = new ReportPortalProperties();
+            ReportPortalService.create(reportPortalProperties).publishReport(defaultRuntimeOptions.getCourgetteReportXml());
+        } catch (Exception ex) {
+            System.err.format("There was a problem publishing the report to report portal, reason: %s", ex.getMessage());
+        }
     }
 
     private boolean runFeature(Map<String, List<String>> args) {

@@ -2,7 +2,7 @@ package courgette.runtime.report.model;
 
 import java.util.List;
 
-import static cucumber.api.Result.Type.*;
+import static io.cucumber.core.backend.Status.*;
 
 public class Hook {
     private String location;
@@ -35,9 +35,9 @@ public class Hook {
 
     public boolean passed(boolean isStrict) {
         if (isStrict) {
-            return result.getStatus().equalsIgnoreCase(PASSED.lowerCaseName()) || result.getStatus().equalsIgnoreCase(SKIPPED.lowerCaseName());
+            return result.getStatus().equalsIgnoreCase(PASSED.toString()) || result.getStatus().equalsIgnoreCase(SKIPPED.toString());
         } else {
-            return !result.getStatus().equalsIgnoreCase(FAILED.lowerCaseName()) && !result.getStatus().equalsIgnoreCase(AMBIGUOUS.lowerCaseName());
+            return !result.getStatus().equalsIgnoreCase(FAILED.toString()) && !result.getStatus().equalsIgnoreCase(AMBIGUOUS.toString());
         }
     }
 }
