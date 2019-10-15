@@ -249,9 +249,14 @@ To enable this feature, add the following Courgette option to the Courgette runn
 
 You must have the **reportportal.properties** file in your classpath and the following properties must be defined:
 ````properties
-rp.endpoint = http://localhost:8080 // the Report Portal server
-rp.project = courgette_example // the Report Portal project
-rp.apitoken=a1e5ee78-317c-477d-b27e-f174c562aedc // the Report Portal API access token
+# Report Portal server
+rp.endpoint = http://localhost:8080
+
+# Report Portal project
+rp.project = courgette_example
+
+# Report Portal API access token
+rp.apitoken=a1e5ee78-317c-477d-b27e-f174c562aedc
 ````
 
 An API access token is required to allow Courgette to publish the report. To obtain an API access token, log in to Report Portal UI and navigate to http://localhost:8080/ui/#api -> UAT -> sso-endpoint -> Get api token
