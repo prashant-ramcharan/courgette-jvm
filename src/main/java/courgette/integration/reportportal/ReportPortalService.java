@@ -1,11 +1,19 @@
 package courgette.integration.reportportal;
 
 import courgette.runtime.utils.FileUtils;
-import io.restassured.response.Response;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ssl.TrustAllStrategy;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.util.EntityUtils;
 
+import javax.net.ssl.SSLContext;
 import java.io.File;
-
-import static io.restassured.RestAssured.given;
+import java.io.IOException;
 
 public class ReportPortalService {
     private ReportPortalProperties reportPortalProperties;
@@ -22,18 +30,42 @@ public class ReportPortalService {
 
     public void publishReport(String reportFilename) {
         String projectEndpoint = reportPortalProperties.getEndpoint() + String.format(API_RESOURCE, reportPortalProperties.getProject());
+        String authorization = "bearer " + reportPortalProperties.getApiToken();
 
         File zipFile = FileUtils.zipFile(reportFilename);
         if (zipFile.exists()) {
-            final Response response = given()
-                    .header("Authorization", "bearer " + reportPortalProperties.getApiToken())
-                    .multiPart(zipFile)
-                    .relaxedHTTPSValidation()
-                    .post(projectEndpoint);
+            final HttpResponse response = sendMultiPartPost(projectEndpoint, authorization, zipFile);
 
-            if (response.getStatusCode() != 200) {
-                System.err.format("Unable to send the report to report portal server, reason: %s", response.getBody().asString());
+            if (response != null && response.getStatusLine().getStatusCode() != 200) {
+                String body;
+                try {
+                    body = EntityUtils.toString(response.getEntity(), "UTF-8");
+                } catch (IOException e) {
+                    body = e.getMessage();
+                }
+                System.err.format("Unable to send the report to report portal server, reason: %s", body);
             }
+        }
+    }
+
+    private HttpResponse sendMultiPartPost(String url, String authorization, File file) {
+        try {
+            SSLContext trustedSSLContext = new SSLContextBuilder().loadTrustMaterial(null, TrustAllStrategy.INSTANCE).build();
+
+            HttpClient httpClient = HttpClientBuilder.create().setSSLContext(trustedSSLContext).build();
+
+            HttpEntity entity = MultipartEntityBuilder
+                    .create()
+                    .addBinaryBody("file", file)
+                    .build();
+
+            HttpPost httpPost = new HttpPost(url);
+            httpPost.addHeader("Authorization", authorization);
+            httpPost.setEntity(entity);
+            return httpClient.execute(httpPost);
+        } catch (Exception e) {
+            System.err.format("Unable to send the report to report portal server, reason: %s", e.getMessage());
+            return null;
         }
     }
 }
