@@ -1,3 +1,10 @@
+CHANGES IN VERSION 4.0.1-SNAPSHOT
+=================================
+
+* Replaced REST Assured client with Apache HttpComponents HttpClient - MIME coded entities.
+* Removed testng version 6 dependency.
+
+
 CHANGES IN VERSION 4.0.0-SNAPSHOT
 =================================
 
