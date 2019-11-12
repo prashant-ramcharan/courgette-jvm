@@ -45,7 +45,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>4.0.1-snapshot</version>
+  <version>4.0.2-snapshot</version>
 </dependency>
 ````
 
@@ -55,7 +55,7 @@ repositories {
     jcenter()
 }
 
-compile 'io.github.prashant-ramcharan:courgette-jvm:4.0.1-snapshot'
+compile 'io.github.prashant-ramcharan:courgette-jvm:4.0.2-snapshot'
 ````
 
 #### Included Dependencies
