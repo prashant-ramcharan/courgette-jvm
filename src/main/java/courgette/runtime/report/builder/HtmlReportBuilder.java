@@ -3,6 +3,7 @@ package courgette.runtime.report.builder;
 import courgette.runtime.CourgetteRunResult;
 import courgette.runtime.report.model.*;
 
+import java.util.Base64;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -200,10 +201,17 @@ public class HtmlReportBuilder {
                         "</div>\n" +
                         "</div>\n";
 
-        private final String MODAL_BODY_ROW_EMBEDDINGS =
+        private final String MODAL_BODY_ROW_IMAGE_EMBEDDINGS =
                 "<div class=\"row mt-2\">\n" +
                         "<div class=\"col-lg-12\">\n" +
                         "<img src=\"images/%s\" class=\"img-thumbnail\">\n" +
+                        "</div>\n" +
+                        "</div>\n";
+
+        private final String MODAL_BODY_ROW_TEXT_HTML_EMBEDDINGS =
+                "<div class=\"row mt-2\">\n" +
+                        "<div class=\"col-lg-12\" style=\"overflow-wrap:break-word;\">\n" +
+                        "%s\n" +
                         "</div>\n" +
                         "</div>\n";
 
@@ -252,11 +260,13 @@ public class HtmlReportBuilder {
 
         private void addEmbeddings(StringBuilder hookBuilder, List<Embedding> embeddings) {
             embeddings.forEach(embedding -> {
-                if (embedding.getMimeType().startsWith("image")) {
+                if (embedding.getMimeType().equals("text/html")) {
+                    String htmlData = new String(Base64.getDecoder().decode(embedding.getData()));
+                    hookBuilder.append(String.format(MODAL_BODY_ROW_TEXT_HTML_EMBEDDINGS, htmlData));
+                } else if (embedding.getMimeType().startsWith("image")) {
                     final String imageName = embedding.getCourgetteEmbeddingId();
                     final String imageFormat = embedding.getMimeType().split("/")[1];
-
-                    hookBuilder.append(String.format(MODAL_BODY_ROW_EMBEDDINGS, imageName + "." + imageFormat));
+                    hookBuilder.append(String.format(MODAL_BODY_ROW_IMAGE_EMBEDDINGS, imageName + "." + imageFormat));
                 }
             });
         }

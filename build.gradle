@@ -1,5 +1,5 @@
 group 'io.github.prashant-ramcharan'
-version '4.0.1-snapshot'
+version '4.0.2-snapshot'
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'

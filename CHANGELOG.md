@@ -1,3 +1,8 @@
+CHANGES IN VERSION 4.0.2-SNAPSHOT
+=================================
+
+* Add support for text/html mime types in the Courgette html report.
+
 CHANGES IN VERSION 4.0.1-SNAPSHOT
 =================================
 
