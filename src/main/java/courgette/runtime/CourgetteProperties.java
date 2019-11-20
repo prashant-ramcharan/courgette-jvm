@@ -3,6 +3,7 @@ package courgette.runtime;
 import courgette.api.CourgetteOptions;
 
 import java.time.Instant;
+import java.util.Arrays;
 
 public class CourgetteProperties {
     private final CourgetteOptions courgetteOptions;
@@ -31,5 +32,9 @@ public class CourgetteProperties {
 
     public Integer getMaxThreads() {
         return maxThreads;
+    }
+
+    public boolean isReportPortalPluginEnabled() {
+        return Arrays.stream(courgetteOptions.plugin()).anyMatch(plugin -> plugin.equalsIgnoreCase("reportportal"));
     }
 }

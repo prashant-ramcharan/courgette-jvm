@@ -1,5 +1,6 @@
 package courgette.runtime;
 
+import courgette.integration.reportportal.ReportPortalProperties;
 import courgette.runtime.utils.FileUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -31,9 +32,11 @@ import java.util.stream.Stream;
 public class CourgetteReporter {
     private final String reportFile;
     private final Map<String, CopyOnWriteArrayList<String>> reports;
+    private final CourgetteProperties courgetteProperties;
 
-    public CourgetteReporter(String reportFile, Map<String, CopyOnWriteArrayList<String>> reports) {
+    public CourgetteReporter(String reportFile, Map<String, CopyOnWriteArrayList<String>> reports, CourgetteProperties courgetteProperties) {
         this.reportFile = reportFile;
+        this.courgetteProperties = courgetteProperties;
 
         reports.values().removeIf(t -> t.contains(null) || t.contains("null") || t.contains("[]") || t.contains(""));
         this.reports = reports;
@@ -94,11 +97,12 @@ public class CourgetteReporter {
         int skipped = 0;
         int tests = 0;
         double time = 0.0;
+        String testSuite = "Test Suite";
 
         final StringBuilder xmlBuilder = new StringBuilder();
 
         xmlBuilder.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n");
-        xmlBuilder.append("<testsuite failures=\"id:failures\" name=\"Test Suite\" skipped=\"id:skipped\" tests=\"id:tests\" time=\"id:time\">\n\n");
+        xmlBuilder.append("<testsuite failures=\"id:failures\" name=\"id:testSuite\" skipped=\"id:skipped\" tests=\"id:tests\" time=\"id:time\">\n\n");
 
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -151,11 +155,16 @@ public class CourgetteReporter {
 
         xmlBuilder.append("</testsuite>");
 
+        if (courgetteProperties.isReportPortalPluginEnabled()) {
+            testSuite = ReportPortalProperties.getInstance().getTestSuite();
+        }
+
         return xmlBuilder.toString()
                 .replace("id:failures", String.valueOf(failures))
                 .replace("id:skipped", String.valueOf(skipped))
                 .replace("id:tests", String.valueOf(tests))
-                .replace("id:time", String.valueOf(time));
+                .replace("id:time", String.valueOf(time))
+                .replace("id:testSuite", testSuite);
     }
 
     private void processNewEmbeddedHtmlFiles(Map<String, CopyOnWriteArrayList<String>> sortedReports, List<String> reportData) {

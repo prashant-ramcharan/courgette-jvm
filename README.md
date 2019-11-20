@@ -45,7 +45,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>4.0.2-snapshot</version>
+  <version>4.0.3-snapshot</version>
 </dependency>
 ````
 
@@ -55,7 +55,7 @@ repositories {
     jcenter()
 }
 
-compile 'io.github.prashant-ramcharan:courgette-jvm:4.0.2-snapshot'
+compile 'io.github.prashant-ramcharan:courgette-jvm:4.0.3-snapshot'
 ````
 
 #### Included Dependencies
@@ -65,7 +65,8 @@ compile 'io.github.prashant-ramcharan:courgette-jvm:4.0.2-snapshot'
 * cucumber-junit 5.0.0-RC1
 * cucumber-testng 5.0.0-RC1
 * jackson-databind 2.8.8
-* httpmime 4.5.10
+* httpcomponents-httpclient 4.5.10
+* httpcomponents-httpmime 4.5.10
 
 
 ## Usage
@@ -249,14 +250,20 @@ To enable this feature, add the following Courgette option to the Courgette runn
 
 You must have the **reportportal.properties** file in your classpath and the following properties must be defined:
 ````properties
-# Report Portal server
+# Report Portal server (mandatory)
 rp.endpoint = http://localhost:8080
 
-# Report Portal project
+# Report Portal project (mandatory)
 rp.project = courgette_example
 
-# Report Portal API access token
+# Report Portal API access token (mandatory)
 rp.apitoken=a1e5ee78-317c-477d-b27e-f174c562aedc
+
+# Report Portal launch name (optional)
+rp.launch= My Demo Project
+
+# Report Portal test suite (optional)
+rp.testsuite= Smoke Test Suite
 ````
 
 An API access token is required to allow Courgette to publish the report. To obtain an API access token, log in to Report Portal UI and navigate to http://localhost:8080/ui/#api -> UAT -> sso-endpoint -> Get api token

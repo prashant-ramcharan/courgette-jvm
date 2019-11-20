@@ -32,7 +32,7 @@ public class ReportPortalService {
         String projectEndpoint = reportPortalProperties.getEndpoint() + String.format(API_RESOURCE, reportPortalProperties.getProject());
         String authorization = "bearer " + reportPortalProperties.getApiToken();
 
-        File zipFile = FileUtils.zipFile(reportFilename);
+        File zipFile = FileUtils.zipFile(reportFilename, true);
         if (zipFile.exists()) {
             final HttpResponse response = sendMultiPartPost(projectEndpoint, authorization, zipFile);
 

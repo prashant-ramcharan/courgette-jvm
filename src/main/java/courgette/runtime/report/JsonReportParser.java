@@ -158,7 +158,11 @@ public class JsonReportParser {
                 Result result = new Result(hookStatus, hookDuration, hookErrorMessage);
 
                 JsonObject match = hook.get(MATCH_ATTRIBUTE).getAsJsonObject();
+
                 String location = match.get(LOCATION_ATTRIBUTE).getAsString();
+                if (!location.endsWith(")")) {
+                    location = location.substring(0, location.lastIndexOf(")") + 1);
+                }
 
                 final List<Embedding> hookEmbeddings = new ArrayList<>();
                 addEmbeddings(hook, hookEmbeddings);
