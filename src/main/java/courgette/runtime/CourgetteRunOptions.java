@@ -86,7 +86,7 @@ public class CourgetteRunOptions implements CourgetteOptions {
             if (reportPortalPropertiesFile == null) {
                 throw new CourgetteException("The " + reportPortalPropertiesFilename + " file must be in your classpath to use the Courgette reportportal plugin");
             }
-            new ReportPortalProperties().validate();
+            ReportPortalProperties.getInstance().validate();
         }
     }
 }

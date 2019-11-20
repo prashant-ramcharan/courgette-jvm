@@ -66,10 +66,14 @@ public final class FileUtils {
         return null;
     }
 
-    public static File zipFile(String filePath) {
+    public static File zipFile(String filePath, boolean removeFileExtension) {
         try {
             File file = new File(filePath);
             String zipFilename = filePath + ".zip";
+
+            if (removeFileExtension) {
+                zipFilename = filePath.substring(0, filePath.lastIndexOf(".")) + ".zip";
+            }
 
             FileOutputStream fileOutputStream = new FileOutputStream(zipFilename);
             ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream);

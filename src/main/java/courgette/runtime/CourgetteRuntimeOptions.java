@@ -1,6 +1,7 @@
 package courgette.runtime;
 
 import courgette.api.CucumberOptions;
+import courgette.integration.reportportal.ReportPortalProperties;
 import io.cucumber.core.feature.CucumberFeature;
 import io.cucumber.core.options.CommandlineOptionsParser;
 import io.cucumber.core.options.RuntimeOptions;
@@ -87,8 +88,9 @@ public class CourgetteRuntimeOptions {
         return String.format("%s/courgette-report/data/report.json", reportTargetDir);
     }
 
-    public String getCourgetteReportXml() {
-        return String.format("%s/courgette-report/data/courgette_test_execution.xml", reportTargetDir);
+    public String getCourgetteReportXmlForReportPortal() {
+        final ReportPortalProperties reportPortalProperties = ReportPortalProperties.getInstance();
+        return String.format("%s/courgette-report/data/%s.xml", reportTargetDir, reportPortalProperties.getLaunchName());
     }
 
     private Map<String, List<String>> createRuntimeOptions(CucumberOptions cucumberOptions, String path) {
@@ -200,8 +202,10 @@ public class CourgetteRuntimeOptions {
             pluginList.add("json:" + getCourgetteReportJson());
         }
 
-        if (pluginList.stream().noneMatch(plugin -> plugin.contains(getCourgetteReportXml()))) {
-            pluginList.add("junit:" + getCourgetteReportXml());
+        if (courgetteProperties.isReportPortalPluginEnabled()) {
+            if (pluginList.stream().noneMatch(plugin -> plugin.contains(getCourgetteReportXmlForReportPortal()))) {
+                pluginList.add("junit:" + getCourgetteReportXmlForReportPortal());
+            }
         }
 
         if (cucumberFeature != null) {

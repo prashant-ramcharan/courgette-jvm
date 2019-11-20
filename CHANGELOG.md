@@ -1,3 +1,12 @@
+CHANGES IN VERSION 4.0.3-SNAPSHOT
+=================================
+
+* Report Portal launch name and test suite are now customizable.
+* Report Portal properties can be overridden at runtime using system properties.
+* Removed the file path from before & after hooks in the Courgette html report.
+* Add apache httpclient dependency to Courgette.
+
+
 CHANGES IN VERSION 4.0.2-SNAPSHOT
 =================================
 

@@ -11,7 +11,7 @@ import java.util.Properties;
 public class ReportPortalProperties {
     private Properties reportPortalProperties = new Properties();
 
-    public ReportPortalProperties() {
+    private ReportPortalProperties() {
         try {
             File reportPortalPropertiesFile = FileUtils.getClassPathFile("reportportal.properties");
             this.reportPortalProperties.load(new FileInputStream(reportPortalPropertiesFile));
@@ -20,12 +20,21 @@ public class ReportPortalProperties {
         }
     }
 
+    private static ReportPortalProperties instance;
+
+    public static ReportPortalProperties getInstance() {
+        if (instance == null) {
+            instance = new ReportPortalProperties();
+        }
+        return instance;
+    }
+
     public String getApiToken() {
-        return reportPortalProperties.getProperty("rp.apitoken");
+        return getProperty("rp.apitoken");
     }
 
     public String getEndpoint() {
-        String endpoint = reportPortalProperties.getProperty("rp.endpoint");
+        String endpoint = getProperty("rp.endpoint");
 
         if (endpoint != null && !endpoint.endsWith("/")) {
             endpoint = endpoint + "/";
@@ -34,7 +43,15 @@ public class ReportPortalProperties {
     }
 
     public String getProject() {
-        return reportPortalProperties.getProperty("rp.project");
+        return getProperty("rp.project");
+    }
+
+    public String getLaunchName() {
+        return getProperty("rp.launch", "Courgette Test Execution").toString().trim();
+    }
+
+    public String getTestSuite() {
+        return getProperty("rp.testsuite", "Test Suite").toString().trim();
     }
 
     public void validate() {
@@ -52,5 +69,14 @@ public class ReportPortalProperties {
         if (project == null) {
             throw new CourgetteException("Report portal project (rp.project) is missing from the reportportal.properties");
         }
+    }
+
+    private String getProperty(String property) {
+        return System.getProperty(property, reportPortalProperties.getProperty(property));
+    }
+
+    private String getProperty(String property, String def) {
+        Object defaultValue = reportPortalProperties.getOrDefault(property, def);
+        return System.getProperty(property, String.valueOf(defaultValue));
     }
 }

@@ -49,7 +49,7 @@ public class Courgette extends CourgetteJUnitRunner {
                 courgetteRunner.createReport();
                 courgetteRunner.createCourgetteReport();
 
-                if (courgetteRunner.isReportPortalPluginEnabled()) {
+                if (courgetteProperties.isReportPortalPluginEnabled()) {
                     courgetteRunner.publishReportToReportPortal();
                 }
             }

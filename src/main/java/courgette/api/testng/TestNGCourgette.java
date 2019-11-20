@@ -46,7 +46,7 @@ public abstract class TestNGCourgette {
             courgetteRunner.createReport();
             courgetteRunner.createCourgetteReport();
 
-            if (courgetteRunner.isReportPortalPluginEnabled()) {
+            if (courgetteProperties.isReportPortalPluginEnabled()) {
                 courgetteRunner.publishReportToReportPortal();
             }
         }
