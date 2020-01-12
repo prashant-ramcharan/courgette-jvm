@@ -22,7 +22,7 @@ public class ExtentReportsProperties {
         return courgetteProperties.getCourgetteOptions().reportTargetDir() + "/courgette-extentreports/images/";
     }
 
-    public File getConfigFile() {
+    public File getXMLConfigFile() {
         return FileUtils.getClassPathFile("extent-config.xml");
     }
 
