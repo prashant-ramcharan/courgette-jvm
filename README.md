@@ -17,6 +17,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 - **Single re-run file** listing all failed scenarios that occured during parallel execution.
 - Supports **Cucumber-JVM 5**
 - Supports **JUnit** and **TestNG**
+- Integrates with **Extent Reports** to create interactive reports.
 - Integrates with **Report Portal** to support AI powered dashboards.
 - Can be used with **Gradle** and **Maven**.
 - Searchable and paginated **Courgette-JVM Html Report** which includes all step definitions, embedded screenshots, thrown exceptions, pie chart and Courgette run information.
@@ -45,7 +46,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>4.0.3-snapshot</version>
+  <version>4.1.0</version>
 </dependency>
 ````
 
@@ -55,7 +56,7 @@ repositories {
     jcenter()
 }
 
-compile 'io.github.prashant-ramcharan:courgette-jvm:4.0.3-snapshot'
+compile 'io.github.prashant-ramcharan:courgette-jvm:4.1.0'
 ````
 
 #### Included Dependencies
@@ -97,6 +98,7 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
 * **plugin** : Courgette supported plugins
     
     * _reportportal: Allows the test results to be published to [Report Portal](https://reportportal.io/) at the end of the test run._
+    * _extentreports: Create an interactive report based on the [Extent Framework](http://extentreports.com/)_
     
 * **cucumberOptions** : The standard cucumber options for specifying feature paths, glue, tags etc..
 
@@ -288,7 +290,7 @@ To enable this feature, add the following Courgette option to the Courgette runn
 
 At the end of the test run the report will be saved to `${reportTargetDir}/courgette-extentreports` 
 
-To configure custom reports (_i.e. change the report name or theme_) you should create an `extent-config.xml` in the classpath. Courgette will load this XML config when it builds the report. View an example [here](https://github.com/prashant-ramcharan/courgette-jvm-example/blob/master/src/test/resources/extent-config.xml)
+To configure custom reports (_i.e. change the report name or theme_) you should create the `extent-config.xml` file in the classpath. Courgette will load this XML config when it builds the report. View an example [here](https://github.com/prashant-ramcharan/courgette-jvm-example/blob/master/src/test/resources/extent-config.xml)
 
 ![CourgetteJVM_ExtentReports.png](images/CourgetteJVM_ExtentReports.png)
 
