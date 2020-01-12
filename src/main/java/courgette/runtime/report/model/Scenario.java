@@ -12,8 +12,16 @@ public class Scenario {
     private List<Hook> before;
     private List<Hook> after;
     private List<Step> steps;
+    private List<Tag> tags;
 
-    public Scenario(String featureUri, String name, String keyword, int line, List<Hook> before, List<Hook> after, List<Step> steps) {
+    public Scenario(String featureUri,
+                    String name,
+                    String keyword,
+                    int line,
+                    List<Hook> before,
+                    List<Hook> after,
+                    List<Step> steps,
+                    List<Tag> tags) {
         this.courgetteScenarioId = UUID.randomUUID().toString();
         this.featureUri = featureUri;
         this.name = name;
@@ -22,6 +30,7 @@ public class Scenario {
         this.before = before;
         this.after = after;
         this.steps = steps;
+        this.tags = tags;
     }
 
     public String getCourgetteScenarioId() {
@@ -54,6 +63,10 @@ public class Scenario {
 
     public List<Step> getSteps() {
         return steps;
+    }
+
+    public List<Tag> getTags() {
+        return tags;
     }
 
     public boolean passed(boolean isStrict) {

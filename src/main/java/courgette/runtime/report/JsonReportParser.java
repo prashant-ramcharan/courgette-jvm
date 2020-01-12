@@ -33,6 +33,7 @@ public class JsonReportParser {
     private final static String MIME_TYPE_ATTRIBUTE = "mime_type";
     private final static String ROWS_ATTRIBUTE = "rows";
     private final static String CELLS_ATTRIBUTE = "cells";
+    private final static String TAGS_ATTRIBUTE = "tags";
 
     private JsonReportParser(File jsonFile) {
         this.jsonFile = jsonFile;
@@ -107,9 +108,22 @@ public class JsonReportParser {
                 final List<Step> scenarioSteps = new ArrayList<>();
                 allSteps.forEach(steps -> addSteps(steps, scenarioSteps));
 
-                scenarioElements.add(new Scenario(featureUri, scenarioName, scenarioKeyword, scenarioLine, scenarioBefore, scenarioAfter, scenarioSteps));
+                final List<Tag> scenarioTags = new ArrayList<>();
+                addTags(scenario.get(TAGS_ATTRIBUTE), scenarioTags);
+
+                scenarioElements.add(new Scenario(featureUri, scenarioName, scenarioKeyword, scenarioLine, scenarioBefore, scenarioAfter, scenarioSteps, scenarioTags));
             }
             features.add(new Feature(featureName, featureUri, scenarioElements));
+        }
+    }
+
+    private void addTags(JsonElement tags, List<Tag> tagList) {
+        if (tags != null && tags.getAsJsonArray() != null) {
+            tags.getAsJsonArray().forEach(tag -> {
+                if (tag.getAsJsonObject() != null) {
+                    tagList.add(new Tag(tag.getAsJsonObject().get(NAME_ATTRIBUTE).getAsString()));
+                }
+            });
         }
     }
 
