@@ -71,10 +71,10 @@ public class ExtentReportsBuilder {
         before.forEach(beforeHook -> addImageEmbeddings(scenarioNode, beforeHook));
         steps.forEach(step -> addStep(scenarioNode, step));
         after.forEach(afterHook -> addImageEmbeddings(scenarioNode, afterHook));
-        addScenarioTags(scenarioNode, tags);
+        assignCategoryToScenario(scenarioNode, tags);
     }
 
-    private void addScenarioTags(ExtentTest scenarioNode, List<Tag> tags) {
+    private void assignCategoryToScenario(ExtentTest scenarioNode, List<Tag> tags) {
         tags.forEach(tag -> scenarioNode.assignCategory(tag.getName()));
     }
 
