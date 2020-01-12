@@ -3,6 +3,7 @@ package courgette.integration.extentreports;
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.GherkinKeyword;
+import com.aventstack.extentreports.Status;
 import com.aventstack.extentreports.reporter.ExtentHtmlReporter;
 import courgette.runtime.CourgetteException;
 import courgette.runtime.report.model.*;
@@ -68,9 +69,9 @@ public class ExtentReportsBuilder {
 
     private void addScenario(ExtentTest featureNode, String scenarioName, List<Hook> before, List<Hook> after, List<Step> steps, List<Tag> tags) {
         final ExtentTest scenarioNode = createGherkinNode(featureNode, "Scenario", scenarioName, false);
-        before.forEach(beforeHook -> addImageEmbeddings(scenarioNode, beforeHook));
-        steps.forEach(step -> addStep(scenarioNode, step));
-        after.forEach(afterHook -> addImageEmbeddings(scenarioNode, afterHook));
+        addBeforeOrAfterDetails(scenarioNode, before);
+        addSteps(scenarioNode, steps);
+        addBeforeOrAfterDetails(scenarioNode, after);
         assignCategoryToScenario(scenarioNode, tags);
     }
 
@@ -78,16 +79,36 @@ public class ExtentReportsBuilder {
         tags.forEach(tag -> scenarioNode.assignCategory(tag.getName()));
     }
 
-    private void addStep(ExtentTest scenarioNode, Step step) {
-        step.getBefore().forEach(beforeStep -> addImageEmbeddings(scenarioNode, beforeStep));
-        ExtentTest stepNode = createGherkinNode(scenarioNode, step.getKeyword().trim(), step.getName(), true);
-        setResult(stepNode, step.passed(isStrict));
-        step.getEmbeddings().forEach(embedding -> embedImage(stepNode, embedding));
-        step.getAfter().forEach(afterStep -> addImageEmbeddings(scenarioNode, afterStep));
+    private void addSteps(ExtentTest scenarioNode, List<Step> steps) {
+        steps.forEach(step -> {
+            addBeforeOrAfterDetails(scenarioNode, step.getBefore());
+            ExtentTest stepNode = createGherkinNode(scenarioNode, step.getKeyword().trim(), step.getName(), true);
+            addAdditionalStepDetails(stepNode, step);
+            setResult(stepNode, step.passed(isStrict));
+            addBeforeOrAfterDetails(scenarioNode, step.getAfter());
+        });
     }
 
-    private void addImageEmbeddings(ExtentTest scenarioNode, Hook hook) {
-        hook.getEmbeddings().forEach(embedding -> embedImage(scenarioNode, embedding));
+    private void addBeforeOrAfterDetails(ExtentTest scenarioNode, List<Hook> hooks) {
+        hooks.forEach(hook -> {
+            hook.getEmbeddings().forEach(embedding -> embedImage(scenarioNode, embedding));
+            addOutputs(scenarioNode, hook.getOutput());
+            addError(scenarioNode, hook.getResult().getErrorMessage());
+        });
+    }
+
+    private void addAdditionalStepDetails(ExtentTest stepNode, Step step) {
+        step.getEmbeddings().forEach(embedding -> embedImage(stepNode, embedding));
+        addOutputs(stepNode, step.getOutput());
+        addError(stepNode, step.getResult().getErrorMessage());
+    }
+
+    private void addOutputs(ExtentTest scenarioNode, List<String> outputs) {
+        outputs.forEach(output -> scenarioNode.log(Status.INFO, output));
+    }
+
+    private void addError(ExtentTest scenarioNode, String error) {
+        scenarioNode.log(Status.INFO, error);
     }
 
     private ExtentTest createGherkinNode(ExtentTest parent, String keyword, String name, boolean appendKeyword) {
@@ -96,6 +117,12 @@ public class ExtentReportsBuilder {
             return parent.createNode(new GherkinKeyword(keyword), nodeName);
         } catch (ClassNotFoundException e) {
             throw new CourgetteException(e);
+        }
+    }
+
+    private void setResult(ExtentTest extentTest, boolean passed) {
+        if (!passed) {
+            extentTest.fail("");
         }
     }
 
@@ -109,12 +136,6 @@ public class ExtentReportsBuilder {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-    }
-
-    private void setResult(ExtentTest extentTest, boolean passed) {
-        if (!passed) {
-            extentTest.fail("");
         }
     }
 }
