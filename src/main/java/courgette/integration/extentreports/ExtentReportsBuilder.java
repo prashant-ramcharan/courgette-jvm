@@ -39,7 +39,7 @@ public class ExtentReportsBuilder {
 
         getDistinctFeatureUris().forEach(featureUri -> {
             List<Feature> features = featureList.stream().filter(f -> f.getUri().equals(featureUri)).collect(Collectors.toList());
-            addFeature(extentReports, features);
+            addFeatures(extentReports, features);
         });
         extentReports.flush();
     }
@@ -48,33 +48,34 @@ public class ExtentReportsBuilder {
         return featureList.stream().map(Feature::getUri).distinct().collect(Collectors.toList());
     }
 
-    private void addFeature(ExtentReports extentReports, List<Feature> features) {
+    private void addFeatures(ExtentReports extentReports, List<Feature> features) {
         final ExtentTest featureNode = extentReports.createTest(features.get(0).getName());
 
         features.forEach(feature -> {
             if (feature.getScenarios().size() == 1) {
                 Scenario scenario = feature.getScenarios().get(0);
-                addScenario(featureNode, scenario.getName(), scenario.getBefore(), scenario.getAfter(), scenario.getSteps());
+                addScenario(featureNode, scenario.getName(), scenario.getBefore(), scenario.getAfter(), scenario.getSteps(), scenario.getTags());
             } else {
                 String scenarioName = feature.getScenarios().stream().filter(s -> !s.getName().equals("")).findFirst().get().getName();
                 feature.getScenarios().forEach(scenario -> {
                     if (!scenario.getKeyword().equals("Background")) {
-                        addScenario(featureNode, scenarioName, scenario.getBefore(), scenario.getAfter(), scenario.getSteps());
+                        addScenario(featureNode, scenarioName, scenario.getBefore(), scenario.getAfter(), scenario.getSteps(), scenario.getTags());
                     }
                 });
             }
         });
     }
 
-    private void addScenario(ExtentTest featureNode, String scenarioName, List<Hook> before, List<Hook> after, List<Step> steps) {
+    private void addScenario(ExtentTest featureNode, String scenarioName, List<Hook> before, List<Hook> after, List<Step> steps, List<Tag> tags) {
         final ExtentTest scenarioNode = createGherkinNode(featureNode, "Scenario", scenarioName, false);
         before.forEach(beforeHook -> addImageEmbeddings(scenarioNode, beforeHook));
         steps.forEach(step -> addStep(scenarioNode, step));
         after.forEach(afterHook -> addImageEmbeddings(scenarioNode, afterHook));
+        addScenarioTags(scenarioNode, tags);
     }
 
-    private void addImageEmbeddings(ExtentTest scenarioNode, Hook hook) {
-        hook.getEmbeddings().forEach(embedding -> embedImage(scenarioNode, embedding));
+    private void addScenarioTags(ExtentTest scenarioNode, List<Tag> tags) {
+        tags.forEach(tag -> scenarioNode.assignCategory(tag.getName()));
     }
 
     private void addStep(ExtentTest scenarioNode, Step step) {
@@ -83,6 +84,10 @@ public class ExtentReportsBuilder {
         setResult(stepNode, step.passed(isStrict));
         step.getEmbeddings().forEach(embedding -> embedImage(stepNode, embedding));
         step.getAfter().forEach(afterStep -> addImageEmbeddings(scenarioNode, afterStep));
+    }
+
+    private void addImageEmbeddings(ExtentTest scenarioNode, Hook hook) {
+        hook.getEmbeddings().forEach(embedding -> embedImage(scenarioNode, embedding));
     }
 
     private ExtentTest createGherkinNode(ExtentTest parent, String keyword, String name, boolean appendKeyword) {
