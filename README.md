@@ -273,6 +273,26 @@ After the test run is complete, the test results will be published to the Report
 ![CourgetteJVM_ReportPortal.png](images/CourgetteJVM_ReportPortal.png)
 
 
+## Extent Reports Integration
+
+Courgette allows the creation of interactive reports using the Extent Reports Courgette plugin.
+
+To enable this feature, add the following Courgette option to the Courgette runner:
+
+````java
+@CourgetteOptions(
+      ...  
+      plugin = { "extentreports" }
+)
+````
+
+At the end of the test run the report will be saved to `${reportTargetDir}/courgette-extentreports` 
+
+To configure custom reports (_i.e. change the report name or theme_) you should create an `extent-config.xml` in the classpath. Courgette will load this XML config when it builds the report. View an example [here](https://github.com/prashant-ramcharan/courgette-jvm-example/blob/master/src/test/resources/extent-config.xml)
+
+![CourgetteJVM_ExtentReports.png](images/CourgetteJVM_ExtentReports.png)
+
+
 ## Limitations and Known Issues
 
 * JUnit test notifier is not updated when running features in the IDE during parallel test execution.
