@@ -290,7 +290,7 @@ To enable this feature, add the following Courgette option to the Courgette runn
 
 At the end of the test run the report will be saved to `${reportTargetDir}/courgette-extentreports` 
 
-To configure custom reports (_i.e. change the report name or theme_) you should create the `extent-config.xml` file in the classpath. Courgette will load this XML config when it builds the report. View an example [here](https://github.com/prashant-ramcharan/courgette-jvm-example/blob/master/src/test/resources/extent-config.xml)
+To configure custom reports (_i.e. change the report name or theme_) you should create the `extent-config.xml` file in the classpath. Courgette will load this XML config when it builds the report. If this file is not provided then default values will be used. View an example [here](https://github.com/prashant-ramcharan/courgette-jvm-example/blob/master/src/test/resources/extent-config.xml)
 
 ![CourgetteJVM_ExtentReports.png](images/CourgetteJVM_ExtentReports.png)
 
