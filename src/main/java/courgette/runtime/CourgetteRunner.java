@@ -1,29 +1,36 @@
 package courgette.runtime;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import courgette.integration.extentreports.ExtentReportsBuilder;
+import courgette.integration.extentreports.ExtentReportsProperties;
 import courgette.integration.reportportal.ReportPortalProperties;
 import courgette.integration.reportportal.ReportPortalService;
+import courgette.runtime.report.JsonReportParser;
+import courgette.runtime.report.model.Feature;
 import courgette.runtime.utils.FileUtils;
 import io.cucumber.core.feature.CucumberFeature;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 public class CourgetteRunner {
     private final List<Callable<Boolean>> runners = new ArrayList<>();
     private final CopyOnWriteArrayList<String> reruns = new CopyOnWriteArrayList<>();
     private final Map<String, CopyOnWriteArrayList<String>> reports = new HashMap<>();
-
     private final List<CourgetteRunnerInfo> runnerInfoList;
     private final CourgetteProperties courgetteProperties;
     private final CourgetteRuntimeOptions defaultRuntimeOptions;
-    private final boolean rerunFailedScenarios;
-
     private final List<CourgetteRunResult> runResults = new ArrayList<>();
-
+    private final boolean rerunFailedScenarios;
     private final boolean canRunFeatures;
+
+    private List<Feature> reportFeatures = new ArrayList<>();
 
     public CourgetteRunner(List<CourgetteRunnerInfo> runnerInfoList, CourgetteProperties courgetteProperties) {
         this.runnerInfoList = runnerInfoList;
@@ -139,8 +146,16 @@ public class CourgetteRunner {
     }
 
     public void createCourgetteReport() {
-        final CourgetteHtmlReporter courgetteReport = new CourgetteHtmlReporter(courgetteProperties, runResults, defaultRuntimeOptions.getCourgetteReportJson());
+        reportFeatures = JsonReportParser.create(new File(defaultRuntimeOptions.getCourgetteReportJson())).getReportFeatures();
+        final CourgetteHtmlReporter courgetteReport = new CourgetteHtmlReporter(courgetteProperties, runResults, reportFeatures);
         courgetteReport.create();
+    }
+
+    public void createCourgetteExtentReports() {
+        final ExtentReportsProperties extentReportsProperties = new ExtentReportsProperties(courgetteProperties);
+        final boolean isStrict = courgetteProperties.getCourgetteOptions().cucumberOptions().strict();
+        final ExtentReportsBuilder extentReportsBuilder = ExtentReportsBuilder.create(extentReportsProperties, reportFeatures, isStrict);
+        extentReportsBuilder.buildReport();
     }
 
     public boolean hasFailures() {

@@ -37,4 +37,8 @@ public class CourgetteProperties {
     public boolean isReportPortalPluginEnabled() {
         return Arrays.stream(courgetteOptions.plugin()).anyMatch(plugin -> plugin.equalsIgnoreCase("reportportal"));
     }
+
+    public boolean isExtentReportsPluginEnabled() {
+        return Arrays.stream(courgetteOptions.plugin()).anyMatch(plugin -> plugin.equalsIgnoreCase("extentreports"));
+    }
 }
