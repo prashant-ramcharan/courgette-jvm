@@ -2,6 +2,7 @@ package courgette.integration.extentreports;
 
 import courgette.runtime.CourgetteException;
 import courgette.runtime.CourgetteProperties;
+import courgette.runtime.utils.FileUtils;
 
 import java.io.File;
 
@@ -19,6 +20,10 @@ public class ExtentReportsProperties {
 
     public String getReportImagesPath() {
         return courgetteProperties.getCourgetteOptions().reportTargetDir() + "/courgette-extentreports/images/";
+    }
+
+    public File getConfigFile() {
+        return FileUtils.getClassPathFile("extent-config.xml");
     }
 
     private void createImagesDir() {
