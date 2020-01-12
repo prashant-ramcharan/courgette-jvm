@@ -1,7 +1,6 @@
 package courgette.runtime;
 
 import courgette.api.CourgetteRunLevel;
-import courgette.runtime.report.JsonReportParser;
 import courgette.runtime.report.builder.HtmlReportBuilder;
 import courgette.runtime.report.model.Embedding;
 import courgette.runtime.report.model.Feature;
@@ -14,7 +13,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -32,10 +30,10 @@ public class CourgetteHtmlReporter {
     private final String jsDir;
 
     private final CourgetteProperties courgetteProperties;
-    private List<CourgetteRunResult> courgetteRunResults;
-    private String cucumberJsonReport;
+    private final List<CourgetteRunResult> courgetteRunResults;
+    private final List<Feature> reportFeatures;
 
-    public CourgetteHtmlReporter(CourgetteProperties courgetteProperties, List<CourgetteRunResult> courgetteRunResults, String cucumberJsonReport) {
+    public CourgetteHtmlReporter(CourgetteProperties courgetteProperties, List<CourgetteRunResult> courgetteRunResults, List<Feature> reportFeatures) {
         this.targetDir = courgetteProperties.getCourgetteOptions().reportTargetDir();
         this.reportDir = targetDir + "/courgette-report";
         this.imagesDir = reportDir + "/images";
@@ -44,7 +42,7 @@ public class CourgetteHtmlReporter {
 
         this.courgetteProperties = courgetteProperties;
         this.courgetteRunResults = courgetteRunResults;
-        this.cucumberJsonReport = cucumberJsonReport;
+        this.reportFeatures = reportFeatures;
     }
 
     public void create() {
@@ -54,15 +52,6 @@ public class CourgetteHtmlReporter {
     }
 
     private void generateHtmlReport() {
-        final List<Feature> features;
-
-        try {
-            features = new ArrayList<>(JsonReportParser.create(new File(cucumberJsonReport)).getReportFeatures());
-        } catch (CourgetteException e) {
-            System.err.println("Unable to create the Courgette Html Report -> " + e.getMessage());
-            return;
-        }
-
         final long elapsedMill = (Instant.now().minus(courgetteProperties.getSessionStartTime().toEpochMilli(), ChronoUnit.MILLIS)).toEpochMilli();
 
         String duration = String.format("%d min, %d sec",
@@ -72,8 +61,8 @@ public class CourgetteHtmlReporter {
         final String featureScenarioLabel = courgetteProperties.getCourgetteOptions().runLevel() == CourgetteRunLevel.FEATURE ? "Features" : "Scenarios";
         final boolean isStrict = courgetteProperties.getCourgetteOptions().cucumberOptions().strict();
 
-        final int total = features.size();
-        final int passed = (int) features.stream().filter(feature -> feature.passed(isStrict)).count();
+        final int total = reportFeatures.size();
+        final int passed = (int) reportFeatures.stream().filter(feature -> feature.passed(isStrict)).count();
         final int failed = total - passed;
         final int rerun = courgetteProperties.getCourgetteOptions().rerunFailedScenarios() ? (int) courgetteRunResults.stream().filter(result -> result.getStatus().equals(CourgetteRunResult.Status.RERUN)).count() : 0;
 
@@ -123,7 +112,7 @@ public class CourgetteHtmlReporter {
             }
         };
 
-        features.forEach(feature ->
+        reportFeatures.forEach(feature ->
                 feature.getScenarios().forEach(scenario -> {
                     scenario.getBefore().forEach(before -> before.getEmbeddings().forEach(saveImage));
                     scenario.getAfter().forEach(after -> after.getEmbeddings().forEach(saveImage));
@@ -135,7 +124,7 @@ public class CourgetteHtmlReporter {
                     scenarioSteps.forEach(step -> step.getAfter().forEach(after -> after.getEmbeddings().forEach(saveImage)));
                 }));
 
-        final HtmlReportBuilder htmlReportBuilder = HtmlReportBuilder.create(features, courgetteRunResults, isStrict);
+        final HtmlReportBuilder htmlReportBuilder = HtmlReportBuilder.create(reportFeatures, courgetteRunResults, isStrict);
 
         final String results = courgetteProperties.getCourgetteOptions().runLevel() == CourgetteRunLevel.FEATURE ?
                 htmlReportBuilder.getHtmlTableFeatureRows() :
