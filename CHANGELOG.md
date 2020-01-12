@@ -1,3 +1,9 @@
+CHANGES IN VERSION 4.1.0
+=================================
+
+* Add Extent Reports integration.
+* Code base improvements.
+
 CHANGES IN VERSION 4.0.3-SNAPSHOT
 =================================
 
