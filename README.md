@@ -98,7 +98,7 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
 * **plugin** : Courgette supported plugins
     
     * _reportportal: Allows the test results to be published to [Report Portal](https://reportportal.io/) at the end of the test run._
-    * _extentreports: Create an interactive report based on the [Extent Framework](http://extentreports.com/)_
+    * _extentreports: Creates an interactive report based on the [Extent Framework](http://extentreports.com/)_
     
 * **cucumberOptions** : The standard cucumber options for specifying feature paths, glue, tags etc..
 
