@@ -30,8 +30,8 @@ public class ExtentReportsBuilder {
     public void buildReport() {
         final ExtentHtmlReporter extentHtmlReporter = new ExtentHtmlReporter(extentReportsProperties.getReportPath());
 
-        if (extentReportsProperties.getConfigFile() != null) {
-            extentHtmlReporter.loadXMLConfig(extentReportsProperties.getConfigFile(), true);
+        if (extentReportsProperties.getXMLConfigFile() != null) {
+            extentHtmlReporter.loadXMLConfig(extentReportsProperties.getXMLConfigFile(), true);
         }
 
         final ExtentReports extentReports = new ExtentReports();
