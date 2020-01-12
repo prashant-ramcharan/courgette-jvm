@@ -46,6 +46,10 @@ public abstract class TestNGCourgette {
             courgetteRunner.createReport();
             courgetteRunner.createCourgetteReport();
 
+            if (courgetteProperties.isExtentReportsPluginEnabled()) {
+                courgetteRunner.createCourgetteExtentReports();
+            }
+
             if (courgetteProperties.isReportPortalPluginEnabled()) {
                 courgetteRunner.publishReportToReportPortal();
             }
