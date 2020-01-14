@@ -246,7 +246,10 @@ To enable this feature, add the following Courgette option to the Courgette runn
 ````java
 @CourgetteOptions(
       ...  
-      plugin = { "reportportal" }
+      plugin = { "reportportal" },
+      cucumberOptions = @CucumberOptions(
+      // cucumber options here
+      )
 )
 ````
 
@@ -284,7 +287,10 @@ To enable this feature, add the following Courgette option to the Courgette runn
 ````java
 @CourgetteOptions(
       ...  
-      plugin = { "extentreports" }
+      plugin = { "extentreports" },
+      cucumberOptions = @CucumberOptions(
+      // cucumber options here
+      )
 )
 ````
 
