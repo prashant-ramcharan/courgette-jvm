@@ -57,12 +57,20 @@ public class ExtentReportsBuilder {
                 Scenario scenario = feature.getScenarios().get(0);
                 addScenario(featureNode, scenario.getName(), scenario.getBefore(), scenario.getAfter(), scenario.getSteps(), scenario.getTags());
             } else {
-                String scenarioName = feature.getScenarios().stream().filter(s -> !s.getName().equals("")).findFirst().get().getName();
-                feature.getScenarios().forEach(scenario -> {
+                String scenarioName = null;
+                if (!feature.getScenarios().stream().allMatch(s -> s.getName().length() > 0)) {
+                    scenarioName = feature.getScenarios().stream().filter(s -> !s.getName().equals("")).findFirst().get().getName();
+                }
+
+                for (Scenario scenario : feature.getScenarios()) {
                     if (!scenario.getKeyword().equals("Background")) {
-                        addScenario(featureNode, scenarioName, scenario.getBefore(), scenario.getAfter(), scenario.getSteps(), scenario.getTags());
+                        if (scenarioName != null) {
+                            addScenario(featureNode, scenarioName, scenario.getBefore(), scenario.getAfter(), scenario.getSteps(), scenario.getTags());
+                        } else {
+                            addScenario(featureNode, scenario.getName(), scenario.getBefore(), scenario.getAfter(), scenario.getSteps(), scenario.getTags());
+                        }
                     }
-                });
+                }
             }
         });
     }
