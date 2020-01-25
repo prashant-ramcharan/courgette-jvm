@@ -1,4 +1,4 @@
-CHANGES IN VERSION 4.1.1
+CHANGES IN VERSION 4.2.0
 =================================
 
 * Fix Extent Reports report issue which duplicated the name of all scenarios when CourgetteRunLevel.FEATURE was used.
