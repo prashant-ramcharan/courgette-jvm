@@ -7,31 +7,27 @@ import courgette.runtime.utils.FileUtils;
 import java.io.File;
 
 public class ExtentReportsProperties {
-    private final CourgetteProperties courgetteProperties;
+    private final String reportPath;
 
     public ExtentReportsProperties(CourgetteProperties courgetteProperties) {
-        this.courgetteProperties = courgetteProperties;
-        createImagesDir();
+        this.reportPath = courgetteProperties.getCourgetteOptions().reportTargetDir() + "/courgette-extentreports/";
+        createReportDir();
     }
 
-    public String getReportPath() {
-        return courgetteProperties.getCourgetteOptions().reportTargetDir() + "/courgette-extentreports/index.html";
-    }
-
-    public String getReportImagesPath() {
-        return courgetteProperties.getCourgetteOptions().reportTargetDir() + "/courgette-extentreports/images/";
+    public String getReportFilename() {
+        return reportPath + "index.html";
     }
 
     public File getXMLConfigFile() {
         return FileUtils.getClassPathFile("extent-config.xml");
     }
 
-    private void createImagesDir() {
-        final File imagesDir = new File(getReportImagesPath());
+    private void createReportDir() {
+        final File reportDir = new File(reportPath);
 
-        if (!imagesDir.exists()) {
-            if (!imagesDir.mkdirs()) {
-                throw new CourgetteException("Unable to create the '../courgette-extentreports/images' directory");
+        if (!reportDir.exists()) {
+            if (!reportDir.mkdirs()) {
+                throw new CourgetteException("Unable to create the '../courgette-extentreports/' directory");
             }
         }
     }
