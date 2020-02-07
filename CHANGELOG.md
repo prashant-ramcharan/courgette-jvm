@@ -1,3 +1,9 @@
+CHANGES IN VERSION 4.3.0
+=================================
+
+* Replace ExtentHtmlReporter with ExtentSparkReporter
+* Embed base64 images to Extent Report
+
 CHANGES IN VERSION 4.2.0
 =================================
 

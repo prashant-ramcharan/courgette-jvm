@@ -4,12 +4,10 @@ import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.GherkinKeyword;
 import com.aventstack.extentreports.Status;
-import com.aventstack.extentreports.reporter.ExtentHtmlReporter;
+import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import courgette.runtime.CourgetteException;
 import courgette.runtime.report.model.*;
-import courgette.runtime.utils.FileUtils;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,14 +27,14 @@ public class ExtentReportsBuilder {
     }
 
     public void buildReport() {
-        final ExtentHtmlReporter extentHtmlReporter = new ExtentHtmlReporter(extentReportsProperties.getReportPath());
+        final ExtentSparkReporter extentSparkReporter = new ExtentSparkReporter(extentReportsProperties.getReportFilename());
 
         if (extentReportsProperties.getXMLConfigFile() != null) {
-            extentHtmlReporter.loadXMLConfig(extentReportsProperties.getXMLConfigFile(), true);
+            extentSparkReporter.loadXMLConfig(extentReportsProperties.getXMLConfigFile(), true);
         }
 
         final ExtentReports extentReports = new ExtentReports();
-        extentReports.attachReporter(extentHtmlReporter);
+        extentReports.attachReporter(extentSparkReporter);
 
         getDistinctFeatureUris().forEach(featureUri -> {
             List<Feature> features = featureList.stream().filter(f -> f.getUri().equals(featureUri)).collect(Collectors.toList());
@@ -83,31 +81,45 @@ public class ExtentReportsBuilder {
             addBeforeOrAfterDetails(scenarioNode, step.getBefore());
             ExtentTest stepNode = createGherkinNode(scenarioNode, step.getKeyword().trim(), step.getName(), true);
             addAdditionalStepDetails(stepNode, step);
-            setResult(stepNode, step.passed(isStrict));
+            setStepResult(stepNode, step.passed(isStrict));
             addBeforeOrAfterDetails(scenarioNode, step.getAfter());
         });
     }
 
     private void addBeforeOrAfterDetails(ExtentTest scenarioNode, List<Hook> hooks) {
         hooks.forEach(hook -> {
-            hook.getEmbeddings().forEach(embedding -> embedImage(scenarioNode, embedding));
             addOutputs(scenarioNode, hook.getOutput());
             addError(scenarioNode, hook.getResult().getErrorMessage());
+            addImageEmbeddings(scenarioNode, hook.getEmbeddings());
         });
     }
 
     private void addAdditionalStepDetails(ExtentTest stepNode, Step step) {
-        step.getEmbeddings().forEach(embedding -> embedImage(stepNode, embedding));
         addOutputs(stepNode, step.getOutput());
         addError(stepNode, step.getResult().getErrorMessage());
+        addImageEmbeddings(stepNode, step.getEmbeddings());
     }
 
     private void addOutputs(ExtentTest scenarioNode, List<String> outputs) {
-        outputs.forEach(output -> scenarioNode.log(Status.INFO, output));
+        outputs.forEach(output -> log(scenarioNode, output));
+    }
+
+    private void addImageEmbeddings(ExtentTest node, List<Embedding> embeddings) {
+        embeddings.forEach(embedding -> {
+            if (embedding.getMimeType().startsWith("image")) {
+                node.addScreenCaptureFromBase64String(embedding.getData());
+            }
+        });
     }
 
     private void addError(ExtentTest scenarioNode, String error) {
-        scenarioNode.log(Status.INFO, error);
+        log(scenarioNode, error);
+    }
+
+    private void log(ExtentTest node, String message) {
+        if (message != null) {
+            node.log(Status.INFO, message);
+        }
     }
 
     private ExtentTest createGherkinNode(ExtentTest parent, String keyword, String name, boolean appendKeyword) {
@@ -119,22 +131,9 @@ public class ExtentReportsBuilder {
         }
     }
 
-    private void setResult(ExtentTest extentTest, boolean passed) {
+    private void setStepResult(ExtentTest extentTest, boolean passed) {
         if (!passed) {
-            extentTest.fail("");
-        }
-    }
-
-    private void embedImage(ExtentTest scenarioNode, Embedding embedding) {
-        if (embedding.getMimeType().startsWith("image")) {
-            final String imageName = extentReportsProperties.getReportImagesPath() + "/" + embedding.getCourgetteEmbeddingId();
-            final String imageFormat = embedding.getMimeType().split("/")[1];
-            FileUtils.writeImageFile(imageName, imageFormat, embedding.getData());
-            try {
-                scenarioNode.addScreenCaptureFromPath("images/" + embedding.getCourgetteEmbeddingId() + "." + imageFormat);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            extentTest.fail("Step failed");
         }
     }
 }
