@@ -1,3 +1,8 @@
+CHANGES IN VERSION 4.3.1
+=================================
+
+* Upgrade Extent Reports adaptor to version 1.0.10
+
 CHANGES IN VERSION 4.3.0
 =================================
 
