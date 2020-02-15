@@ -1,3 +1,11 @@
+CHANGES IN VERSION 4.3.2
+=================================
+
+* Upgrade to Extent Reports version 4.1.3
+* Removed Extent Reports Cucumber adaptor
+* Extent Reports now uses timestamps from the Cucumber report
+
+
 CHANGES IN VERSION 4.3.1
 =================================
 

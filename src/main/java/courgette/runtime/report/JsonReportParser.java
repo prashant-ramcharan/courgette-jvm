@@ -13,6 +13,7 @@ public class JsonReportParser {
     private File jsonFile;
     private List<Feature> features;
 
+    private final static String START_TIMESTAMP_ATTRIBUTE = "start_timestamp";
     private final static String NAME_ATTRIBUTE = "name";
     private final static String URI_ATTRIBUTE = "uri";
     private final static String ELEMENTS_ATTRIBUTE = "elements";
@@ -92,6 +93,8 @@ public class JsonReportParser {
             while (elementsIterator.hasNext()) {
                 JsonObject scenario = elementsIterator.next().getAsJsonObject();
 
+                JsonElement startTimestampElement = scenario.get(START_TIMESTAMP_ATTRIBUTE);
+                String startTimestamp = startTimestampElement != null ? startTimestampElement.getAsString() : "";
                 String scenarioName = scenario.get(NAME_ATTRIBUTE).getAsString();
                 String scenarioKeyword = scenario.get(KEYWORD_ATTRIBUTE).getAsString();
                 int scenarioLine = scenario.get(LINE_ATTRIBUTE).getAsInt();
@@ -111,7 +114,7 @@ public class JsonReportParser {
                 final List<Tag> scenarioTags = new ArrayList<>();
                 addTags(scenario.get(TAGS_ATTRIBUTE), scenarioTags);
 
-                scenarioElements.add(new Scenario(featureUri, scenarioName, scenarioKeyword, scenarioLine, scenarioBefore, scenarioAfter, scenarioSteps, scenarioTags));
+                scenarioElements.add(new Scenario(featureUri, startTimestamp, scenarioName, scenarioKeyword, scenarioLine, scenarioBefore, scenarioAfter, scenarioSteps, scenarioTags));
             }
             features.add(new Feature(featureName, featureUri, scenarioElements));
         }
