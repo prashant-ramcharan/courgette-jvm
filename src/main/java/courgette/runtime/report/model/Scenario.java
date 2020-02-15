@@ -13,8 +13,10 @@ public class Scenario {
     private List<Hook> after;
     private List<Step> steps;
     private List<Tag> tags;
+    private String startTimestamp;
 
     public Scenario(String featureUri,
+                    String startTimestamp,
                     String name,
                     String keyword,
                     int line,
@@ -24,6 +26,7 @@ public class Scenario {
                     List<Tag> tags) {
         this.courgetteScenarioId = UUID.randomUUID().toString();
         this.featureUri = featureUri;
+        this.startTimestamp = startTimestamp;
         this.name = name;
         this.keyword = keyword;
         this.line = line;
@@ -67,6 +70,10 @@ public class Scenario {
 
     public List<Tag> getTags() {
         return tags;
+    }
+
+    public String getStartTimestamp() {
+        return startTimestamp;
     }
 
     public boolean passed(boolean isStrict) {

@@ -1,5 +1,5 @@
 group 'io.github.prashant-ramcharan'
-version '4.3.1'
+version '4.3.2'
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'
@@ -13,7 +13,7 @@ ext {
     cucumberVersion='5.0.0-RC1'
     jacksonVersion='2.8.8'
     httpcomponentsVersion='4.5.10'
-    extentreportVersion='1.0.10'
+    extentreportVersion='4.1.3'
 }
 
 repositories {
@@ -29,7 +29,7 @@ dependencies {
     compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
     compile "org.apache.httpcomponents:httpclient:$httpcomponentsVersion"
     compile "org.apache.httpcomponents:httpmime:$httpcomponentsVersion"
-    compile "com.aventstack:extentreports-cucumber4-adapter:$extentreportVersion"
+    compile "com.aventstack:extentreports:$extentreportVersion"
 }
 
 task buildJar(type: Jar, dependsOn: classes) {
