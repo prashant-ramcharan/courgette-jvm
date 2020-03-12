@@ -1,3 +1,8 @@
+CHANGES IN VERSION 4.3.3
+=================================
+
+* Fixed bug which caused background steps to be incorrectly reported in the Courgette Html report.
+
 CHANGES IN VERSION 4.3.2
 =================================
 
