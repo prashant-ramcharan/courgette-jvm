@@ -73,16 +73,14 @@ public class JsonReportParser {
             JsonArray elements = (JsonArray) feature.get(ELEMENTS_ATTRIBUTE);
             Iterator<JsonElement> elementsIterator = elements.iterator();
 
-            final Map<Integer, JsonArray> backgroundSteps = new HashMap<>();
+            final List<JsonArray> backgroundSteps = new ArrayList<>();
 
             while (elementsIterator.hasNext()) {
                 JsonObject element = elementsIterator.next().getAsJsonObject();
 
-                int elementLine = element.get(LINE_ATTRIBUTE).getAsInt();
-
                 if (element.get(KEYWORD_ATTRIBUTE).getAsString().equalsIgnoreCase("Background")) {
                     JsonArray elementSteps = (JsonArray) element.get(STEPS_ATTRIBUTE);
-                    backgroundSteps.put(elementLine, elementSteps);
+                    backgroundSteps.add(elementSteps);
                 }
             }
 
@@ -90,6 +88,7 @@ public class JsonReportParser {
 
             final List<Scenario> scenarioElements = new ArrayList<>();
 
+            int index = 0;
             while (elementsIterator.hasNext()) {
                 JsonObject scenario = elementsIterator.next().getAsJsonObject();
 
@@ -99,13 +98,21 @@ public class JsonReportParser {
                 String scenarioKeyword = scenario.get(KEYWORD_ATTRIBUTE).getAsString();
                 int scenarioLine = scenario.get(LINE_ATTRIBUTE).getAsInt();
 
+                if (scenarioKeyword.equalsIgnoreCase("Background")) {
+                    continue;
+                }
+
                 final List<Hook> scenarioBefore = new ArrayList<>();
                 addHook(scenario.get(BEFORE_ATTRIBUTE), scenarioBefore);
 
                 final List<Hook> scenarioAfter = new ArrayList<>();
                 addHook(scenario.get(AFTER_ATTRIBUTE), scenarioAfter);
 
-                List<JsonArray> allSteps = new ArrayList<>(backgroundSteps.values());
+                List<JsonArray> allSteps = new ArrayList<>();
+                if (!backgroundSteps.isEmpty()) {
+                    allSteps.add(backgroundSteps.get(index++));
+                }
+
                 allSteps.addAll(Collections.singleton((JsonArray) scenario.get(STEPS_ATTRIBUTE)));
 
                 final List<Step> scenarioSteps = new ArrayList<>();
