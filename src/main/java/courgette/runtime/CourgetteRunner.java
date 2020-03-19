@@ -12,6 +12,7 @@ import io.cucumber.core.feature.CucumberFeature;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -45,6 +46,11 @@ public class CourgetteRunner {
 
         final Queue<CourgetteRunnerInfo> runnerQueue = new ArrayDeque<>(runnerInfoList);
 
+        Path customClassPath = null;
+        if (courgetteProperties.getCourgetteOptions().shortenJavaClassPath()) {
+            customClassPath = FileUtils.copyClassPathFilesToTempDirectory();
+        }
+
         while (!runnerQueue.isEmpty()) {
             final CourgetteRunnerInfo runnerInfo = runnerQueue.poll();
 
@@ -53,10 +59,11 @@ public class CourgetteRunner {
             final CucumberFeature cucumberFeature = runnerInfo.getCucumberFeature();
             final Integer lineId = runnerInfo.getLineId();
             final String featureUri = cucumberArgs.get(null).get(0);
+            final Path finalCustomClassPath = customClassPath;
 
             this.runners.add(() -> {
                 try {
-                    boolean isPassed = runFeature(cucumberArgs);
+                    boolean isPassed = runFeature(cucumberArgs, finalCustomClassPath);
 
                     if (isPassed) {
                         runResults.add(new CourgetteRunResult(cucumberFeature, lineId, featureUri, CourgetteRunResult.Status.PASSED));
@@ -78,7 +85,7 @@ public class CourgetteRunner {
                         rerunAttempts = rerunAttempts < 1 ? 1 : rerunAttempts;
 
                         while (rerunAttempts-- > 0) {
-                            isPassed = runFeature(rerunCucumberArgs);
+                            isPassed = runFeature(rerunCucumberArgs, finalCustomClassPath);
 
                             if (isPassed) {
                                 runResults.add(new CourgetteRunResult(cucumberFeature, lineId, rerunFeatureUri, CourgetteRunResult.Status.PASSED_AFTER_RERUN));
@@ -178,10 +185,10 @@ public class CourgetteRunner {
         }
     }
 
-    private boolean runFeature(Map<String, List<String>> args) {
+    private boolean runFeature(Map<String, List<String>> args, Path classPathDir) {
         try {
             final boolean showTestOutput = courgetteProperties.getCourgetteOptions().showTestOutput();
-            return 0 == new CourgetteFeatureRunner(args, showTestOutput).run();
+            return 0 == new CourgetteFeatureRunner(args, showTestOutput, classPathDir).run();
         } catch (Throwable throwable) {
             throwable.printStackTrace();
             return false;

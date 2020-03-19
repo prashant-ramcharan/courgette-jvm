@@ -1,3 +1,8 @@
+CHANGES IN VERSION 4.3.4
+=================================
+
+* Add new Courgette option 'shortenJavaClassPath' to provide a workaround to the "CreateProcess error=206, The filename or extension is too long" issue on Windows OS when using Java 8.
+
 CHANGES IN VERSION 4.3.3
 =================================
 
