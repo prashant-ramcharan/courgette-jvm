@@ -47,7 +47,7 @@ public class CourgetteRunner {
         final Queue<CourgetteRunnerInfo> runnerQueue = new ArrayDeque<>(runnerInfoList);
 
         Path customClassPath = null;
-        if (isJava8() && courgetteProperties.getCourgetteOptions().shortenJavaClassPath()) {
+        if (shouldUseCustomClassPath()) {
             customClassPath = FileUtils.copyClassPathFilesToTempDirectory();
         }
 
@@ -212,6 +212,10 @@ public class CourgetteRunner {
                 : courgetteProperties.getMaxThreads() < 1
                 ? 1
                 : courgetteProperties.getMaxThreads();
+    }
+
+    private boolean shouldUseCustomClassPath() {
+        return isJava8() && courgetteProperties.getCourgetteOptions().shortenJavaClassPath();
     }
 
     private boolean isJava8() {

@@ -96,7 +96,7 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
 
 * **reportTargetDir** : Target directory where courgette-report is generated. Set to target by default.
 
-* **shortenJavaClassPath** : If set to true, the project jars will be copied to a temp directory to shorten the classpath. [Java 8 only]
+* **shortenJavaClassPath** : If set to true, the project jars will be copied to a temp directory to shorten the classpath. [Java 8 Only]
 
 * **plugin** : Courgette supported plugins
     
