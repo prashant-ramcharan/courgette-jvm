@@ -44,6 +44,11 @@ public @interface CourgetteOptions {
     String[] plugin() default {};
 
     /**
+     * @return true to shorten the Java classpath by copying the project dependencies to the tmp folder
+     */
+    boolean shortenJavaClassPath() default false;
+
+    /**
      * @return the Cucumber options
      */
     CucumberOptions cucumberOptions();

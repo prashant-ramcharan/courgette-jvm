@@ -6,8 +6,11 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
@@ -91,6 +94,33 @@ public final class FileUtils {
         } catch (IOException ex) {
             throw new CourgetteException("Unable to zip file: " + ex);
         }
+    }
+
+    public static Path copyClassPathFilesToTempDirectory() {
+        Path tmpDir = createTempDirectory();
+        if (tmpDir == null) {
+            return null;
+        }
+        final URL[] classPathUrls = ((URLClassLoader) (Thread.currentThread().getContextClassLoader())).getURLs();
+        Arrays.asList(classPathUrls).forEach(classPathUrl -> {
+            try {
+                Path source = Paths.get(classPathUrl.getPath());
+                Path target = Paths.get(tmpDir.toFile().getAbsoluteFile() + File.separator + source.getFileName());
+                Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                System.err.println("Error copying file. Reason: " + e.getLocalizedMessage());
+            }
+        });
+        return tmpDir;
+    }
+
+    private static Path createTempDirectory() {
+        try {
+            return Files.createTempDirectory(null);
+        } catch (IOException e) {
+            System.err.println("Unable to create temp directory. Reason: " + e.getMessage());
+        }
+        return null;
     }
 
     private static BiFunction<String, Boolean, String> fileReader = (file, deleteOnExit) -> {
