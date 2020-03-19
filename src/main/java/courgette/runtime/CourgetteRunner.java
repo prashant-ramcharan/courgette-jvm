@@ -185,10 +185,10 @@ public class CourgetteRunner {
         }
     }
 
-    private boolean runFeature(Map<String, List<String>> args, Path classPathDir) {
+    private boolean runFeature(Map<String, List<String>> args, Path customClassPath) {
         try {
             final boolean showTestOutput = courgetteProperties.getCourgetteOptions().showTestOutput();
-            return 0 == new CourgetteFeatureRunner(args, showTestOutput, classPathDir).run();
+            return 0 == new CourgetteFeatureRunner(args, showTestOutput, customClassPath).run();
         } catch (Throwable throwable) {
             throwable.printStackTrace();
             return false;
