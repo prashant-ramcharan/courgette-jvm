@@ -1,7 +1,7 @@
 package courgette.runtime;
 
 import courgette.api.CourgetteRunLevel;
-import io.cucumber.core.feature.CucumberFeature;
+import io.cucumber.core.gherkin.Feature;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,17 +11,17 @@ public class CourgetteRunnerInfo {
     private final CourgetteRuntimeOptions courgetteRuntimeOptions;
     private final Integer lineId;
     private final CourgetteRunLevel courgetteRunLevel;
-    private final CucumberFeature cucumberFeature;
+    private final Feature feature;
 
-    public CourgetteRunnerInfo(CourgetteProperties courgetteProperties, CucumberFeature cucumberFeature, Integer lineId) {
-        this.cucumberFeature = cucumberFeature;
-        this.courgetteRuntimeOptions = new CourgetteRuntimeOptions(courgetteProperties, cucumberFeature);
+    public CourgetteRunnerInfo(CourgetteProperties courgetteProperties, Feature feature, Integer lineId) {
+        this.feature = feature;
+        this.courgetteRuntimeOptions = new CourgetteRuntimeOptions(courgetteProperties, feature);
         this.lineId = lineId;
         this.courgetteRunLevel = courgetteProperties.getCourgetteOptions().runLevel();
     }
 
-    public CucumberFeature getCucumberFeature() {
-        return cucumberFeature;
+    public Feature getFeature() {
+        return feature;
     }
 
     public Integer getLineId() {

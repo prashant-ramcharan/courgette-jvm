@@ -2,9 +2,14 @@ package courgette.api.testng;
 
 import courgette.api.CourgetteOptions;
 import courgette.api.CourgetteRunLevel;
-import courgette.runtime.*;
-import gherkin.pickles.PickleLocation;
-import io.cucumber.core.feature.CucumberFeature;
+import courgette.runtime.CourgetteLoader;
+import courgette.runtime.CourgetteProperties;
+import courgette.runtime.CourgetteRunOptions;
+import courgette.runtime.CourgetteRunner;
+import courgette.runtime.CourgetteRunnerInfo;
+import courgette.runtime.CourgetteTestFailureException;
+import io.cucumber.core.gherkin.Feature;
+import io.cucumber.core.internal.gherkin.pickles.PickleLocation;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -22,15 +27,15 @@ public abstract class TestNGCourgette {
         final CourgetteOptions courgetteOptions = new CourgetteRunOptions(this.getClass());
         courgetteProperties = new CourgetteProperties(courgetteOptions, createSessionId(), courgetteOptions.threads());
 
-        CourgetteLoader courgetteFeatureLoader = new CourgetteLoader(courgetteProperties, this.getClass().getClassLoader());
-        List<CucumberFeature> cucumberFeatures = courgetteFeatureLoader.getCucumberFeatures();
+        CourgetteLoader courgetteFeatureLoader = new CourgetteLoader(courgetteProperties);
+        List<Feature> features = courgetteFeatureLoader.getFeatures();
 
         runnerInfoList = new ArrayList<>();
 
         if (courgetteOptions.runLevel().equals(CourgetteRunLevel.FEATURE)) {
-            cucumberFeatures.forEach(feature -> runnerInfoList.add(new CourgetteRunnerInfo(courgetteProperties, feature, null)));
+            features.forEach(feature -> runnerInfoList.add(new CourgetteRunnerInfo(courgetteProperties, feature, null)));
         } else {
-            final Map<PickleLocation, CucumberFeature> scenarios = courgetteFeatureLoader.getCucumberScenarios();
+            final Map<PickleLocation, Feature> scenarios = courgetteFeatureLoader.getCucumberScenarios();
             scenarios
                     .keySet()
                     .forEach(location -> runnerInfoList.add(new CourgetteRunnerInfo(courgetteProperties, scenarios.get(location), location.getLine())));

@@ -1,22 +1,22 @@
 package courgette.runtime;
 
-import io.cucumber.core.feature.CucumberFeature;
+import io.cucumber.core.gherkin.Feature;
 
 public class CourgetteRunResult {
-    private CucumberFeature cucumberFeature;
+    private Feature feature;
     private Integer lineId;
     private String featureUri;
     private Status status;
 
-    public CourgetteRunResult(CucumberFeature cucumberFeature, Integer lineId, String featureUri, Status status) {
-        this.cucumberFeature = cucumberFeature;
+    public CourgetteRunResult(Feature feature, Integer lineId, String featureUri, Status status) {
+        this.feature = feature;
         this.lineId = lineId;
         this.featureUri = featureUri;
         this.status = status;
     }
 
-    public CucumberFeature getCucumberFeature() {
-        return cucumberFeature;
+    public Feature getFeature() {
+        return feature;
     }
 
     public Integer getLineId() {

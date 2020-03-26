@@ -2,10 +2,15 @@ package courgette.api.junit;
 
 import courgette.api.CourgetteOptions;
 import courgette.api.CourgetteRunLevel;
-import courgette.runtime.*;
+import courgette.runtime.CourgetteCallbacks;
+import courgette.runtime.CourgetteLoader;
+import courgette.runtime.CourgetteProperties;
+import courgette.runtime.CourgetteRunOptions;
+import courgette.runtime.CourgetteRunner;
+import courgette.runtime.CourgetteRunnerInfo;
 import courgette.runtime.junit.CourgetteJUnitRunner;
-import gherkin.pickles.PickleLocation;
-import io.cucumber.core.feature.CucumberFeature;
+import io.cucumber.core.gherkin.Feature;
+import io.cucumber.core.internal.gherkin.pickles.PickleLocation;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
 
@@ -22,15 +27,15 @@ public class Courgette extends CourgetteJUnitRunner {
 
         callbacks = new CourgetteCallbacks(clazz);
 
-        final CourgetteLoader courgetteLoader = new CourgetteLoader(courgetteProperties, clazz.getClassLoader());
-        cucumberFeatures = courgetteLoader.getCucumberFeatures();
+        final CourgetteLoader courgetteLoader = new CourgetteLoader(courgetteProperties);
+        features = courgetteLoader.getFeatures();
 
         runnerInfoList = new ArrayList<>();
 
         if (courgetteOptions.runLevel().equals(CourgetteRunLevel.FEATURE)) {
-            cucumberFeatures.forEach(feature -> runnerInfoList.add(new CourgetteRunnerInfo(courgetteProperties, feature, null)));
+            features.forEach(feature -> runnerInfoList.add(new CourgetteRunnerInfo(courgetteProperties, feature, null)));
         } else {
-            final Map<PickleLocation, CucumberFeature> scenarios = courgetteLoader.getCucumberScenarios();
+            final Map<PickleLocation, Feature> scenarios = courgetteLoader.getCucumberScenarios();
             scenarios
                     .keySet()
                     .forEach(location -> runnerInfoList.add(new CourgetteRunnerInfo(courgetteProperties, scenarios.get(location), location.getLine())));

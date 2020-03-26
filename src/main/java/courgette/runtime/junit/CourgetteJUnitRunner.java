@@ -1,39 +1,45 @@
 package courgette.runtime.junit;
 
-import courgette.runtime.*;
-import io.cucumber.core.feature.CucumberFeature;
+import courgette.runtime.CourgetteCallbacks;
+import courgette.runtime.CourgetteProperties;
+import courgette.runtime.CourgetteRunResult;
+import courgette.runtime.CourgetteRunnerInfo;
+import courgette.runtime.CourgetteTestFailureException;
+import io.cucumber.core.gherkin.Feature;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.ParentRunner;
 import org.junit.runners.model.InitializationError;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public abstract class CourgetteJUnitRunner extends ParentRunner<CucumberFeature> {
+public abstract class CourgetteJUnitRunner extends ParentRunner<Feature> {
     protected CourgetteProperties courgetteProperties;
-    protected List<CucumberFeature> cucumberFeatures;
+    protected List<Feature> features;
     protected List<CourgetteRunnerInfo> runnerInfoList;
     protected CourgetteCallbacks callbacks;
     protected Description description;
 
-    private Map<CucumberFeature, Description> cucumberFeatureDescriptions = new HashMap<>();
+    private Map<Feature, Description> featureDescriptions = new HashMap<>();
+    private List<String> featureDescriptionNames = new ArrayList<>();
 
     protected CourgetteJUnitRunner(Class<?> testClass) throws InitializationError {
         super(testClass);
     }
 
     @Override
-    protected List<CucumberFeature> getChildren() {
-        return cucumberFeatures;
+    protected List<Feature> getChildren() {
+        return features;
     }
 
     @Override
-    protected Description describeChild(CucumberFeature child) {
+    protected Description describeChild(Feature child) {
         return description;
     }
 
@@ -44,7 +50,7 @@ public abstract class CourgetteJUnitRunner extends ParentRunner<CucumberFeature>
     }
 
     @Override
-    protected void runChild(CucumberFeature child, RunNotifier notifier) {
+    protected void runChild(Feature child, RunNotifier notifier) {
     }
 
     protected String createSessionId() {
@@ -59,27 +65,30 @@ public abstract class CourgetteJUnitRunner extends ParentRunner<CucumberFeature>
         getChildren()
                 .stream()
                 .distinct()
-                .forEach(cucumberFeature -> {
-                    Description featureDescription = Description.createTestDescription("", cucumberFeature.getName());
-                    description.addChild(featureDescription);
-                    cucumberFeatureDescriptions.put(cucumberFeature, featureDescription);
+                .forEach(feature -> {
+                    if (!featureDescriptionNames.contains(feature.getName())) {
+                        Description featureDescription = Description.createTestDescription("", feature.getName());
+                        description.addChild(featureDescription);
+                        featureDescriptions.put(feature, featureDescription);
+                        featureDescriptionNames.add(feature.getName());
+                    }
                 });
     }
 
     protected void notifyTestStarted(RunNotifier notifier) {
-        cucumberFeatureDescriptions.values().forEach(notifier::fireTestStarted);
+        featureDescriptions.values().forEach(notifier::fireTestStarted);
     }
 
     protected void notifyTestSuccess(RunNotifier notifier) {
-        cucumberFeatureDescriptions.values().forEach(notifier::fireTestFinished);
+        featureDescriptions.values().forEach(notifier::fireTestFinished);
     }
 
     protected void notifyTestFailure(RunNotifier notifier, List<CourgetteRunResult> failures) {
         failures.forEach(failure -> {
-            CucumberFeature cucumberFeature = failure.getCucumberFeature();
-            Description description = cucumberFeatureDescriptions.get(cucumberFeature);
+            Feature feature = failure.getFeature();
+            Description description = featureDescriptions.get(feature);
             notifier.fireTestFailure(new Failure(description, new CourgetteTestFailureException("Please refer to Courgette / Cucumber report for more info.")));
         });
-        cucumberFeatureDescriptions.keySet().removeAll(failures.stream().map(CourgetteRunResult::getCucumberFeature).collect(Collectors.toList()));
+        featureDescriptions.keySet().removeAll(failures.stream().map(CourgetteRunResult::getFeature).collect(Collectors.toList()));
     }
 }

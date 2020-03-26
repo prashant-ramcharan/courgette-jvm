@@ -2,13 +2,19 @@ package courgette.runtime;
 
 import courgette.api.CucumberOptions;
 import courgette.integration.reportportal.ReportPortalProperties;
-import io.cucumber.core.feature.CucumberFeature;
+import io.cucumber.core.gherkin.Feature;
 import io.cucumber.core.options.CommandlineOptionsParser;
 import io.cucumber.core.options.RuntimeOptions;
 
 import java.io.File;
-import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -18,7 +24,7 @@ import static java.util.Arrays.copyOf;
 
 public class CourgetteRuntimeOptions {
     private final CourgetteProperties courgetteProperties;
-    private final CucumberFeature cucumberFeature;
+    private final Feature feature;
     private final CucumberOptions cucumberOptions;
     private final String reportTargetDir;
 
@@ -28,11 +34,11 @@ public class CourgetteRuntimeOptions {
 
     private final int instanceId = UUID.randomUUID().hashCode();
 
-    public CourgetteRuntimeOptions(CourgetteProperties courgetteProperties, CucumberFeature cucumberFeature) {
+    public CourgetteRuntimeOptions(CourgetteProperties courgetteProperties, Feature feature) {
         this.courgetteProperties = courgetteProperties;
-        this.cucumberFeature = cucumberFeature;
+        this.feature = feature;
         this.cucumberOptions = courgetteProperties.getCourgetteOptions().cucumberOptions();
-        this.cucumberResourcePath = cucumberFeature.getUri().getSchemeSpecificPart();
+        this.cucumberResourcePath = feature.getUri().getSchemeSpecificPart();
         this.reportTargetDir = courgetteProperties.getCourgetteOptions().reportTargetDir();
 
         createRuntimeOptions(cucumberOptions, cucumberResourcePath).forEach((key, value) -> runtimeOptions.addAll(value));
@@ -41,7 +47,7 @@ public class CourgetteRuntimeOptions {
     public CourgetteRuntimeOptions(CourgetteProperties courgetteProperties) {
         this.courgetteProperties = courgetteProperties;
         this.cucumberOptions = courgetteProperties.getCourgetteOptions().cucumberOptions();
-        this.cucumberFeature = null;
+        this.feature = null;
         this.reportTargetDir = courgetteProperties.getCourgetteOptions().reportTargetDir();
 
         createRuntimeOptions(cucumberOptions, null).forEach((key, value) -> runtimeOptions.addAll(value));
@@ -129,15 +135,15 @@ public class CourgetteRuntimeOptions {
     };
 
     private String getMultiThreadRerunFile() {
-        return getTempDirectory() + courgetteProperties.getSessionId() + "_rerun_" + getFeatureId(cucumberFeature) + ".txt";
+        return getTempDirectory() + courgetteProperties.getSessionId() + "_rerun_" + getFeatureId(feature) + ".txt";
     }
 
     private String getMultiThreadReportFile() {
-        return getTempDirectory() + courgetteProperties.getSessionId() + "_thread_report_" + getFeatureId(cucumberFeature);
+        return getTempDirectory() + courgetteProperties.getSessionId() + "_thread_report_" + getFeatureId(feature);
     }
 
-    private String getFeatureId(CucumberFeature cucumberFeature) {
-        return String.format("%s_%s", cucumberFeature.hashCode(), instanceId);
+    private String getFeatureId(Feature feature) {
+        return String.format("%s_%s", feature.hashCode(), instanceId);
     }
 
     private Function<CourgetteProperties, String> cucumberRerunPlugin = (courgetteProperties) -> {
@@ -162,7 +168,7 @@ public class CourgetteRuntimeOptions {
 
         asList(plugins).forEach(plugin -> {
             if (isReportPlugin.test(plugin)) {
-                if (cucumberFeature != null) {
+                if (feature != null) {
                     pluginList.add(plugin);
 
                     String extension = plugin.substring(0, plugin.indexOf(":"));
@@ -189,7 +195,7 @@ public class CourgetteRuntimeOptions {
         Predicate<List<String>> alreadyAddedRerunPlugin = (addedPlugins) -> addedPlugins.stream().anyMatch(p -> p.startsWith("rerun:"));
 
         if (!alreadyAddedRerunPlugin.test(pluginList)) {
-            if (cucumberFeature != null) {
+            if (feature != null) {
                 rerunFile = getMultiThreadRerunFile();
             } else {
                 final String cucumberRerunFile = cucumberRerunPlugin.apply(courgetteProperties);
@@ -208,7 +214,7 @@ public class CourgetteRuntimeOptions {
             }
         }
 
-        if (cucumberFeature != null) {
+        if (feature != null) {
             final String junitReportPlugin = String.format("junit:%s.xml", getMultiThreadReportFile());
             if (pluginList.stream().noneMatch(plugin -> plugin.equals(junitReportPlugin))) {
                 pluginList.add(junitReportPlugin);
@@ -244,57 +250,13 @@ public class CourgetteRuntimeOptions {
         return runOptions;
     };
 
-    private BiFunction<String, String, String> resourceFinder = (resourcePath, featurePath) -> {
-        final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        final String[] resourceFolders = resourcePath.split("/");
-
-        if (resourcePath.equals(featurePath)) {
-            return resourcePath;
-        }
-
-        Integer startIndex = featurePath.indexOf(resourceFolders[resourceFolders.length - 1]);
-        if (startIndex > -1) {
-            startIndex = startIndex + (resourceFolders[resourceFolders.length - 1].length() + 1);
-        } else {
-            startIndex = 0;
-        }
-
-        String resourceName = featurePath.substring(startIndex);
-
-        if (resourceFolders.length > 0) {
-            final StringBuilder resourcePathBuilder = new StringBuilder();
-
-            for (int i = resourceFolders.length - 1; i >= 0; i--) {
-                resourcePathBuilder.insert(0, String.format("%s/", resourceFolders[i]));
-
-                final URL resource = classLoader.getResource(String.format("%s%s", resourcePathBuilder.toString(), resourceName));
-
-                if (resource != null) {
-                    return resourcePathBuilder.toString();
-                }
-            }
-        }
-        return null;
-    };
-
     private BiFunction<String[], String, List<String>> featureParser = (resourceFeaturePaths, featurePath) -> {
         final List<String> featurePaths = new ArrayList<>();
-
-        if (featurePath != null) {
-            for (String resourceFeaturePath : resourceFeaturePaths) {
-                final String resource = resourceFinder.apply(resourceFeaturePath, featurePath);
-
-                if (resource != null) {
-                    if (featurePath.startsWith(resourceFeaturePath)) {
-                        featurePaths.add(featurePath);
-                    } else {
-                        featurePaths.add(String.format("%s/%s", resourceFeaturePath, featurePath));
-                    }
-                    return featurePaths;
-                }
-            }
+        if (featurePath == null) {
+            featurePaths.addAll(Arrays.asList(resourceFeaturePaths));
+        } else {
+            featurePaths.add(featurePath);
         }
-        featurePaths.addAll(Arrays.asList(resourceFeaturePaths));
         return featurePaths;
     };
 

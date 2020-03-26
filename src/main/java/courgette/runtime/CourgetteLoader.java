@@ -1,72 +1,78 @@
 package courgette.runtime;
 
-import gherkin.pickles.PickleLocation;
-import io.cucumber.core.feature.CucumberFeature;
-import io.cucumber.core.feature.FeatureLoader;
+import io.cucumber.core.eventbus.EventBus;
+import io.cucumber.core.feature.FeatureParser;
 import io.cucumber.core.filter.Filters;
-import io.cucumber.core.io.MultiLoader;
-import io.cucumber.core.io.ResourceLoader;
+import io.cucumber.core.gherkin.Feature;
+import io.cucumber.core.internal.gherkin.pickles.PickleLocation;
 import io.cucumber.core.options.RuntimeOptions;
+import io.cucumber.core.resource.ClassLoaders;
 import io.cucumber.core.runtime.FeaturePathFeatureSupplier;
+import io.cucumber.core.runtime.TimeServiceEventBus;
 
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.function.Supplier;
 
 public class CourgetteLoader {
     private final CourgetteProperties courgetteProperties;
-    private final List<CucumberFeature> cucumberFeatures;
+    private final List<Feature> features;
     private final Filters filters;
 
-    public CourgetteLoader(CourgetteProperties courgetteProperties, ClassLoader classLoader) {
+    public CourgetteLoader(CourgetteProperties courgetteProperties) {
         this.courgetteProperties = courgetteProperties;
 
         RuntimeOptions runtimeOptions = createRuntimeOptions();
         this.filters = new Filters(runtimeOptions);
 
-        ResourceLoader resourceLoader = new MultiLoader(classLoader);
-        FeatureLoader featureLoader = new FeatureLoader(resourceLoader);
-        FeaturePathFeatureSupplier featureSupplier = new FeaturePathFeatureSupplier(featureLoader, runtimeOptions);
-        this.cucumberFeatures = featureSupplier.get();
+        EventBus eventBus = new TimeServiceEventBus(Clock.systemUTC(), UUID::randomUUID);
+        FeatureParser parser = new FeatureParser(eventBus::generateId);
+        Supplier<ClassLoader> classLoader = ClassLoaders::getDefaultClassLoader;
+        FeaturePathFeatureSupplier featureSupplier = new FeaturePathFeatureSupplier(classLoader, runtimeOptions, parser);
+
+        this.features = featureSupplier.get();
     }
 
-    public List<CucumberFeature> getCucumberFeatures() {
-        return filterCucumberFeatures();
+    public List<Feature> getFeatures() {
+        return filterFeatures();
     }
 
-    public Map<PickleLocation, CucumberFeature> getCucumberScenarios() {
-        return filterCucumberScenarios(cucumberFeatures);
+    public Map<PickleLocation, Feature> getCucumberScenarios() {
+        return filterCucumberScenarios(features);
     }
 
     private RuntimeOptions createRuntimeOptions() {
         return new CourgetteRuntimeOptions(courgetteProperties).getRuntimeOptions();
     }
 
-    private List<CucumberFeature> filterCucumberFeatures() {
-        final List<CucumberFeature> matchedCucumberFeatures = new ArrayList<>();
+    private List<Feature> filterFeatures() {
+        final List<Feature> matchedFeatures = new ArrayList<>();
 
-        cucumberFeatures.forEach(cucumberFeature -> {
-            CourgettePickleMatcher pickleMatcher = new CourgettePickleMatcher(cucumberFeature, filters);
+        features.forEach(feature -> {
+            CourgettePickleMatcher pickleMatcher = new CourgettePickleMatcher(feature, filters);
 
             if (pickleMatcher.matches()) {
-                matchedCucumberFeatures.add(cucumberFeature);
+                matchedFeatures.add(feature);
             }
         });
-        return matchedCucumberFeatures;
+        return matchedFeatures;
     }
 
-    private Map<PickleLocation, CucumberFeature> filterCucumberScenarios(List<CucumberFeature> cucumberFeatures) {
-        final Map<PickleLocation, CucumberFeature> scenarios = new HashMap<>();
+    private Map<PickleLocation, Feature> filterCucumberScenarios(List<Feature> features) {
+        final Map<PickleLocation, Feature> scenarios = new HashMap<>();
 
-        if (cucumberFeatures != null) {
-            cucumberFeatures.forEach(cucumberFeature ->
-                    cucumberFeature.getPickles().forEach(pickle -> {
-                        CourgettePickleMatcher pickleMatcher = new CourgettePickleMatcher(cucumberFeature, filters);
+        if (features != null) {
+            features.forEach(feature ->
+                    feature.getPickles().forEach(pickle -> {
+                        CourgettePickleMatcher pickleMatcher = new CourgettePickleMatcher(feature, filters);
 
-                        PickleLocation pickleLocation = pickleMatcher.matchLocation(pickle.getLine());
+                        PickleLocation pickleLocation = pickleMatcher.matchLocation(pickle.getLocation().getLine());
                         if (pickleLocation != null) {
-                            scenarios.put(pickleLocation, cucumberFeature);
+                            scenarios.put(pickleLocation, feature);
                         }
                     }));
         }
