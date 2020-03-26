@@ -1,3 +1,9 @@
+CHANGES IN VERSION 4.4.0
+=================================
+
+* Upgrade to Cucumber version 5.5.0
+* Code improvements / refactoring.
+
 CHANGES IN VERSION 4.3.4
 =================================
 

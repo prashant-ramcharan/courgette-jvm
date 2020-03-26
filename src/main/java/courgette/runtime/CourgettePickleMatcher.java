@@ -1,19 +1,19 @@
 package courgette.runtime;
 
-import gherkin.pickles.PickleLocation;
-import io.cucumber.core.feature.CucumberFeature;
-import io.cucumber.core.feature.CucumberPickle;
 import io.cucumber.core.filter.Filters;
+import io.cucumber.core.gherkin.Feature;
+import io.cucumber.core.gherkin.Pickle;
+import io.cucumber.core.internal.gherkin.pickles.PickleLocation;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CourgettePickleMatcher {
-    private final CucumberFeature cucumberFeature;
+    private final Feature feature;
     private final Filters filters;
 
-    public CourgettePickleMatcher(CucumberFeature cucumberFeature, Filters filters) {
-        this.cucumberFeature = cucumberFeature;
+    public CourgettePickleMatcher(Feature feature, Filters filters) {
+        this.feature = feature;
         this.filters = filters;
     }
 
@@ -21,7 +21,7 @@ public class CourgettePickleMatcher {
         AtomicBoolean matched = new AtomicBoolean();
 
         try {
-            cucumberFeature.getPickles().forEach(pickle -> {
+            feature.getPickles().forEach(pickle -> {
                 matched.set(filters.test(pickle));
                 if (matched.get()) {
                     throw new ConditionSatisfiedException();
@@ -35,14 +35,14 @@ public class CourgettePickleMatcher {
     public PickleLocation matchLocation(int pickleLocationLine) {
         final PickleLocation[] location = {null};
 
-        List<CucumberPickle> pickles = cucumberFeature.getPickles();
+        List<Pickle> pickles = feature.getPickles();
 
         try {
-            pickles.stream().filter(p -> p.getLine() == pickleLocationLine)
+            pickles.stream().filter(p -> p.getLocation().getLine() == pickleLocationLine)
                     .findFirst()
                     .ifPresent(pickleEvent -> {
                         if (filters.test(pickleEvent)) {
-                            location[0] = new PickleLocation(pickleEvent.getLine(), pickleEvent.getScenarioLine());
+                            location[0] = new PickleLocation(pickleEvent.getLocation().getLine(), pickleEvent.getLocation().getColumn());
                             throw new ConditionSatisfiedException();
                         }
                     });

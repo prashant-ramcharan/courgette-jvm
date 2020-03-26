@@ -1,7 +1,11 @@
 package courgette.runtime.report.builder;
 
 import courgette.runtime.CourgetteRunResult;
-import courgette.runtime.report.model.*;
+import courgette.runtime.report.model.Embedding;
+import courgette.runtime.report.model.Feature;
+import courgette.runtime.report.model.Hook;
+import courgette.runtime.report.model.Result;
+import courgette.runtime.report.model.Scenario;
 
 import java.util.Base64;
 import java.util.List;

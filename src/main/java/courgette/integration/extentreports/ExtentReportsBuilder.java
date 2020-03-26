@@ -6,7 +6,13 @@ import com.aventstack.extentreports.GherkinKeyword;
 import com.aventstack.extentreports.Status;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import courgette.runtime.CourgetteException;
-import courgette.runtime.report.model.*;
+import courgette.runtime.report.model.Embedding;
+import courgette.runtime.report.model.Feature;
+import courgette.runtime.report.model.Hook;
+import courgette.runtime.report.model.Result;
+import courgette.runtime.report.model.Scenario;
+import courgette.runtime.report.model.Step;
+import courgette.runtime.report.model.Tag;
 
 import java.time.Instant;
 import java.util.ArrayList;
