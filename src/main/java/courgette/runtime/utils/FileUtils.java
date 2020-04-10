@@ -129,9 +129,8 @@ public final class FileUtils {
         try {
             return Paths.get(url.toURI());
         } catch (URISyntaxException e) {
-            System.err.println("Unable to get file path. Reason: " + e.getLocalizedMessage());
+            throw new CourgetteException("Unable to get file path. Reason: " + e.getLocalizedMessage());
         }
-        return null;
     }
 
     private static Path createPath(String uri) {
