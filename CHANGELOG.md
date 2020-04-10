@@ -1,3 +1,8 @@
+CHANGES IN VERSION 4.4.1
+=================================
+
+* Fixed issue which caused a java.nio.file.InvalidPathException in Windows OS.
+
 CHANGES IN VERSION 4.4.0
 =================================
 
