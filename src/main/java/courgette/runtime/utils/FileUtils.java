@@ -14,6 +14,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
@@ -113,14 +115,28 @@ public final class FileUtils {
         final URL[] classPathUrls = ((URLClassLoader) (Thread.currentThread().getContextClassLoader())).getURLs();
         Arrays.asList(classPathUrls).forEach(classPathUrl -> {
             try {
-                Path source = Paths.get(classPathUrl.getPath());
-                Path target = Paths.get(tmpDir.toFile().getAbsoluteFile() + File.separator + source.getFileName());
+                Path source = createPath(classPathUrl);
+                Path target = createPath(tmpDir.toFile().getAbsoluteFile() + File.separator + source.getFileName());
                 Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException e) {
                 System.err.println("Error copying file. Reason: " + e.getLocalizedMessage());
             }
         });
         return tmpDir;
+    }
+
+    private static Path createPath(URL url) {
+        try {
+            return Paths.get(url.toURI());
+        } catch (URISyntaxException e) {
+            System.err.println("Unable to get file path. Reason: " + e.getLocalizedMessage());
+        }
+        return null;
+    }
+
+    private static Path createPath(String uri) {
+        URI fileUri = new File(uri).toURI();
+        return Paths.get(fileUri);
     }
 
     private static Path createTempDirectory() {
