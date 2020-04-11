@@ -3,6 +3,7 @@ CHANGES IN VERSION 4.5.0
 
 * Courgette runner no longer requires the classpath to be built before execution. This also fixes the CreateProcess error=206 limitation on Windows OS.
 * Removed 'shortenJavaClassPath' Courgette option.
+* Upgrade to Extent Reports version 4.1.4 
 
 
 CHANGES IN VERSION 4.4.1
