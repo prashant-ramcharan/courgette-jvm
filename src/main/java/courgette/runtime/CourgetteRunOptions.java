@@ -64,11 +64,6 @@ public class CourgetteRunOptions implements CourgetteOptions {
         return null;
     }
 
-    @Override
-    public boolean shortenJavaClassPath() {
-        return SystemPropertyUtils.getBoolProperty(CourgetteSystemProperty.SHORTEN_JAVA_CLASSPATH, courgetteOptions.shortenJavaClassPath());
-    }
-
     private void validate(Class clazz) {
         courgetteOptions = (CourgetteOptions) Arrays.stream(clazz.getDeclaredAnnotations())
                 .filter(annotation -> annotation.annotationType().equals(CourgetteOptions.class))

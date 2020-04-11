@@ -11,7 +11,6 @@ import courgette.runtime.utils.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,11 +49,6 @@ public class CourgetteRunner {
 
         final Queue<CourgetteRunnerInfo> runnerQueue = new ArrayDeque<>(runnerInfoList);
 
-        Path customClassPath = null;
-        if (shouldUseCustomClassPath()) {
-            customClassPath = FileUtils.copyClassPathFilesToTempDirectory();
-        }
-
         while (!runnerQueue.isEmpty()) {
             final CourgetteRunnerInfo runnerInfo = runnerQueue.poll();
 
@@ -63,11 +57,10 @@ public class CourgetteRunner {
             final io.cucumber.core.gherkin.Feature feature = runnerInfo.getFeature();
             final Integer lineId = runnerInfo.getLineId();
             final String featureUri = cucumberArgs.get(null).get(0);
-            final Path finalCustomClassPath = customClassPath;
 
             this.runners.add(() -> {
                 try {
-                    boolean isPassed = runFeature(cucumberArgs, finalCustomClassPath);
+                    boolean isPassed = runFeature(cucumberArgs);
 
                     if (isPassed) {
                         runResults.add(new CourgetteRunResult(feature, lineId, featureUri, CourgetteRunResult.Status.PASSED));
@@ -89,7 +82,7 @@ public class CourgetteRunner {
                         rerunAttempts = rerunAttempts < 1 ? 1 : rerunAttempts;
 
                         while (rerunAttempts-- > 0) {
-                            isPassed = runFeature(rerunCucumberArgs, finalCustomClassPath);
+                            isPassed = runFeature(rerunCucumberArgs);
 
                             if (isPassed) {
                                 runResults.add(new CourgetteRunResult(feature, lineId, rerunFeatureUri, CourgetteRunResult.Status.PASSED_AFTER_RERUN));
@@ -189,10 +182,10 @@ public class CourgetteRunner {
         }
     }
 
-    private boolean runFeature(Map<String, List<String>> args, Path customClassPath) {
+    private boolean runFeature(Map<String, List<String>> args) {
         try {
             final boolean showTestOutput = courgetteProperties.getCourgetteOptions().showTestOutput();
-            return 0 == new CourgetteFeatureRunner(args, showTestOutput, customClassPath).run();
+            return 0 == new CourgetteFeatureRunner(args, showTestOutput).run();
         } catch (Throwable throwable) {
             throwable.printStackTrace();
             return false;
@@ -216,13 +209,5 @@ public class CourgetteRunner {
                 : courgetteProperties.getMaxThreads() < 1
                 ? 1
                 : courgetteProperties.getMaxThreads();
-    }
-
-    private boolean shouldUseCustomClassPath() {
-        return isJava8() && courgetteProperties.getCourgetteOptions().shortenJavaClassPath();
-    }
-
-    private boolean isJava8() {
-        return System.getProperty("java.version").startsWith("1.8");
     }
 }
