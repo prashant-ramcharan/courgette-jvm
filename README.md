@@ -46,7 +46,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>4.4.1</version>
+  <version>4.5.0</version>
 </dependency>
 ````
 
@@ -56,7 +56,7 @@ repositories {
     jcenter()
 }
 
-compile 'io.github.prashant-ramcharan:courgette-jvm:4.4.1'
+compile 'io.github.prashant-ramcharan:courgette-jvm:4.5.0'
 ````
 
 #### Included Dependencies
@@ -95,8 +95,6 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
 * **showTestOutput** : If set to true, the output for each feature will be redirected to the current I/O source or destination.
 
 * **reportTargetDir** : Target directory where courgette-report is generated. Set to target by default.
-
-* **shortenJavaClassPath** : If set to true, the project jars will be copied to a temp directory to shorten the classpath. [Java 8 Only]
 
 * **plugin** : Courgette supported plugins
     
@@ -314,12 +312,6 @@ To configure custom reports (_i.e. change the report name or theme_) you should 
 * When there's a failure in the feature and your runner is set to 'runLevel = CourgetteRunLevel.FEATURE' and 'rerunFailedScenarios = true', the re-run cucumber feature report will override the original cucumber feature report.
    
    * _Use CourgetteRunLevel.SCENARIO which resolves this issue and retains all results in the cucumber report._
-
-
-* The following error is returned: "java.io.IOException: Cannot run program "java": CreateProcess error=206, The filename or extension is too long" [Windows OS Only]
-    * _This is a known Windows Create Process issue and is related to the classpath exceeding the maximum length of 32K characters. To workaround this, please upgrade to either Java 9/10/11 and Courgette 3.0.0 as Courgette uses the Java Platform Module System instead of the URL classloader._
-    * _Set Courgette option 'shortenJavaClassPath = true' [implemented in Courgette version 4.3.4]_
-
 
 ## Submitting Issues
 For any issues or requests, please submit [here](https://github.com/prashant-ramcharan/courgette-jvm/issues/new)
