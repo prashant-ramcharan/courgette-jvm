@@ -95,7 +95,7 @@ public class ExtentReportsBuilder {
             addBeforeOrAfterDetails(scenarioNode, step.getBefore());
             ExtentTest stepNode = createStepNode(scenarioNode, step, startTime);
             addAdditionalStepDetails(stepNode, step);
-            setStepResult(stepNode, step.passed(isStrict));
+            setStepResult(stepNode, step, isStrict);
             addBeforeOrAfterDetails(scenarioNode, step.getAfter());
         });
     }
@@ -159,8 +159,12 @@ public class ExtentReportsBuilder {
         }
     }
 
-    private void setStepResult(ExtentTest extentTest, boolean passed) {
-        if (!passed) {
+    private void setStepResult(ExtentTest extentTest, Step step, boolean isStrict) {
+        if (step.skipped()) {
+            extentTest.skip("Step skipped");
+        } else if (step.passed(isStrict)) {
+            extentTest.pass("Step passed");
+        } else {
             extentTest.fail("Step failed");
         }
     }

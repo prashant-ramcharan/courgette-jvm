@@ -74,4 +74,8 @@ public class Step {
             return !result.getStatus().equalsIgnoreCase(FAILED.toString()) && !result.getStatus().equalsIgnoreCase(AMBIGUOUS.toString());
         }
     }
+
+    public boolean skipped() {
+        return result.getStatus().equalsIgnoreCase(SKIPPED.toString()) || result.getStatus().equalsIgnoreCase(AMBIGUOUS.toString());
+    }
 }
