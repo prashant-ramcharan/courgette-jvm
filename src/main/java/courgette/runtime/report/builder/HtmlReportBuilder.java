@@ -205,10 +205,10 @@ public class HtmlReportBuilder {
                         "</div>\n" +
                         "</div>\n";
 
-        private final String MODAL_BODY_ROW_IMAGE_EMBEDDINGS =
+        private final String MODAL_BODY_ROW_BASE64IMAGE_EMBEDDINGS =
                 "<div class=\"row mt-2\">\n" +
                         "<div class=\"col-lg-12\">\n" +
-                        "<img src=\"images/%s\" class=\"img-thumbnail\">\n" +
+                        "<img src=\"data:image/%s;base64,%s\" class=\"img-thumbnail\">\n" +
                         "</div>\n" +
                         "</div>\n";
 
@@ -268,9 +268,8 @@ public class HtmlReportBuilder {
                     String htmlData = new String(Base64.getDecoder().decode(embedding.getData()));
                     hookBuilder.append(String.format(MODAL_BODY_ROW_TEXT_HTML_EMBEDDINGS, htmlData));
                 } else if (embedding.getMimeType().startsWith("image")) {
-                    final String imageName = embedding.getCourgetteEmbeddingId();
                     final String imageFormat = embedding.getMimeType().split("/")[1];
-                    hookBuilder.append(String.format(MODAL_BODY_ROW_IMAGE_EMBEDDINGS, imageName + "." + imageFormat));
+                    hookBuilder.append(String.format(MODAL_BODY_ROW_BASE64IMAGE_EMBEDDINGS, imageFormat, embedding.getData()));
                 }
             });
         }

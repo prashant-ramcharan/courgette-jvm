@@ -1,3 +1,13 @@
+CHANGES IN VERSION 4.6.0
+=================================
+
+* Courgette now creates a single Courgette Html Report.
+* Changed Courgette Html Report to embed all images as a base64 image source.
+* Changed Courgette Html Report to use a CDN to load JS and CSS files.
+* Upgrade to Cucumber version 5.6.0
+* Updated Extent Reports plugin to mark skipped steps.
+
+
 CHANGES IN VERSION 4.5.0
 =================================
 
