@@ -19,7 +19,6 @@ public class CourgetteHtmlReporter {
     private final String INDEX_HTML = "/report/index.html";
     private final String targetDir;
     private final String reportDir;
-    private final String reportDataDir;
 
     private final CourgetteProperties courgetteProperties;
     private final List<CourgetteRunResult> courgetteRunResults;
@@ -28,7 +27,6 @@ public class CourgetteHtmlReporter {
     public CourgetteHtmlReporter(CourgetteProperties courgetteProperties, List<CourgetteRunResult> courgetteRunResults, List<Feature> reportFeatures) {
         this.targetDir = courgetteProperties.getCourgetteOptions().reportTargetDir();
         this.reportDir = targetDir + "/courgette-report";
-        this.reportDataDir = reportDir + "/data";
         this.courgetteProperties = courgetteProperties;
         this.courgetteRunResults = courgetteRunResults;
         this.reportFeatures = reportFeatures;
@@ -37,7 +35,6 @@ public class CourgetteHtmlReporter {
     public void create() {
         createReportDirectories();
         generateHtmlReport();
-        removeReportDataDirectory();
     }
 
     private void generateHtmlReport() {
@@ -121,9 +118,5 @@ public class CourgetteHtmlReporter {
                 throw new CourgetteException("Unable to create the '../courgette-report' directory");
             }
         }
-    }
-
-    private void removeReportDataDirectory() {
-        FileUtils.deleteDirectorySilently(reportDataDir);
     }
 }
