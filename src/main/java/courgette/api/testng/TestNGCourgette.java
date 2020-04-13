@@ -62,6 +62,7 @@ public abstract class TestNGCourgette {
 
         if (courgetteRunner.hasFailures()) {
             courgetteRunner.createRerunFile();
+            courgetteRunner.cleanupCourgetteHtmlReportFiles();
             throw new CourgetteTestFailureException("There were failing tests. Refer to the Courgette html report for more details.");
         }
     }
