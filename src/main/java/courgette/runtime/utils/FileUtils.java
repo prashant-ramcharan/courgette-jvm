@@ -2,28 +2,17 @@ package courgette.runtime.utils;
 
 import courgette.runtime.CourgetteException;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -44,27 +33,6 @@ public final class FileUtils {
 
     public static void writeFile(String file, String contents) {
         fileStringWriter.accept(file, contents);
-    }
-
-    public static void writeImageFile(String file, String format, String base64Image) {
-        try {
-            byte[] imageByte = Base64.getDecoder().decode(base64Image);
-
-            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(imageByte);
-            BufferedImage bufferedImage = ImageIO.read(byteArrayInputStream);
-
-            ImageIO.write(bufferedImage, format, new File(file + "." + format));
-        } catch (IOException ignored) {
-        }
-    }
-
-    public static void readAndWriteFile(InputStream inputStream, String writePath) {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-
-        StringBuilder lines = new StringBuilder();
-        reader.lines().forEach(line -> lines.append(line).append("\n"));
-
-        writeFile(writePath, lines.toString());
     }
 
     public static List<File> getParentFiles(String path) {
@@ -107,44 +75,16 @@ public final class FileUtils {
         }
     }
 
-    public static Path copyClassPathFilesToTempDirectory() {
-        Path tmpDir = createTempDirectory();
-        if (tmpDir == null) {
-            return null;
-        }
-        final URL[] classPathUrls = ((URLClassLoader) (Thread.currentThread().getContextClassLoader())).getURLs();
-        Arrays.asList(classPathUrls).forEach(classPathUrl -> {
-            try {
-                Path source = createPath(classPathUrl);
-                Path target = createPath(tmpDir.toFile().getAbsoluteFile() + File.separator + source.getFileName());
-                Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException e) {
-                System.err.println("Error copying file. Reason: " + e.getLocalizedMessage());
+    public static void deleteDirectorySilently(String dir) {
+        try {
+            File directory = new File(dir);
+            if (directory.exists()) {
+                Arrays.asList(directory.listFiles()).forEach(File::delete);
+                directory.delete();
             }
-        });
-        return tmpDir;
-    }
-
-    private static Path createPath(URL url) {
-        try {
-            return Paths.get(url.toURI());
-        } catch (URISyntaxException e) {
-            throw new CourgetteException("Unable to get file path. Reason: " + e.getLocalizedMessage());
+        } catch (Exception ignored) {
+            // no action is needed
         }
-    }
-
-    private static Path createPath(String uri) {
-        URI fileUri = new File(uri).toURI();
-        return Paths.get(fileUri);
-    }
-
-    private static Path createTempDirectory() {
-        try {
-            return Files.createTempDirectory(null);
-        } catch (IOException e) {
-            System.err.println("Unable to create temp directory. Reason: " + e.getMessage());
-        }
-        return null;
     }
 
     private static BiFunction<String, Boolean, String> fileReader = (file, deleteOnExit) -> {
