@@ -124,14 +124,6 @@ public class CourgetteHtmlReporter {
     }
 
     private void removeReportDataDirectory() {
-        try {
-            File dataFile = new File(reportDataDir);
-            if (dataFile.exists()) {
-                Arrays.asList(dataFile.listFiles()).forEach(File::delete);
-                dataFile.delete();
-            }
-        } catch (Exception ignored) {
-            // no action is needed if this fails
-        }
+        FileUtils.deleteDirectorySilently(reportDataDir);
     }
 }
