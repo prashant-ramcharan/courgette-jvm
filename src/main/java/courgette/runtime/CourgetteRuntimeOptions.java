@@ -90,13 +90,17 @@ public class CourgetteRuntimeOptions {
         return reportFiles;
     }
 
+    public String getCourgetteReportDataDirectory() {
+        return reportTargetDir + "/courgette-report/data";
+    }
+
     public String getCourgetteReportJson() {
-        return String.format("%s/courgette-report/data/report.json", reportTargetDir);
+        return String.format("%s/report.json", getCourgetteReportDataDirectory());
     }
 
     public String getCourgetteReportXmlForReportPortal() {
         final ReportPortalProperties reportPortalProperties = ReportPortalProperties.getInstance();
-        return String.format("%s/courgette-report/data/%s.xml", reportTargetDir, reportPortalProperties.getLaunchName());
+        return String.format("%s/%s.xml", getCourgetteReportDataDirectory(), reportPortalProperties.getLaunchName());
     }
 
     private Map<String, List<String>> createRuntimeOptions(CucumberOptions cucumberOptions, String path) {
