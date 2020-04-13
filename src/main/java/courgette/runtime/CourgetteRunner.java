@@ -183,8 +183,8 @@ public class CourgetteRunner {
     }
 
     public void cleanupCourgetteHtmlReportFiles() {
-        final String reportDirectory = courgetteProperties.getCourgetteOptions().reportTargetDir() + "/report/data";
-        FileUtils.deleteDirectorySilently(reportDirectory);
+        final String reportDataDirectory = courgetteProperties.getCourgetteOptions().reportTargetDir() + "/report/data";
+        FileUtils.deleteDirectorySilently(reportDataDirectory);
     }
 
     private boolean runFeature(Map<String, List<String>> args) {
