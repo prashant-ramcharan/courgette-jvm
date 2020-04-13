@@ -65,7 +65,7 @@ compile 'io.github.prashant-ramcharan:courgette-jvm:4.6.0'
 * cucumber-java8 5.6.0
 * cucumber-junit 5.6.0
 * cucumber-testng 5.6.0
-* extent-reports 4.1.3
+* extent-reports 4.1.4
 * jackson-databind 2.8.8
 * httpcomponents-httpclient 4.5.10
 * httpcomponents-httpmime 4.5.10
