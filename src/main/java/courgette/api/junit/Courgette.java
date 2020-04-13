@@ -66,6 +66,7 @@ public class Courgette extends CourgetteJUnitRunner {
             if (courgetteRunner.hasFailures()) {
                 courgetteRunner.createRerunFile();
             }
+            courgetteRunner.cleanupCourgetteHtmlReportFiles();
         } finally {
             callbacks.afterAll();
 
