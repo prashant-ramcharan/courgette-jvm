@@ -3,6 +3,7 @@ package courgette.integration.extentreports;
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.GherkinKeyword;
+import com.aventstack.extentreports.MediaEntityBuilder;
 import com.aventstack.extentreports.Status;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import courgette.runtime.CourgetteException;
@@ -14,6 +15,7 @@ import courgette.runtime.report.model.Scenario;
 import courgette.runtime.report.model.Step;
 import courgette.runtime.report.model.Tag;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
@@ -59,7 +61,7 @@ public class ExtentReportsBuilder {
     }
 
     private void addFeatures(ExtentReports extentReports, List<Feature> features) {
-        final ExtentTest featureNode = extentReports.createTest(features.get(0).getName());
+        final ExtentTest featureNode = createBddTest(extentReports, features.get(0).getName());
 
         features.forEach(feature -> {
             if (feature.getScenarios().size() > 1) {
@@ -73,6 +75,12 @@ public class ExtentReportsBuilder {
                 }
             }
         });
+    }
+
+    private ExtentTest createBddTest(ExtentReports extentReports, String featureName) {
+        ExtentTest featureNode = extentReports.createTest(featureName);
+        featureNode.getModel().setBddType(com.aventstack.extentreports.gherkin.model.Feature.class);
+        return featureNode;
     }
 
     private void addScenario(ExtentTest featureNode, Scenario scenario) {
@@ -112,9 +120,10 @@ public class ExtentReportsBuilder {
             List<String> output = hook.getOutput();
             List<Embedding> embeddings = hook.getEmbeddings();
 
-            addOutputs(scenarioNode, output);
-            addError(scenarioNode, error);
-            addImageEmbeddings(scenarioNode, embeddings);
+            final ExtentTest hookNode = scenarioNode.createNode(com.aventstack.extentreports.gherkin.model.Asterisk.class, hook.getLocation());
+            addOutputs(hookNode, output);
+            addError(hookNode, error);
+            addImageEmbeddings(hookNode, embeddings);
         });
     }
 
@@ -135,9 +144,17 @@ public class ExtentReportsBuilder {
     private void addImageEmbeddings(ExtentTest node, List<Embedding> embeddings) {
         embeddings.forEach(embedding -> {
             if (embedding.getMimeType().startsWith("image")) {
-                node.addScreenCaptureFromBase64String(embedding.getData());
+                addBase64ScreenCapture(node, embedding.getData());
             }
         });
+    }
+
+    private void addBase64ScreenCapture(ExtentTest node, String base64Image) {
+        try {
+            node.log(Status.INFO, "", MediaEntityBuilder.createScreenCaptureFromBase64String(base64Image).build());
+        } catch (IOException e) {
+            System.err.println("[Courgette Extent Reports Plugin] Unable to embed image. Reason: " + e.getMessage());
+        }
     }
 
     private void addError(ExtentTest node, String error) {
@@ -161,11 +178,11 @@ public class ExtentReportsBuilder {
 
     private void setStepResult(ExtentTest extentTest, Step step, boolean isStrict) {
         if (step.skipped()) {
-            extentTest.skip("Step skipped");
+            extentTest.skip("");
         } else if (step.passed(isStrict)) {
-            extentTest.pass("Step passed");
+            extentTest.pass("");
         } else {
-            extentTest.fail("Step failed");
+            extentTest.fail("");
         }
     }
 

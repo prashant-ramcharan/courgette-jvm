@@ -1,3 +1,8 @@
+CHANGES IN VERSION 4.6.1
+=================================
+* Add Extent Reports bdd type on feature creation which enables Extent Reports to create a BDD report.
+
+
 CHANGES IN VERSION 4.6.0
 =================================
 
