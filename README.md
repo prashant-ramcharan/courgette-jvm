@@ -46,7 +46,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>4.6.1</version>
+  <version>4.6.2</version>
 </dependency>
 ````
 
@@ -56,7 +56,7 @@ repositories {
     jcenter()
 }
 
-compile 'io.github.prashant-ramcharan:courgette-jvm:4.6.1'
+compile 'io.github.prashant-ramcharan:courgette-jvm:4.6.2'
 ````
 
 #### Included Dependencies
@@ -121,6 +121,7 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
         rerunFailedScenarios = true,
         rerunAttempts = 1,
         showTestOutput = true,
+        reportTitle = "Courgette-JVM Example",
         reportTargetDir = "build",
         cucumberOptions = @CucumberOptions(
                 features = "src/test/resources/features",
@@ -148,6 +149,7 @@ public class RegressionTestSuite {
         rerunFailedScenarios = true,
         rerunAttempts = 1,
         showTestOutput = true,
+        reportTitle = "Courgette-JVM Example",
         reportTargetDir = "build",
         cucumberOptions = @CucumberOptions(
                 features = "src/test/resources/features",

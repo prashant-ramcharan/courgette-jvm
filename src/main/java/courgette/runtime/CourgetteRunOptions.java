@@ -45,6 +45,11 @@ public class CourgetteRunOptions implements CourgetteOptions {
     }
 
     @Override
+    public String reportTitle() {
+        return SystemPropertyUtils.getNonEmptyStringProperty(CourgetteSystemProperty.REPORT_TITLE, courgetteOptions.reportTitle(), "Courgette-JVM Report");
+    }
+
+    @Override
     public String reportTargetDir() {
         return SystemPropertyUtils.getNonEmptyStringProperty(CourgetteSystemProperty.REPORT_TARGET_DIR, courgetteOptions.reportTargetDir(), "target");
     }
