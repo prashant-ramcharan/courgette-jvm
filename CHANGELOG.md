@@ -1,3 +1,8 @@
+CHANGES IN VERSION 4.6.2
+=================================
+* Add new Courgette option 'reportTitle' to support overriding the default Courgette html report title.
+
+
 CHANGES IN VERSION 4.6.1
 =================================
 * Add Extent Reports bdd type on feature creation which enables Extent Reports to create a BDD report.

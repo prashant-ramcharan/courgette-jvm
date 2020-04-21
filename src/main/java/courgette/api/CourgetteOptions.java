@@ -34,6 +34,11 @@ public @interface CourgetteOptions {
     boolean showTestOutput() default false;
 
     /**
+     * @return the reportTitle for the Courgette Html report
+     */
+    String reportTitle() default "Courgette-JVM Report";
+
+    /**
      * @return target directory of courgette-report (this defaults to 'target' directory)
      */
     String reportTargetDir() default "";

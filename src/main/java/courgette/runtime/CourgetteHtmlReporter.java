@@ -19,6 +19,7 @@ public class CourgetteHtmlReporter {
     private final String INDEX_HTML = "/report/index.html";
     private final String targetDir;
     private final String reportDir;
+    private final String reportTitle;
 
     private final CourgetteProperties courgetteProperties;
     private final List<CourgetteRunResult> courgetteRunResults;
@@ -26,6 +27,7 @@ public class CourgetteHtmlReporter {
 
     public CourgetteHtmlReporter(CourgetteProperties courgetteProperties, List<CourgetteRunResult> courgetteRunResults, List<Feature> reportFeatures) {
         this.targetDir = courgetteProperties.getCourgetteOptions().reportTargetDir();
+        this.reportTitle = courgetteProperties.getCourgetteOptions().reportTitle();
         this.reportDir = targetDir + "/courgette-report";
         this.courgetteProperties = courgetteProperties;
         this.courgetteRunResults = courgetteRunResults;
@@ -61,6 +63,7 @@ public class CourgetteHtmlReporter {
 
         String formattedIndexHtml = indexHtmlBuilder.toString();
 
+        formattedIndexHtml = formattedIndexHtml.replaceAll("id:reportTitle", reportTitle);
         formattedIndexHtml = formattedIndexHtml.replaceAll("id:label", featureScenarioLabel);
         formattedIndexHtml = formattedIndexHtml.replaceAll("id:total", String.valueOf(total));
         formattedIndexHtml = formattedIndexHtml.replaceAll("id:passed", String.valueOf(passed));
