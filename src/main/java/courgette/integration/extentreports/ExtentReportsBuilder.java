@@ -26,16 +26,14 @@ import java.util.stream.Collectors;
 public class ExtentReportsBuilder {
     private ExtentReportsProperties extentReportsProperties;
     private List<Feature> featureList;
-    private boolean isStrict;
 
-    private ExtentReportsBuilder(ExtentReportsProperties extentReportsProperties, List<Feature> featureList, boolean isStrict) {
+    private ExtentReportsBuilder(ExtentReportsProperties extentReportsProperties, List<Feature> featureList) {
         this.extentReportsProperties = extentReportsProperties;
         this.featureList = featureList;
-        this.isStrict = isStrict;
     }
 
-    public static ExtentReportsBuilder create(ExtentReportsProperties extentReportProperties, List<Feature> featureList, boolean isStrict) {
-        return new ExtentReportsBuilder(extentReportProperties, featureList, isStrict);
+    public static ExtentReportsBuilder create(ExtentReportsProperties extentReportProperties, List<Feature> featureList) {
+        return new ExtentReportsBuilder(extentReportProperties, featureList);
     }
 
     public void buildReport() {
@@ -103,7 +101,7 @@ public class ExtentReportsBuilder {
             addBeforeOrAfterDetails(scenarioNode, step.getBefore());
             ExtentTest stepNode = createStepNode(scenarioNode, step, startTime);
             addAdditionalStepDetails(stepNode, step);
-            setStepResult(stepNode, step, isStrict);
+            setStepResult(stepNode, step);
             addBeforeOrAfterDetails(scenarioNode, step.getAfter());
         });
     }
@@ -176,10 +174,10 @@ public class ExtentReportsBuilder {
         }
     }
 
-    private void setStepResult(ExtentTest extentTest, Step step, boolean isStrict) {
+    private void setStepResult(ExtentTest extentTest, Step step) {
         if (step.skipped()) {
             extentTest.skip("");
-        } else if (step.passed(isStrict)) {
+        } else if (step.passed()) {
             extentTest.pass("");
         } else {
             extentTest.fail("");

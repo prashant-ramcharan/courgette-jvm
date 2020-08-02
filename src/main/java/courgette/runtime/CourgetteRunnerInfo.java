@@ -59,6 +59,6 @@ public class CourgetteRunnerInfo {
     }
 
     public List<String> getReportFiles() {
-        return courgetteRuntimeOptions.getReportJsFiles();
+        return courgetteRuntimeOptions.getReportFiles();
     }
 }

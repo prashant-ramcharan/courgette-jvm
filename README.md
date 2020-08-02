@@ -15,7 +15,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 - **Requires only 1 annotated class** to run all feature files in parallel.
 - **Single report generation** for all executed features including embedded files (Json and Html reports)
 - **Single re-run file** listing all failed scenarios that occured during parallel execution.
-- Supports **Cucumber-JVM 5**
+- Supports **Cucumber-JVM 6**
 - Supports **JUnit** and **TestNG**
 - Integrates with **Extent Reports** to create interactive reports.
 - Integrates with **Report Portal** to support AI powered dashboards.
@@ -46,7 +46,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>4.6.2</version>
+  <version>5.0.0</version>
 </dependency>
 ````
 
@@ -56,15 +56,15 @@ repositories {
     jcenter()
 }
 
-compile 'io.github.prashant-ramcharan:courgette-jvm:4.6.2'
+compile 'io.github.prashant-ramcharan:courgette-jvm:5.0.0'
 ````
 
 #### Included Dependencies
-* cucumber-core 5.6.0
-* cucumber-java 5.6.0
-* cucumber-java8 5.6.0
-* cucumber-junit 5.6.0
-* cucumber-testng 5.6.0
+* cucumber-core 6.4.0
+* cucumber-java 6.4.0
+* cucumber-java8 6.4.0
+* cucumber-junit 6.4.0
+* cucumber-testng 6.4.0
 * extent-reports 4.1.4
 * jackson-databind 2.8.8
 * httpcomponents-httpclient 4.5.10
@@ -131,8 +131,7 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
                         "pretty",
                         "json:build/cucumber-report/cucumber.json",
                         "html:build/cucumber-report/cucumber.html",
-                        "junit:build/cucumber-report/cucumber.xml"},
-                strict = true
+                        "junit:build/cucumber-report/cucumber.xml"}
         ))
 public class RegressionTestSuite {
 }
@@ -158,8 +157,7 @@ public class RegressionTestSuite {
                 plugin = {
                         "pretty",
                         "json:build/cucumber-report/cucumber.json",
-                        "html:build/cucumber-report/cucumber.html"},
-                strict = true
+                        "html:build/cucumber-report/cucumber.html"}
         ))
 public class RegressionTestSuite extends TestNGCourgette {
 }
@@ -305,15 +303,8 @@ To configure custom reports (_i.e. change the report name or theme_) you should 
 
 
 ## Limitations and Known Issues
-
-* JUnit test notifier is not updated when running features in the IDE during parallel test execution.
    
-   * _Each feature is run using the Cucumber CLI and because of this JUnit is not notified off the test result. The workaround to this is the Courgette-JVM html report which lists all test passes, failures and re-runs. Alternatively, you can review the Cucumber reports or the results from the build tool_.
-   
-  
-* When there's a failure in the feature and your runner is set to 'runLevel = CourgetteRunLevel.FEATURE' and 'rerunFailedScenarios = true', the re-run cucumber feature report will override the original cucumber feature report.
-   
-   * _Use CourgetteRunLevel.SCENARIO which resolves this issue and retains all results in the cucumber report._
+  * Each feature / scenario is run using the Cucumber CLI and because of this JUnit is not notified off the result whilst the tests are being executed. The workaround to this is the Courgette-JVM html report which lists all test passes, failures and re-runs. Alternatively, you can review the Cucumber reports or the results from the build tool.
 
 ## Submitting Issues
 For any issues or requests, please submit [here](https://github.com/prashant-ramcharan/courgette-jvm/issues/new)

@@ -76,9 +76,9 @@ public class Scenario {
         return startTimestamp;
     }
 
-    public boolean passed(boolean isStrict) {
-        return before.stream().allMatch(before -> before.passed(isStrict))
-                && after.stream().allMatch(after -> after.passed(isStrict))
-                && steps.stream().allMatch(step -> step.passed(isStrict));
+    public boolean passed() {
+        return before.stream().allMatch(Hook::passed)
+                && after.stream().allMatch(Hook::passed)
+                && steps.stream().allMatch(Step::passed);
     }
 }
