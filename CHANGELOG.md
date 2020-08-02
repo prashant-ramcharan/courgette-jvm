@@ -1,3 +1,11 @@
+CHANGES IN VERSION 5.0.0
+=================================
+
+* Upgrade to Cucumber version 6.4.0 [see release notes](https://github.com/cucumber/cucumber-jvm/blob/master/release-notes/v6.0.0.md)
+* Remove 'strict' cucumber option as this value is now defaulted to true in Cucumber.
+* Code refactoring and improvements.
+
+
 CHANGES IN VERSION 4.6.2
 =================================
 * Add new Courgette option 'reportTitle' to support overriding the default Courgette html report title.

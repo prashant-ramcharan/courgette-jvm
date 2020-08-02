@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 public class HtmlReportBuilder {
     private List<Feature> featureList;
     private List<CourgetteRunResult> courgetteRunResults;
-    private boolean isStrict;
 
     private static final String PASSED = "Passed";
     private static final String PASSED_AFTER_RERUN = "Passed after Rerun";
@@ -25,25 +24,24 @@ public class HtmlReportBuilder {
     private static final String DANGER = "danger";
     private static final String WARNING = "warning";
 
-    private HtmlReportBuilder(List<Feature> featureList, List<CourgetteRunResult> courgetteRunResults, boolean isStrict) {
+    private HtmlReportBuilder(List<Feature> featureList, List<CourgetteRunResult> courgetteRunResults) {
         this.featureList = featureList;
         this.courgetteRunResults = courgetteRunResults;
-        this.isStrict = isStrict;
     }
 
-    public static HtmlReportBuilder create(List<Feature> featureList, List<CourgetteRunResult> courgetteRunResults, boolean isStrict) {
-        return new HtmlReportBuilder(featureList, courgetteRunResults, isStrict);
+    public static HtmlReportBuilder create(List<Feature> featureList, List<CourgetteRunResult> courgetteRunResults) {
+        return new HtmlReportBuilder(featureList, courgetteRunResults);
     }
 
     public String getHtmlTableFeatureRows() {
         final StringBuilder tableRows = new StringBuilder();
-        featureList.forEach(feature -> tableRows.append(TableRowBuilder.create(feature, courgetteRunResults, isStrict).getFeatureRow()));
+        featureList.forEach(feature -> tableRows.append(TableRowBuilder.create(feature, courgetteRunResults).getFeatureRow()));
         return tableRows.toString();
     }
 
     public String getHtmlTableScenarioRows() {
         final StringBuilder tableRows = new StringBuilder();
-        featureList.forEach(feature -> tableRows.append(TableRowBuilder.create(feature, courgetteRunResults, isStrict).getScenarioRow()));
+        featureList.forEach(feature -> tableRows.append(TableRowBuilder.create(feature, courgetteRunResults).getScenarioRow()));
         return tableRows.toString();
     }
 
@@ -68,19 +66,17 @@ public class HtmlReportBuilder {
 
     static class TableRowBuilder {
         private Feature feature;
-        private boolean isStrict;
         private List<CourgetteRunResult> courgetteRunResults;
         private boolean hasReruns;
 
-        private TableRowBuilder(Feature feature, List<CourgetteRunResult> courgetteRunResults, boolean isStrict) {
+        private TableRowBuilder(Feature feature, List<CourgetteRunResult> courgetteRunResults) {
             this.feature = feature;
-            this.isStrict = isStrict;
             this.courgetteRunResults = courgetteRunResults;
             this.hasReruns = this.courgetteRunResults.stream().anyMatch(result -> result.getStatus() == CourgetteRunResult.Status.RERUN);
         }
 
-        public static TableRowBuilder create(Feature feature, List<CourgetteRunResult> courgetteRunResults, boolean isStrict) {
-            return new TableRowBuilder(feature, courgetteRunResults, isStrict);
+        public static TableRowBuilder create(Feature feature, List<CourgetteRunResult> courgetteRunResults) {
+            return new TableRowBuilder(feature, courgetteRunResults);
         }
 
         private final String FEATURE_ROW_START = "<tr>\n" +
@@ -118,7 +114,7 @@ public class HtmlReportBuilder {
 
             String featureId = feature.getCourgetteFeatureId();
             String featureName = feature.getName();
-            String featureBadge = feature.passed(isStrict) ? SUCCESS : DANGER;
+            String featureBadge = feature.passed() ? SUCCESS : DANGER;
             String featureStatus = featureBadge.equals(SUCCESS) ? PASSED : FAILED;
 
             featureRow.append(String.format(FEATURE_ROW_START, featureId, featureName, featureId));
@@ -139,7 +135,7 @@ public class HtmlReportBuilder {
                 if (!scenario.getKeyword().equalsIgnoreCase("Background")) {
                     String scenarioId = scenario.getCourgetteScenarioId();
                     String scenarioName = scenario.getName();
-                    String scenarioBadge = scenario.passed(isStrict) ? SUCCESS : DANGER;
+                    String scenarioBadge = scenario.passed() ? SUCCESS : DANGER;
                     String scenarioStatus = scenarioBadge.equals(SUCCESS) ? PASSED : FAILED;
 
                     switch (scenarioBadge) {

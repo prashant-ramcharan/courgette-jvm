@@ -66,11 +66,11 @@ public abstract class CourgetteJUnitRunner extends ParentRunner<Feature> {
                 .stream()
                 .distinct()
                 .forEach(feature -> {
-                    if (!featureDescriptionNames.contains(feature.getName())) {
-                        Description featureDescription = Description.createTestDescription("", feature.getName());
+                    if (feature.getName().isPresent() && !featureDescriptionNames.contains(feature.getName().get())) {
+                        Description featureDescription = Description.createTestDescription(this.getClass(), feature.getName().get());
                         description.addChild(featureDescription);
                         featureDescriptions.put(feature, featureDescription);
-                        featureDescriptionNames.add(feature.getName());
+                        feature.getName().ifPresent(featureDescriptionNames::add);
                     }
                 });
     }
@@ -87,7 +87,7 @@ public abstract class CourgetteJUnitRunner extends ParentRunner<Feature> {
         failures.forEach(failure -> {
             Feature feature = failure.getFeature();
             Description description = featureDescriptions.get(feature);
-            notifier.fireTestFailure(new Failure(description, new CourgetteTestFailureException("Please refer to Courgette / Cucumber report for more info.")));
+            notifier.fireTestFailure(new Failure(description, new CourgetteTestFailureException("Please refer to the console or Courgette and Cucumber reports for more info.")));
         });
         featureDescriptions.keySet().removeAll(failures.stream().map(CourgetteRunResult::getFeature).collect(Collectors.toList()));
     }

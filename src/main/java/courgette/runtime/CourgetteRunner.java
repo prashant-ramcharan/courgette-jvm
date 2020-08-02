@@ -127,7 +127,7 @@ public class CourgetteRunner {
     }
 
     public void createReport() {
-        final List<String> reportFiles = defaultRuntimeOptions.getReportJsFiles();
+        final List<String> reportFiles = defaultRuntimeOptions.getReportFiles();
 
         reportFiles.forEach(reportFile -> {
             CourgetteReporter reporter = new CourgetteReporter(reportFile, reports, courgetteProperties);
@@ -150,15 +150,17 @@ public class CourgetteRunner {
     }
 
     public void createCourgetteReport() {
-        reportFeatures = JsonReportParser.create(new File(defaultRuntimeOptions.getCourgetteReportJson())).getReportFeatures();
-        final CourgetteHtmlReporter courgetteReport = new CourgetteHtmlReporter(courgetteProperties, runResults, reportFeatures);
-        courgetteReport.create();
+        final File reportJson = new File(defaultRuntimeOptions.getCourgetteReportJson());
+        if (reportJson.exists()) {
+            reportFeatures = JsonReportParser.create(reportJson).getReportFeatures();
+            final CourgetteHtmlReporter courgetteReport = new CourgetteHtmlReporter(courgetteProperties, runResults, reportFeatures);
+            courgetteReport.create();
+        }
     }
 
     public void createCourgetteExtentReports() {
         final ExtentReportsProperties extentReportsProperties = new ExtentReportsProperties(courgetteProperties);
-        final boolean isStrict = courgetteProperties.getCourgetteOptions().cucumberOptions().strict();
-        final ExtentReportsBuilder extentReportsBuilder = ExtentReportsBuilder.create(extentReportsProperties, reportFeatures, isStrict);
+        final ExtentReportsBuilder extentReportsBuilder = ExtentReportsBuilder.create(extentReportsProperties, reportFeatures);
         extentReportsBuilder.buildReport();
     }
 

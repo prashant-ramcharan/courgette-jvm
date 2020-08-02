@@ -2,8 +2,6 @@ package courgette.runtime.report.model;
 
 import java.util.List;
 
-import static io.cucumber.core.backend.Status.AMBIGUOUS;
-import static io.cucumber.core.backend.Status.FAILED;
 import static io.cucumber.core.backend.Status.PASSED;
 import static io.cucumber.core.backend.Status.SKIPPED;
 
@@ -36,11 +34,7 @@ public class Hook {
         return output;
     }
 
-    public boolean passed(boolean isStrict) {
-        if (isStrict) {
-            return result.getStatus().equalsIgnoreCase(PASSED.toString()) || result.getStatus().equalsIgnoreCase(SKIPPED.toString());
-        } else {
-            return !result.getStatus().equalsIgnoreCase(FAILED.toString()) && !result.getStatus().equalsIgnoreCase(AMBIGUOUS.toString());
-        }
+    public boolean passed() {
+        return result.getStatus().equalsIgnoreCase(PASSED.toString()) || result.getStatus().equalsIgnoreCase(SKIPPED.toString());
     }
 }

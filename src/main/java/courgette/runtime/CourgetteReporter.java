@@ -18,21 +18,15 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class CourgetteReporter {
     private final String reportFile;
@@ -65,21 +59,33 @@ public class CourgetteReporter {
                 }
             });
 
-            final boolean isHtml = reportFile.endsWith("report.js");
+            final boolean isHtml = reportFile.endsWith(".html");
             final boolean isJson = reportFile.endsWith(".json");
+            final boolean isNdJson = reportFile.endsWith(".ndjson");
             final boolean isXml = reportFile.endsWith(".xml");
 
+            final CucumberMessageUpdater messageUpdater = new CucumberMessageUpdater();
+
             if (isHtml) {
-                createHtmlReportImagesFolder();
-                processNewEmbeddedHtmlFiles(reports, reportData);
-                removeExistingEmbeddedHtmlFiles();
-                reportData.removeIf(report -> !report.startsWith("$(document)"));
-                FileUtils.writeFile(reportFile, reportData);
+                Optional<String> htmlReport = reportData.stream().filter(report -> report.startsWith("<!DOCTYPE html>")).findFirst();
+
+                if (htmlReport.isPresent()) {
+                    String report = htmlReport.get();
+                    reportData.removeIf(r -> !r.startsWith("<!DOCTYPE html>"));
+                    reportData.forEach(messageUpdater::filterCucumberMessages);
+                    report = messageUpdater.updateCucumberMessages(report);
+                    FileUtils.writeFile(reportFile, report);
+                }
             }
 
             if (isJson) {
                 reportData.removeIf(report -> !report.startsWith("["));
                 FileUtils.writeFile(reportFile, formatJsonReport(reportData));
+            }
+
+            if (isNdJson) {
+                reportData.removeIf(report -> !report.startsWith("{\"meta\":"));
+                FileUtils.writeFile(reportFile, formatNdJsonReport(reportData));
             }
 
             if (isXml) {
@@ -95,6 +101,12 @@ public class CourgetteReporter {
         jsonBuilder.deleteCharAt(jsonBuilder.lastIndexOf(","));
         jsonBuilder.append("]");
         return jsonBuilder.toString();
+    }
+
+    private String formatNdJsonReport(List<String> reports) {
+        StringBuilder ndJsonBuilder = new StringBuilder("");
+        reports.forEach(data -> ndJsonBuilder.append(data).append("\n"));
+        return ndJsonBuilder.toString();
     }
 
     private String formatXmlReport(List<String> reports, boolean mergeTestCaseName) {
@@ -170,69 +182,5 @@ public class CourgetteReporter {
                 .replace("id:tests", String.valueOf(tests))
                 .replace("id:time", String.valueOf(time))
                 .replace("id:testSuite", testSuite);
-    }
-
-    private void processNewEmbeddedHtmlFiles(Map<String, CopyOnWriteArrayList<String>> sortedReports, List<String> reportData) {
-        Stream<Map.Entry<String, CopyOnWriteArrayList<String>>> reportsWithEmbeddedFiles = sortedReports.entrySet().stream().filter(r -> r.getKey().contains(".html"));
-
-        final File targetDir = new File(reportFile).getParentFile();
-
-        final String target = targetDir.getPath();
-        final String targetImageFolder = "images";
-
-        reportsWithEmbeddedFiles.forEach(report -> {
-            final String uuid = UUID.randomUUID().toString().replace("-", "");
-
-            try {
-                String reportDetails = report.getValue().get(0);
-                final Integer reportIndex = reportData.indexOf(reportDetails);
-                String[] embeddedFiles = reportDetails.split("embedded");
-
-                for (int index = 0; (index < embeddedFiles.length - 1); index++) {
-
-                    final List<File> reportFiles = FileUtils
-                            .getParentFiles(report.getKey())
-                            .stream().filter(name -> name.getName().startsWith("embedded"))
-                            .collect(Collectors.toList());
-
-                    final File source = reportFiles.get(index);
-
-                    final String fileExtension = source.getName().substring(source.getName().lastIndexOf(".") + 1);
-                    final String embeddedImageFilename = String.format("%s/%s%s.%s", targetImageFolder, uuid, index, fileExtension);
-
-                    final File destination = new File(String.format("%s/%s", target, embeddedImageFilename));
-
-                    Files.copy(source.toPath(), destination.toPath(), StandardCopyOption.REPLACE_EXISTING);
-
-                    reportData.set(reportIndex, reportDetails.replace("embedded", String.format("%s/%s", targetImageFolder, uuid)));
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-    }
-
-    private void createHtmlReportImagesFolder() {
-        File reportTargetChild = new File(reportFile);
-        File reportTargetParent = reportTargetChild.getParentFile();
-
-        File imageFolder = new File(reportTargetParent.getPath() + "/images");
-        if (!imageFolder.exists()) {
-            imageFolder.mkdir();
-        }
-    }
-
-    private void removeExistingEmbeddedHtmlFiles() {
-        File reportTargetChild = new File(reportFile);
-        File reportTargetParent = reportTargetChild.getParentFile();
-
-        List<File> embeddedFiles = new ArrayList<>();
-
-        embeddedFiles.addAll(
-                Arrays.stream(reportTargetParent.listFiles())
-                        .filter(file -> file.getName().startsWith("embedded"))
-                        .collect(Collectors.toList()));
-
-        embeddedFiles.forEach(File::delete);
     }
 }
