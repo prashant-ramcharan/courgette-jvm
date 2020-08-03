@@ -2,7 +2,7 @@ CHANGES IN VERSION 5.0.0
 =================================
 
 * Upgrade to Cucumber version 6.4.0 [see release notes](https://github.com/cucumber/cucumber-jvm/blob/master/release-notes/v6.0.0.md)
-* Remove 'strict' cucumber option as this value is now defaulted to true in Cucumber.
+* Remove 'strict' cucumber option as this value is now defaulted to true in Cucumber. (_This is a breaking change so you would need to update your Courgette runner class if you use this option_)
 * Code refactoring and improvements.
 
 
