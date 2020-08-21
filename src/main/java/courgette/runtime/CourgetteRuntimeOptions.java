@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -54,7 +55,7 @@ public class CourgetteRuntimeOptions {
     }
 
     public RuntimeOptions getRuntimeOptions() {
-        return new CommandlineOptionsParser().parse(runtimeOptions).build();
+        return new CommandlineOptionsParser(System.out).parse(runtimeOptions.toArray(new String[]{})).build();
     }
 
     public Map<String, List<String>> mapRuntimeOptions() {
@@ -74,16 +75,12 @@ public class CourgetteRuntimeOptions {
         return cucumberRerunFile;
     }
 
-    public List<String> getReportJsFiles() {
+    public List<String> getReportFiles() {
         final List<String> reportFiles = new ArrayList<>();
 
         runtimeOptions.forEach(option -> {
             if (option != null && isReportPlugin.test(option)) {
                 String reportFile = option.substring(option.indexOf(":") + 1);
-
-                if (option.startsWith("html:")) {
-                    reportFile = reportFile + "/report.js";
-                }
                 reportFiles.add(reportFile);
             }
         });
@@ -113,7 +110,6 @@ public class CourgetteRuntimeOptions {
         runtimeOptions.put("--name", optionParser.apply("--name", envCucumberOptionParser.apply("name", cucumberOptions.name())));
         runtimeOptions.put("--snippets", optionParser.apply("--snippets", cucumberOptions.snippets().name().toLowerCase()));
         runtimeOptions.put("--dryRun", Collections.singletonList(cucumberOptions.dryRun() ? "--dry-run" : "--no-dry-run"));
-        runtimeOptions.put("--strict", Collections.singletonList(cucumberOptions.strict() ? "--strict" : "--no-strict"));
         runtimeOptions.put("--monochrome", Collections.singletonList(cucumberOptions.monochrome() ? "--monochrome" : "--no-monochrome"));
         runtimeOptions.put(null, featureParser.apply(envCucumberOptionParser.apply("features", cucumberOptions.features()), path));
 
@@ -161,10 +157,10 @@ public class CourgetteRuntimeOptions {
         return null;
     };
 
-    private final Predicate<String> isReportPlugin = (plugin) -> plugin.startsWith("html:") || plugin.startsWith("json:") || plugin.startsWith("junit:");
+    private final Predicate<String> isReportPlugin = (plugin) -> plugin.startsWith("html:") || plugin.startsWith("json:") || plugin.startsWith("junit:") || plugin.startsWith("message:");
 
     private String[] parsePlugins(String[] plugins) {
-        List<String> pluginList = new ArrayList<>();
+        HashSet<String> pluginList = new HashSet<>();
 
         if (plugins.length == 0) {
             plugins = new String[]{"json:" + getCourgetteReportJson()};
@@ -196,7 +192,7 @@ public class CourgetteRuntimeOptions {
             }
         });
 
-        Predicate<List<String>> alreadyAddedRerunPlugin = (addedPlugins) -> addedPlugins.stream().anyMatch(p -> p.startsWith("rerun:"));
+        Predicate<HashSet<String>> alreadyAddedRerunPlugin = (addedPlugins) -> addedPlugins.stream().anyMatch(p -> p.startsWith("rerun:"));
 
         if (!alreadyAddedRerunPlugin.test(pluginList)) {
             if (feature != null) {
@@ -208,8 +204,12 @@ public class CourgetteRuntimeOptions {
             pluginList.add("rerun:" + rerunFile);
         }
 
+        if (feature != null && pluginList.stream().noneMatch(plugin -> plugin.startsWith("json:"))) {
+            pluginList.add(String.format("json:%s.json", getMultiThreadReportFile()));
+        }
+
         if (pluginList.stream().noneMatch(plugin -> plugin.contains(getCourgetteReportJson()))) {
-            pluginList.add("json:" + getCourgetteReportJson());
+            pluginList.add(String.format("json:%s", getCourgetteReportJson()));
         }
 
         if (courgetteProperties.isReportPortalPluginEnabled()) {

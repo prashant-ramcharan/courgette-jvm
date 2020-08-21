@@ -1,5 +1,10 @@
 package courgette.runtime.report;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import courgette.runtime.CourgetteException;
 import courgette.runtime.report.model.Embedding;
 import courgette.runtime.report.model.Feature;
@@ -8,11 +13,6 @@ import courgette.runtime.report.model.Result;
 import courgette.runtime.report.model.Scenario;
 import courgette.runtime.report.model.Step;
 import courgette.runtime.report.model.Tag;
-import io.cucumber.core.gherkin.vintage.internal.gherkin.deps.com.google.gson.JsonArray;
-import io.cucumber.core.gherkin.vintage.internal.gherkin.deps.com.google.gson.JsonElement;
-import io.cucumber.core.gherkin.vintage.internal.gherkin.deps.com.google.gson.JsonNull;
-import io.cucumber.core.gherkin.vintage.internal.gherkin.deps.com.google.gson.JsonObject;
-import io.cucumber.core.gherkin.vintage.internal.gherkin.deps.com.google.gson.JsonParser;
 
 import java.io.File;
 import java.io.FileNotFoundException;

@@ -3,7 +3,7 @@ package courgette.runtime;
 import io.cucumber.core.filter.Filters;
 import io.cucumber.core.gherkin.Feature;
 import io.cucumber.core.gherkin.Pickle;
-import io.cucumber.core.internal.gherkin.pickles.PickleLocation;
+import io.cucumber.gherkin.Location;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -32,8 +32,8 @@ public class CourgettePickleMatcher {
         return matched.get();
     }
 
-    public PickleLocation matchLocation(int pickleLocationLine) {
-        final PickleLocation[] location = {null};
+    public Location matchLocation(int pickleLocationLine) {
+        final Location[] location = {null};
 
         List<Pickle> pickles = feature.getPickles();
 
@@ -42,7 +42,7 @@ public class CourgettePickleMatcher {
                     .findFirst()
                     .ifPresent(pickleEvent -> {
                         if (filters.test(pickleEvent)) {
-                            location[0] = new PickleLocation(pickleEvent.getLocation().getLine(), pickleEvent.getLocation().getColumn());
+                            location[0] = new Location(pickleEvent.getLocation().getLine(), pickleEvent.getLocation().getColumn());
                             throw new ConditionSatisfiedException();
                         }
                     });

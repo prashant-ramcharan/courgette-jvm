@@ -32,7 +32,7 @@ public class Feature {
         return scenarios;
     }
 
-    public boolean passed(boolean isStrict) {
-        return scenarios.stream().allMatch(scenario -> scenario.passed(isStrict));
+    public boolean passed() {
+        return scenarios.stream().allMatch(Scenario::passed);
     }
 }

@@ -10,7 +10,7 @@ import courgette.runtime.CourgetteRunner;
 import courgette.runtime.CourgetteRunnerInfo;
 import courgette.runtime.junit.CourgetteJUnitRunner;
 import io.cucumber.core.gherkin.Feature;
-import io.cucumber.core.internal.gherkin.pickles.PickleLocation;
+import io.cucumber.gherkin.Location;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
 
@@ -35,7 +35,7 @@ public class Courgette extends CourgetteJUnitRunner {
         if (courgetteOptions.runLevel().equals(CourgetteRunLevel.FEATURE)) {
             features.forEach(feature -> runnerInfoList.add(new CourgetteRunnerInfo(courgetteProperties, feature, null)));
         } else {
-            final Map<PickleLocation, Feature> scenarios = courgetteLoader.getCucumberScenarios();
+            final Map<Location, Feature> scenarios = courgetteLoader.getCucumberScenarios();
             scenarios
                     .keySet()
                     .forEach(location -> runnerInfoList.add(new CourgetteRunnerInfo(courgetteProperties, scenarios.get(location), location.getLine())));
