@@ -136,6 +136,11 @@ public class CourgetteRunner {
         });
     }
 
+    public void publishCucumberReport() {
+        final CourgetteReporter courgetteReporter = new CourgetteReporter(reports);
+        courgetteReporter.publishCucumberReport();
+    }
+
     public void createRerunFile() {
         final List<String> rerun = new ArrayList<>();
 

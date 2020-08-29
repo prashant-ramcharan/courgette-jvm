@@ -8,7 +8,7 @@ public class CourgetteRunResult {
     private String featureUri;
     private Status status;
 
-    public CourgetteRunResult(Feature feature, Integer lineId, String featureUri, Status status) {
+    CourgetteRunResult(Feature feature, Integer lineId, String featureUri, Status status) {
         this.feature = feature;
         this.lineId = lineId;
         this.featureUri = featureUri;

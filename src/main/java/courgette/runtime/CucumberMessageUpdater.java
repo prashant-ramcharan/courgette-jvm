@@ -7,13 +7,13 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-public class CucumberMessageUpdater {
+class CucumberMessageUpdater {
     private LinkedList<String> messages = new LinkedList<>();
     private HashMap<String, Integer> uriMap = new HashMap<>();
 
     private final String KEY = "window.CUCUMBER_MESSAGES";
 
-    public void filterCucumberMessages(String report) {
+    public void filterMessages(String report) {
         Optional<String> message = extract(report);
         message.ifPresent(s -> messages.add(s));
 
@@ -24,17 +24,34 @@ public class CucumberMessageUpdater {
         }
     }
 
-    public String updateCucumberMessages(String report) {
+    public void addMessage(String cucumberMessage) {
+        if (!cucumberMessage.isEmpty()) {
+            messages.add(cucumberMessage);
+
+            Optional<String> uri = extractUri(cucumberMessage);
+            if (uri.isPresent()) {
+                int counter = uriMap.getOrDefault(uri.get(), 0) + 1;
+                uriMap.put(uri.get(), counter);
+            }
+        }
+    }
+
+    public String updateMessages(String report) {
         Optional<String> cucumberMessages = extract(report);
 
         if (cucumberMessages.isPresent()) {
             updateMessageUris();
-            report = report.replace(cucumberMessages.get(), combineCucumberMessages());
+            report = report.replace(cucumberMessages.get(), combineMessages());
         }
         return report;
     }
 
-    private String combineCucumberMessages() {
+    public LinkedList<String> updateAndGetMessages() {
+        updateMessageUris();
+        return messages;
+    }
+
+    private String combineMessages() {
         return String.join(",", messages);
     }
 

@@ -25,7 +25,7 @@ public class CourgetteHtmlReporter {
     private final List<CourgetteRunResult> courgetteRunResults;
     private final List<Feature> reportFeatures;
 
-    public CourgetteHtmlReporter(CourgetteProperties courgetteProperties, List<CourgetteRunResult> courgetteRunResults, List<Feature> reportFeatures) {
+    CourgetteHtmlReporter(CourgetteProperties courgetteProperties, List<CourgetteRunResult> courgetteRunResults, List<Feature> reportFeatures) {
         this.targetDir = courgetteProperties.getCourgetteOptions().reportTargetDir();
         this.reportTitle = courgetteProperties.getCourgetteOptions().reportTitle();
         this.reportDir = targetDir + "/courgette-report";

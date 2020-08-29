@@ -26,6 +26,8 @@ public @interface CucumberOptions {
 
     boolean monochrome() default false;
 
+    boolean publish() default false;
+
     String[] name() default {};
 
     SnippetType snippets() default SnippetType.UNDERSCORE;

@@ -11,7 +11,7 @@ public class CourgetteFeatureRunner {
     private Map<String, List<String>> runnerArgs;
     private Boolean output;
 
-    public CourgetteFeatureRunner(Map<String, List<String>> runnerArgs, Boolean output) {
+    CourgetteFeatureRunner(Map<String, List<String>> runnerArgs, Boolean output) {
         this.runnerArgs = runnerArgs;
         this.output = output;
     }
@@ -54,8 +54,12 @@ public class CourgetteFeatureRunner {
 
             System.getProperties().keySet().forEach(property -> systemPropertyList.add(String.format("-D%s=%s", property, System.getProperty(property.toString()))));
             systemPropertyList.removeIf(systemProperty -> systemProperty.startsWith("-Dcucumber"));
-
+            addCucumberSystemProperties(systemPropertyList);
             return systemPropertyList;
+        }
+
+        private void addCucumberSystemProperties(final List<String> systemPropertyList) {
+            systemPropertyList.add("-Dcucumber.publish.quiet=true");
         }
     }
 }

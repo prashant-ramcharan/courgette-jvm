@@ -1,5 +1,5 @@
 group 'io.github.prashant-ramcharan'
-version '5.0.0'
+version '5.1.0'
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'
@@ -10,10 +10,11 @@ compileJava {
 }
 
 ext {
-    cucumberVersion='6.4.0'
-    jacksonVersion='2.8.8'
-    httpcomponentsVersion='4.5.10'
-    extentreportVersion='4.1.4'
+    cucumberVersion = '6.6.0'
+    testNGVersion = '7.1.0'
+    jacksonVersion = '2.8.8'
+    httpcomponentsVersion = '4.5.10'
+    extentreportVersion = '4.1.4'
 }
 
 repositories {
@@ -25,7 +26,11 @@ dependencies {
     compile "io.cucumber:cucumber-java:$cucumberVersion"
     compile "io.cucumber:cucumber-java8:$cucumberVersion"
     compile "io.cucumber:cucumber-junit:$cucumberVersion"
-    compile "io.cucumber:cucumber-testng:$cucumberVersion"
+    compile("io.cucumber:cucumber-testng:$cucumberVersion") {
+        exclude group: 'com.google.guava'
+        exclude group: 'org.testng'
+    }
+    compile "org.testng:testng:$testNGVersion"
     compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
     compile "org.apache.httpcomponents:httpclient:$httpcomponentsVersion"
     compile "org.apache.httpcomponents:httpmime:$httpcomponentsVersion"
