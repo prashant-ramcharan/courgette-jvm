@@ -23,7 +23,7 @@ import java.util.function.Predicate;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.copyOf;
 
-public class CourgetteRuntimeOptions {
+class CourgetteRuntimeOptions {
     private final CourgetteProperties courgetteProperties;
     private final Feature feature;
     private final CucumberOptions cucumberOptions;
@@ -35,7 +35,7 @@ public class CourgetteRuntimeOptions {
 
     private final int instanceId = UUID.randomUUID().hashCode();
 
-    public CourgetteRuntimeOptions(CourgetteProperties courgetteProperties, Feature feature) {
+    CourgetteRuntimeOptions(CourgetteProperties courgetteProperties, Feature feature) {
         this.courgetteProperties = courgetteProperties;
         this.feature = feature;
         this.cucumberOptions = courgetteProperties.getCourgetteOptions().cucumberOptions();
@@ -45,7 +45,7 @@ public class CourgetteRuntimeOptions {
         createRuntimeOptions(cucumberOptions, cucumberResourcePath).forEach((key, value) -> runtimeOptions.addAll(value));
     }
 
-    public CourgetteRuntimeOptions(CourgetteProperties courgetteProperties) {
+    CourgetteRuntimeOptions(CourgetteProperties courgetteProperties) {
         this.courgetteProperties = courgetteProperties;
         this.cucumberOptions = courgetteProperties.getCourgetteOptions().cucumberOptions();
         this.feature = null;
@@ -93,6 +93,10 @@ public class CourgetteRuntimeOptions {
 
     public String getCourgetteReportJson() {
         return String.format("%s/report.json", getCourgetteReportDataDirectory());
+    }
+
+    public String getCourgetteReportNdJson() {
+        return String.format("%s/report.ndjson", getCourgetteReportDataDirectory());
     }
 
     public String getCourgetteReportXmlForReportPortal() {
@@ -175,10 +179,14 @@ public class CourgetteRuntimeOptions {
 
                     if (extension.equalsIgnoreCase("junit")) {
                         pluginList.remove(plugin);
-
                         final String reportPath = String.format("junit:%s.xml", getMultiThreadReportFile());
                         pluginList.add(reportPath);
-                    } else {
+                    }
+                    else if (extension.equalsIgnoreCase("message")) {
+                        final String reportPath = String.format("message:%s.ndjson", getMultiThreadReportFile());
+                        pluginList.add(reportPath);
+                    }
+                    else {
                         if (!extension.equals("")) {
                             final String reportPath = String.format("%s:%s.%s", extension, getMultiThreadReportFile(), extension);
                             pluginList.add(reportPath);
@@ -210,6 +218,10 @@ public class CourgetteRuntimeOptions {
 
         if (pluginList.stream().noneMatch(plugin -> plugin.contains(getCourgetteReportJson()))) {
             pluginList.add(String.format("json:%s", getCourgetteReportJson()));
+        }
+
+        if (pluginList.stream().noneMatch(plugin -> plugin.contains(getCourgetteReportNdJson()))) {
+            pluginList.add(String.format("message:%s", getCourgetteReportNdJson()));
         }
 
         if (courgetteProperties.isReportPortalPluginEnabled()) {

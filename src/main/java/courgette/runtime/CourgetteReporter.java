@@ -28,43 +28,30 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class CourgetteReporter {
-    private final String reportFile;
+class CourgetteReporter {
     private final Map<String, CopyOnWriteArrayList<String>> reports;
-    private final CourgetteProperties courgetteProperties;
 
-    public CourgetteReporter(String reportFile, Map<String, CopyOnWriteArrayList<String>> reports, CourgetteProperties courgetteProperties) {
+    private String reportFile;
+    private CourgetteProperties courgetteProperties;
+
+    CourgetteReporter(String reportFile, Map<String, CopyOnWriteArrayList<String>> reports, CourgetteProperties courgetteProperties) {
         this.reportFile = reportFile;
         this.courgetteProperties = courgetteProperties;
-
-        reports.values().removeIf(t -> t.contains(null) || t.contains("null") || t.contains("[]") || t.contains(""));
         this.reports = reports;
     }
 
-    public void createReport(boolean mergeTestCaseName) {
+    CourgetteReporter(Map<String, CopyOnWriteArrayList<String>> reports) {
+        this.reports = reports;
+    }
+
+    void createReport(boolean mergeTestCaseName) {
         if (reportFile != null && !reports.isEmpty()) {
-            final Map<String, CopyOnWriteArrayList<String>> reports = new LinkedHashMap<>();
-
-            this.reports.entrySet().stream()
-                    .sorted(Map.Entry.comparingByKey())
-                    .forEachOrdered(x -> reports.put(x.getKey(), x.getValue()));
-
-            final List<String> reportData = new ArrayList<>();
-
-            reports.values().forEach(report -> {
-                try {
-                    reportData.add(report.get(0));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            });
+            final List<String> reportData = getReportData();
 
             final boolean isHtml = reportFile.endsWith(".html");
             final boolean isJson = reportFile.endsWith(".json");
             final boolean isNdJson = reportFile.endsWith(".ndjson");
             final boolean isXml = reportFile.endsWith(".xml");
-
-            final CucumberMessageUpdater messageUpdater = new CucumberMessageUpdater();
 
             if (isHtml) {
                 Optional<String> htmlReport = reportData.stream().filter(report -> report.startsWith("<!DOCTYPE html>")).findFirst();
@@ -72,8 +59,11 @@ public class CourgetteReporter {
                 if (htmlReport.isPresent()) {
                     String report = htmlReport.get();
                     reportData.removeIf(r -> !r.startsWith("<!DOCTYPE html>"));
-                    reportData.forEach(messageUpdater::filterCucumberMessages);
-                    report = messageUpdater.updateCucumberMessages(report);
+
+                    CucumberMessageUpdater messageUpdater = new CucumberMessageUpdater();
+                    reportData.forEach(messageUpdater::filterMessages);
+                    report = messageUpdater.updateMessages(report);
+
                     FileUtils.writeFile(reportFile, report);
                 }
             }
@@ -84,13 +74,28 @@ public class CourgetteReporter {
             }
 
             if (isNdJson) {
-                reportData.removeIf(report -> !report.startsWith("{\"meta\":"));
-                FileUtils.writeFile(reportFile, formatNdJsonReport(reportData));
+                List<String> cucumberMessages = filterCucumberMessages(new ArrayList<>(reportData));
+                FileUtils.writeFile(reportFile, formatNdJsonReport(cucumberMessages));
             }
 
             if (isXml) {
                 reportData.removeIf(report -> !report.startsWith("<?xml"));
                 FileUtils.writeFile(reportFile, formatXmlReport(reportData, mergeTestCaseName));
+            }
+        }
+    }
+
+    void publishCucumberReport() {
+        if (!reports.isEmpty()) {
+            List<String> cucumberMessages = filterCucumberMessages(new ArrayList<>(getReportData()));
+
+            CucumberReportPublisher reportPublisher = new CucumberReportPublisher(cucumberMessages);
+            Optional<String> reportUrl = reportPublisher.publish();
+
+            if (reportUrl.isPresent()) {
+                System.out.println("\n------------------------------------------------------------------------");
+                System.out.println("Courgette published your Cucumber Report to:\n" + reportUrl.get());
+                System.out.println("------------------------------------------------------------------------\n");
             }
         }
     }
@@ -104,7 +109,7 @@ public class CourgetteReporter {
     }
 
     private String formatNdJsonReport(List<String> reports) {
-        StringBuilder ndJsonBuilder = new StringBuilder("");
+        StringBuilder ndJsonBuilder = new StringBuilder();
         reports.forEach(data -> ndJsonBuilder.append(data).append("\n"));
         return ndJsonBuilder.toString();
     }
@@ -182,5 +187,33 @@ public class CourgetteReporter {
                 .replace("id:tests", String.valueOf(tests))
                 .replace("id:time", String.valueOf(time))
                 .replace("id:testSuite", testSuite);
+    }
+
+    private List<String> filterCucumberMessages(List<String> reportData) {
+        final CucumberMessageUpdater messageUpdater = new CucumberMessageUpdater();
+        reportData.removeIf(report -> !report.startsWith("{\"meta\":"));
+        reportData.forEach(messageUpdater::addMessage);
+        return messageUpdater.updateAndGetMessages();
+    }
+
+    private List<String> getReportData() {
+        final List<String> reportData = new ArrayList<>();
+
+        final Map<String, CopyOnWriteArrayList<String>> reportMap = new LinkedHashMap<>();
+
+        this.reports.values().removeIf(t -> t.contains(null) || t.contains("null") || t.contains("[]") || t.contains(""));
+
+        this.reports.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .forEachOrdered(x -> reportMap.put(x.getKey(), x.getValue()));
+
+        reportMap.values().forEach(report -> {
+            try {
+                reportData.add(report.get(0));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+        return reportData;
     }
 }

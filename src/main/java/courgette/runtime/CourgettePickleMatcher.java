@@ -12,7 +12,7 @@ public class CourgettePickleMatcher {
     private final Feature feature;
     private final Filters filters;
 
-    public CourgettePickleMatcher(Feature feature, Filters filters) {
+    CourgettePickleMatcher(Feature feature, Filters filters) {
         this.feature = feature;
         this.filters = filters;
     }

@@ -14,7 +14,8 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 - **Automatic re-run** of failed scenarios.
 - **Requires only 1 annotated class** to run all feature files in parallel.
 - **Single report generation** for all executed features including embedded files (Json and Html reports)
-- **Single re-run file** listing all failed scenarios that occured during parallel execution.
+- **Publishes a single Cucumber Report** to https://reports.cucumber.io/ after parallel execution (_supported from version 5.1.0_)
+- **Single re-run file** listing all failed scenarios that occurred during parallel execution.
 - Supports **Cucumber-JVM 6**
 - Supports **JUnit** and **TestNG**
 - Integrates with **Extent Reports** to create interactive reports.
@@ -46,7 +47,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>5.0.0</version>
+  <version>5.1.0</version>
 </dependency>
 ````
 
@@ -56,15 +57,15 @@ repositories {
     jcenter()
 }
 
-compile 'io.github.prashant-ramcharan:courgette-jvm:5.0.0'
+compile 'io.github.prashant-ramcharan:courgette-jvm:5.1.0'
 ````
 
 #### Included Dependencies
-* cucumber-core 6.4.0
-* cucumber-java 6.4.0
-* cucumber-java8 6.4.0
-* cucumber-junit 6.4.0
-* cucumber-testng 6.4.0
+* cucumber-core 6.6.0
+* cucumber-java 6.6.0
+* cucumber-java8 6.6.0
+* cucumber-junit 6.6.0
+* cucumber-testng 6.6.0
 * extent-reports 4.1.4
 * jackson-databind 2.8.8
 * httpcomponents-httpclient 4.5.10
@@ -127,6 +128,7 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
                 features = "src/test/resources/features",
                 glue = "steps",
                 tags = {"@regression", "not @wip"},
+                publish = true,
                 plugin = {
                         "pretty",
                         "json:build/cucumber-report/cucumber.json",
@@ -154,6 +156,7 @@ public class RegressionTestSuite {
                 features = "src/test/resources/features",
                 glue = "steps",
                 tags = {"@regression", "not @wip"},
+                publish = true,
                 plugin = {
                         "pretty",
                         "json:build/cucumber-report/cucumber.json",

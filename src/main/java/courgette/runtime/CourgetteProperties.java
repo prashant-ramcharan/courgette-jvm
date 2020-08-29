@@ -1,6 +1,7 @@
 package courgette.runtime;
 
 import courgette.api.CourgetteOptions;
+import courgette.runtime.utils.SystemPropertyUtils;
 
 import java.time.Instant;
 import java.util.Arrays;
@@ -40,5 +41,9 @@ public class CourgetteProperties {
 
     public boolean isExtentReportsPluginEnabled() {
         return Arrays.stream(courgetteOptions.plugin()).anyMatch(plugin -> plugin.equalsIgnoreCase("extentreports"));
+    }
+
+    public boolean isCucumberReportPublisherEnabled() {
+        return SystemPropertyUtils.getBoolProperty("cucumber.publish", courgetteOptions.cucumberOptions().publish());
     }
 }
