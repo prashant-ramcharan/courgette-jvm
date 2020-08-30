@@ -137,7 +137,7 @@ public class CourgetteRunner {
     }
 
     public void publishCucumberReport() {
-        final CourgetteReporter courgetteReporter = new CourgetteReporter(reports);
+        final CourgetteReporter courgetteReporter = new CourgetteReporter(reports, courgetteProperties);
         courgetteReporter.publishCucumberReport();
     }
 
