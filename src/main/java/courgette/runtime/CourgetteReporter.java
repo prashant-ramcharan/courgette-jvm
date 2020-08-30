@@ -18,6 +18,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -104,7 +105,7 @@ class CourgetteReporter {
                 out.append("\n------------------------------------------------------------------------\n");
                 System.out.println(out.toString());
 
-                String reportLinkFilename = courgetteProperties.getCourgetteOptions().reportTargetDir() + "/cucumber-report-link.txt";
+                String reportLinkFilename = courgetteProperties.getCourgetteOptions().reportTargetDir() + File.separator + "cucumber-report-link.txt";
                 FileUtils.writeFile(reportLinkFilename, out.toString());
             }
         }
