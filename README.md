@@ -14,7 +14,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 - **Automatic re-run** of failed scenarios.
 - **Requires only 1 annotated class** to run all feature files in parallel.
 - **Single report generation** for all executed features including embedded files (Json and Html reports)
-- **Publishes a single Cucumber Report** to https://reports.cucumber.io/ after parallel execution (_supported from version 5.1.0_)
+- **Publishes a single Cucumber Report** to https://reports.cucumber.io/ after parallel execution.
 - **Single re-run file** listing all failed scenarios that occurred during parallel execution.
 - Supports **Cucumber-JVM 6**
 - Supports **JUnit** and **TestNG**
@@ -103,7 +103,7 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
     * _extentreports: Creates an interactive report based on the [Extent Framework](http://extentreports.com/)_
     
 * **cucumberOptions** : The standard cucumber options for specifying feature paths, glue, tags etc..
-    * The publish cucumber option (_supported from version 5.1.0_) will publish a single cucumber report after parallel execution. The published report link will be displayed in the console and saved to `${reportTargetDir}/cucumber-report-link.txt`
+    * The `publish` cucumber option (_supported from version 5.1.0_) will publish a single cucumber report after parallel execution. The published report link will be displayed in the console and saved to `${reportTargetDir}/cucumber-report-link.txt`
 
 ### Additional
 
