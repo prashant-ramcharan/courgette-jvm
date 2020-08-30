@@ -21,6 +21,7 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -36,12 +37,13 @@ class CourgetteReporter {
 
     CourgetteReporter(String reportFile, Map<String, CopyOnWriteArrayList<String>> reports, CourgetteProperties courgetteProperties) {
         this.reportFile = reportFile;
-        this.courgetteProperties = courgetteProperties;
         this.reports = reports;
+        this.courgetteProperties = courgetteProperties;
     }
 
-    CourgetteReporter(Map<String, CopyOnWriteArrayList<String>> reports) {
+    CourgetteReporter(Map<String, CopyOnWriteArrayList<String>> reports, CourgetteProperties courgetteProperties) {
         this.reports = reports;
+        this.courgetteProperties = courgetteProperties;
     }
 
     void createReport(boolean mergeTestCaseName) {
@@ -92,10 +94,18 @@ class CourgetteReporter {
             CucumberReportPublisher reportPublisher = new CucumberReportPublisher(cucumberMessages);
             Optional<String> reportUrl = reportPublisher.publish();
 
+            StringBuilder out = new StringBuilder();
+
             if (reportUrl.isPresent()) {
-                System.out.println("\n------------------------------------------------------------------------");
-                System.out.println("Courgette published your Cucumber Report to:\n" + reportUrl.get());
-                System.out.println("------------------------------------------------------------------------\n");
+                out.append("\n------------------------------------------------------------------------\n");
+                out.append("Link published at: ").append(Instant.now()).append("\n");
+                out.append("\nCourgette published your Cucumber Report to:\n");
+                out.append(reportUrl.get());
+                out.append("\n------------------------------------------------------------------------\n");
+                System.out.println(out.toString());
+
+                String reportLinkFilename = courgetteProperties.getCourgetteOptions().reportTargetDir() + "/cucumber-report-link.txt";
+                FileUtils.writeFile(reportLinkFilename, out.toString());
             }
         }
     }

@@ -103,6 +103,7 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
     * _extentreports: Creates an interactive report based on the [Extent Framework](http://extentreports.com/)_
     
 * **cucumberOptions** : The standard cucumber options for specifying feature paths, glue, tags etc..
+    * The publish cucumber option (_supported from version 5.1.0_) will publish a single cucumber report after parallel execution. The published report link will be displayed in the console and saved to `${reportTargetDir}/cucumber-report-link.txt`
 
 ### Additional
 
