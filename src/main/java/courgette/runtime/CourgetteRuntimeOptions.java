@@ -164,80 +164,75 @@ class CourgetteRuntimeOptions {
     private final Predicate<String> isReportPlugin = (plugin) -> plugin.startsWith("html:") || plugin.startsWith("json:") || plugin.startsWith("junit:") || plugin.startsWith("message:");
 
     private String[] parsePlugins(String[] plugins) {
-        HashSet<String> pluginList = new HashSet<>();
+        HashSet<String> pluginCollection = new HashSet<>();
 
-        if (plugins.length == 0) {
-            plugins = new String[]{"json:" + getCourgetteReportJson()};
-        }
+        plugins = addDefaultPlugins(plugins);
 
         asList(plugins).forEach(plugin -> {
             if (isReportPlugin.test(plugin)) {
                 if (feature != null) {
-                    pluginList.add(plugin);
+                    pluginCollection.add(plugin);
 
                     String extension = plugin.substring(0, plugin.indexOf(":"));
 
                     if (extension.equalsIgnoreCase("junit")) {
-                        pluginList.remove(plugin);
+                        pluginCollection.remove(plugin);
                         final String reportPath = String.format("junit:%s.xml", getMultiThreadReportFile());
-                        pluginList.add(reportPath);
-                    }
-                    else if (extension.equalsIgnoreCase("message")) {
+                        pluginCollection.add(reportPath);
+                    } else if (extension.equalsIgnoreCase("message")) {
                         final String reportPath = String.format("message:%s.ndjson", getMultiThreadReportFile());
-                        pluginList.add(reportPath);
-                    }
-                    else {
+                        pluginCollection.add(reportPath);
+                    } else {
                         if (!extension.equals("")) {
                             final String reportPath = String.format("%s:%s.%s", extension, getMultiThreadReportFile(), extension);
-                            pluginList.add(reportPath);
+                            pluginCollection.add(reportPath);
                         }
                     }
                 } else {
-                    pluginList.add(plugin);
+                    pluginCollection.add(plugin);
                 }
             } else {
-                pluginList.add(plugin);
+                pluginCollection.add(plugin);
             }
         });
 
         Predicate<HashSet<String>> alreadyAddedRerunPlugin = (addedPlugins) -> addedPlugins.stream().anyMatch(p -> p.startsWith("rerun:"));
 
-        if (!alreadyAddedRerunPlugin.test(pluginList)) {
+        if (!alreadyAddedRerunPlugin.test(pluginCollection)) {
             if (feature != null) {
                 rerunFile = getMultiThreadRerunFile();
             } else {
                 final String cucumberRerunFile = cucumberRerunPlugin.apply(courgetteProperties);
                 rerunFile = cucumberRerunFile != null ? cucumberRerunFile : String.format("%s/courgette-rerun.txt", reportTargetDir);
             }
-            pluginList.add("rerun:" + rerunFile);
+            pluginCollection.add("rerun:" + rerunFile);
         }
 
-        if (feature != null && pluginList.stream().noneMatch(plugin -> plugin.startsWith("json:"))) {
-            pluginList.add(String.format("json:%s.json", getMultiThreadReportFile()));
-        }
-
-        if (pluginList.stream().noneMatch(plugin -> plugin.contains(getCourgetteReportJson()))) {
-            pluginList.add(String.format("json:%s", getCourgetteReportJson()));
-        }
-
-        if (pluginList.stream().noneMatch(plugin -> plugin.contains(getCourgetteReportNdJson()))) {
-            pluginList.add(String.format("message:%s", getCourgetteReportNdJson()));
+        if (feature != null && pluginCollection.stream().noneMatch(plugin -> plugin.startsWith("json:"))) {
+            pluginCollection.add(String.format("json:%s.json", getMultiThreadReportFile()));
         }
 
         if (courgetteProperties.isReportPortalPluginEnabled()) {
-            if (pluginList.stream().noneMatch(plugin -> plugin.contains(getCourgetteReportXmlForReportPortal()))) {
-                pluginList.add("junit:" + getCourgetteReportXmlForReportPortal());
+            if (pluginCollection.stream().noneMatch(plugin -> plugin.contains(getCourgetteReportXmlForReportPortal()))) {
+                pluginCollection.add("junit:" + getCourgetteReportXmlForReportPortal());
             }
         }
 
         if (feature != null) {
             final String junitReportPlugin = String.format("junit:%s.xml", getMultiThreadReportFile());
-            if (pluginList.stream().noneMatch(plugin -> plugin.equals(junitReportPlugin))) {
-                pluginList.add(junitReportPlugin);
+            if (pluginCollection.stream().noneMatch(plugin -> plugin.equals(junitReportPlugin))) {
+                pluginCollection.add(junitReportPlugin);
             }
         }
 
-        return copyOf(pluginList.toArray(), pluginList.size(), String[].class);
+        return copyOf(pluginCollection.toArray(), pluginCollection.size(), String[].class);
+    }
+
+    private String[] addDefaultPlugins(String[] plugins) {
+        plugins = Arrays.copyOf(plugins, plugins.length + 2);
+        plugins[plugins.length - 1] = "json:" + getCourgetteReportJson();
+        plugins[plugins.length - 2] = "message:" + getCourgetteReportNdJson();
+        return plugins;
     }
 
     private BiFunction<String, Object, List<String>> optionParser = (name, options) -> {

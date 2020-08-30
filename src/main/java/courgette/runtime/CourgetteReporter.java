@@ -98,7 +98,7 @@ class CourgetteReporter {
 
             if (reportUrl.isPresent()) {
                 out.append("\n------------------------------------------------------------------------\n");
-                out.append("Link published at: ").append(Instant.now()).append("\n");
+                out.append("Report published at: ").append(Instant.now()).append("\n");
                 out.append("\nCourgette published your Cucumber Report to:\n");
                 out.append(reportUrl.get());
                 out.append("\n------------------------------------------------------------------------\n");
