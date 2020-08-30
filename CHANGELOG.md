@@ -3,7 +3,6 @@ CHANGES IN VERSION 5.1.0
 
 * Upgrade to Cucumber version 6.6.0
 * Add Cucumber option 'publish' which publishes a single Cucumber Report to https://reports.cucumber.io/ after parallel execution.
-* Upgrade Bootstrap to version 4.0.0
 
 CHANGES IN VERSION 5.0.0
 =================================
