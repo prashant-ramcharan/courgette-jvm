@@ -47,11 +47,15 @@ public class ReportPortalProperties {
     }
 
     public String getLaunchName() {
-        return getProperty("rp.launch", "Courgette Test Execution").toString().trim();
+        return getProperty("rp.launch", "Courgette Test Execution").trim();
     }
 
     public String getTestSuite() {
-        return getProperty("rp.testsuite", "Test Suite").toString().trim();
+        return getProperty("rp.testsuite", "Test Suite").trim();
+    }
+
+    public String getTags() {
+        return getProperty("rp.tags", "").trim();
     }
 
     public void validate() {

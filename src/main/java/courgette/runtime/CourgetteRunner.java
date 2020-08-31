@@ -182,10 +182,11 @@ public class CourgetteRunner {
     }
 
     public void publishReportToReportPortal() {
-        try {
-            ReportPortalService.create(ReportPortalProperties.getInstance()).publishReport(defaultRuntimeOptions.getCourgetteReportXmlForReportPortal());
-        } catch (Exception ex) {
-            System.err.format("There was a problem publishing the report to report portal, reason: %s", ex.getMessage());
+        final ReportPortalService service = ReportPortalService.create(ReportPortalProperties.getInstance());
+
+        boolean published = service.publishReport(defaultRuntimeOptions.getCourgetteReportXmlForReportPortal());
+        if (published) {
+            service.updateLaunchTags();
         }
     }
 
