@@ -1,3 +1,10 @@
+CHANGES IN VERSION 5.2.0
+=================================
+
+* Update Courgette Report Portal plugin.
+    * Add support to send `rp.tags` to the latest launch.
+
+
 CHANGES IN VERSION 5.1.0
 =================================
 
