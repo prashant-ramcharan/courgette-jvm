@@ -315,6 +315,9 @@ To configure custom reports (_i.e. change the report name or theme_) you should 
 ## Limitations and Known Issues
    
   * Each feature / scenario is run using the Cucumber CLI and because of this JUnit is not notified off the result whilst the tests are being executed. The workaround to this is the Courgette-JVM html report which lists all test passes, failures and re-runs. Alternatively, you can review the Cucumber reports or the results from the build tool.
+  
+  * When there's a failure in the feature and your runner is set to `runLevel = CourgetteRunLevel.FEATURE` and `rerunFailedScenarios = true`, the re-run cucumber feature report will override the original cucumber feature report.
+    * _Use CourgetteRunLevel.SCENARIO which resolves this issue and retains all results in the cucumber report._
 
 ## Submitting Issues
 For any issues or requests, please submit [here](https://github.com/prashant-ramcharan/courgette-jvm/issues/new)
