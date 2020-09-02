@@ -1,15 +1,21 @@
+CHANGES IN VERSION 5.2.1
+=================================
+
+* [ENHANCEMENT] Remove CDN and embed CSS and JS in Courgette html report. This enables viewing the Courgette html report when offline.
+
+
 CHANGES IN VERSION 5.2.0
 =================================
 
 * Update Courgette Report Portal plugin.
-    * Add support to send `rp.tags` to the latest launch.
+    * [NEW] Add support to send `rp.tags` to the latest launch.
 
 
 CHANGES IN VERSION 5.1.0
 =================================
 
 * Upgrade to Cucumber version 6.6.0
-* Add Cucumber option 'publish' which publishes a single Cucumber Report to https://reports.cucumber.io/ after parallel execution.
+* [NEW] Add Cucumber option 'publish' which publishes a single Cucumber Report to https://reports.cucumber.io/ after parallel execution.
 
 CHANGES IN VERSION 5.0.0
 =================================
