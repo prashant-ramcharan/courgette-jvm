@@ -37,11 +37,7 @@ public class ExtentReportsBuilder {
     }
 
     public void buildReport() {
-        final ExtentSparkReporter extentSparkReporter = new ExtentSparkReporter(extentReportsProperties.getReportFilename());
-
-        if (extentReportsProperties.getXMLConfigFile() != null) {
-            extentSparkReporter.loadXMLConfig(extentReportsProperties.getXMLConfigFile(), true);
-        }
+        final ExtentSparkReporter extentSparkReporter = createExtentSparkReporter();
 
         final ExtentReports extentReports = new ExtentReports();
         extentReports.setReportUsesManualConfiguration(true);
@@ -52,6 +48,19 @@ public class ExtentReportsBuilder {
             addFeatures(extentReports, features);
         });
         extentReports.flush();
+    }
+
+    private ExtentSparkReporter createExtentSparkReporter() {
+        final ExtentSparkReporter extentSparkReporter = new ExtentSparkReporter(extentReportsProperties.getReportFilename());
+
+        if (extentReportsProperties.getXMLConfigFile() != null) {
+            try {
+                extentSparkReporter.loadXMLConfig(extentReportsProperties.getXMLConfigFile());
+            } catch (IOException e) {
+                System.err.println("[Courgette Extent Reports Plugin] Unable to load the Extent Reports XML config. Will use default settings. Reason: " + e.getMessage());
+            }
+        }
+        return extentSparkReporter;
     }
 
     private List<String> getDistinctFeatureUris() {
@@ -148,11 +157,7 @@ public class ExtentReportsBuilder {
     }
 
     private void addBase64ScreenCapture(ExtentTest node, String base64Image) {
-        try {
-            node.log(Status.INFO, "", MediaEntityBuilder.createScreenCaptureFromBase64String(base64Image).build());
-        } catch (IOException e) {
-            System.err.println("[Courgette Extent Reports Plugin] Unable to embed image. Reason: " + e.getMessage());
-        }
+        node.log(Status.INFO, "", MediaEntityBuilder.createScreenCaptureFromBase64String(base64Image).build());
     }
 
     private void addError(ExtentTest node, String error) {
