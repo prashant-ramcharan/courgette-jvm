@@ -22,6 +22,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -150,7 +152,7 @@ class CourgetteReporter {
                     failures = failures + Integer.parseInt(node.getAttribute("failures"));
                     skipped = skipped + Integer.parseInt(node.getAttribute("skipped"));
                     tests = tests + Integer.parseInt(node.getAttribute("tests"));
-                    time = time + Double.parseDouble(node.getAttribute("time"));
+                    time = time + parseTime(node.getAttribute("time"));
 
                     NodeList testCases = document.getElementsByTagName("testcase");
 
@@ -226,5 +228,16 @@ class CourgetteReporter {
             }
         });
         return reportData;
+    }
+
+    private double parseTime(String time) {
+        final NumberFormat numberFormat = NumberFormat.getInstance();
+        Number timeValue;
+        try {
+            timeValue = numberFormat.parse(time);
+        } catch (ParseException e) {
+            timeValue = Double.parseDouble(time.replaceAll(",", ""));
+        }
+        return timeValue.doubleValue();
     }
 }

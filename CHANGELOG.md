@@ -1,3 +1,10 @@
+CHANGES IN VERSION 5.3.0
+=================================
+
+* [UPGRADE] Extent Reports version to 5.0.3
+* [FIX] Handle NumberFormatException in Courgette Reporter.
+
+
 CHANGES IN VERSION 5.2.1
 =================================
 

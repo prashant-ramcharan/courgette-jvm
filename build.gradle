@@ -1,5 +1,5 @@
 group 'io.github.prashant-ramcharan'
-version '5.2.1'
+version '5.3.0'
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'
@@ -14,7 +14,7 @@ ext {
     testNGVersion = '7.1.0'
     jacksonVersion = '2.8.8'
     httpcomponentsVersion = '4.5.10'
-    extentreportVersion = '4.1.4'
+    extentreportVersion = '5.0.3'
 }
 
 repositories {
