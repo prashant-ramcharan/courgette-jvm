@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import courgette.api.CourgetteRunLevel;
 import courgette.runtime.CourgetteException;
 import courgette.runtime.report.model.Embedding;
 import courgette.runtime.report.model.Feature;
@@ -19,12 +20,16 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class JsonReportParser {
     private File jsonFile;
     private List<Feature> features;
+    private CourgetteRunLevel runLevel;
 
     private final static String START_TIMESTAMP_ATTRIBUTE = "start_timestamp";
     private final static String NAME_ATTRIBUTE = "name";
@@ -49,13 +54,14 @@ public class JsonReportParser {
     private final static String CELLS_ATTRIBUTE = "cells";
     private final static String TAGS_ATTRIBUTE = "tags";
 
-    private JsonReportParser(File jsonFile) {
+    private JsonReportParser(File jsonFile, CourgetteRunLevel runLevel) {
         this.jsonFile = jsonFile;
+        this.runLevel = runLevel;
         this.features = new ArrayList<>();
     }
 
-    public static JsonReportParser create(File jsonFile) {
-        return new JsonReportParser(jsonFile);
+    public static JsonReportParser create(File jsonFile, CourgetteRunLevel runLevel) {
+        return new JsonReportParser(jsonFile, runLevel);
     }
 
     public List<Feature> getReportFeatures() {
@@ -64,7 +70,32 @@ public class JsonReportParser {
         } catch (FileNotFoundException | IllegalStateException e) {
             throw new CourgetteException(e);
         }
-        return features;
+        return runLevel.equals(CourgetteRunLevel.FEATURE) ? features : convertToFeatureList(features);
+    }
+
+    private List<Feature> convertToFeatureList(List<Feature> features) {
+        Map<String, List<Scenario>> scenarioMap = new HashMap<>();
+
+        features.forEach(feature -> {
+            final String uri = feature.getUri();
+
+            if (scenarioMap.containsKey(uri)) {
+                List<Scenario> scenarioList = scenarioMap.get(uri);
+                scenarioList.addAll(feature.getScenarios());
+                scenarioList.sort(Comparator.comparingInt(Scenario::getLine));
+                scenarioMap.put(uri, scenarioList);
+            } else {
+                scenarioMap.put(uri, feature.getScenarios());
+            }
+        });
+
+        List<Feature> featureList = new ArrayList<>();
+
+        scenarioMap.forEach((key, value) -> {
+            Feature feature = features.stream().filter(f -> f.getUri().equals(key)).findFirst().get();
+            featureList.add(new Feature(feature.getName(), feature.getUri(), value));
+        });
+        return featureList;
     }
 
     private void parseJsonReport() throws FileNotFoundException {

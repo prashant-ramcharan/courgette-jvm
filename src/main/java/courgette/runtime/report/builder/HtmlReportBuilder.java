@@ -39,12 +39,6 @@ public class HtmlReportBuilder {
         return tableRows.toString();
     }
 
-    public String getHtmlTableScenarioRows() {
-        final StringBuilder tableRows = new StringBuilder();
-        featureList.forEach(feature -> tableRows.append(TableRowBuilder.create(feature, courgetteRunResults).getScenarioRow()));
-        return tableRows.toString();
-    }
-
     public String getHtmlModals() {
         final StringBuilder modals = new StringBuilder();
 
@@ -99,16 +93,6 @@ public class HtmlReportBuilder {
                 "                                    </td>\n" +
                 "                                </tr>\n";
 
-
-        private final String SCENARIO_ROW = "<tr>\n" +
-                "                                    <td>\n" +
-                "                                        <a href=\"\" data-toggle=\"modal\" data-target=\"#%s\">%s</a>\n" +
-                "                                    </td>\n" +
-                "                                    <td>\n" +
-                "                                        <span class=\"float-left badge badge-%s\">%s</span>\n" +
-                "                                    </td>\n" +
-                "                                </tr>\n";
-
         private String getFeatureRow() {
             final StringBuilder featureRow = new StringBuilder();
 
@@ -122,12 +106,6 @@ public class HtmlReportBuilder {
             featureRow.append(String.format(FEATURE_ROW_END, featureBadge, featureStatus));
 
             return featureRow.toString();
-        }
-
-        private String getScenarioRow() {
-            final StringBuilder scenarioRow = new StringBuilder();
-            getScenario(scenarioRow, SCENARIO_ROW);
-            return scenarioRow.toString();
         }
 
         private void getScenario(StringBuilder source, String format) {

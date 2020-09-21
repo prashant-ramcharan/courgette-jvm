@@ -1,3 +1,10 @@
+CHANGES IN VERSION 5.4.0
+=================================
+
+* [NEW] Add scenario grouping to Courgette html report when using CourgetteRunLevel.SCENARIO.
+* [MAINTENANCE] Upgrade to Cucumber version 6.7.0
+
+
 CHANGES IN VERSION 5.3.0
 =================================
 
@@ -21,8 +28,8 @@ CHANGES IN VERSION 5.2.0
 CHANGES IN VERSION 5.1.0
 =================================
 
-* Upgrade to Cucumber version 6.6.0
 * [NEW] Add Cucumber option 'publish' which publishes a single Cucumber Report to https://reports.cucumber.io/ after parallel execution.
+* [MAINTENANCE] Upgrade to Cucumber version 6.6.0
 
 CHANGES IN VERSION 5.0.0
 =================================
