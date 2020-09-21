@@ -1,6 +1,7 @@
 package courgette.runtime;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import courgette.api.CourgetteRunLevel;
 import courgette.integration.extentreports.ExtentReportsBuilder;
 import courgette.integration.extentreports.ExtentReportsProperties;
 import courgette.integration.reportportal.ReportPortalProperties;
@@ -156,8 +157,10 @@ public class CourgetteRunner {
 
     public void createCourgetteReport() {
         final File reportJson = new File(defaultRuntimeOptions.getCourgetteReportJson());
+        final CourgetteRunLevel runLevel = courgetteProperties.getCourgetteOptions().runLevel();
+
         if (reportJson.exists()) {
-            reportFeatures = JsonReportParser.create(reportJson).getReportFeatures();
+            reportFeatures = JsonReportParser.create(reportJson, runLevel).getReportFeatures();
             final CourgetteHtmlReporter courgetteReport = new CourgetteHtmlReporter(courgetteProperties, runResults, reportFeatures);
             courgetteReport.create();
         }
