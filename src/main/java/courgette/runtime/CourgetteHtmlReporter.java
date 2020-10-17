@@ -26,14 +26,20 @@ public class CourgetteHtmlReporter {
     private final CourgetteProperties courgetteProperties;
     private final List<CourgetteRunResult> courgetteRunResults;
     private final List<Feature> reportFeatures;
+    private final String cucumberReportUrl;
 
-    CourgetteHtmlReporter(CourgetteProperties courgetteProperties, List<CourgetteRunResult> courgetteRunResults, List<Feature> reportFeatures) {
+    CourgetteHtmlReporter(CourgetteProperties courgetteProperties,
+                          List<CourgetteRunResult> courgetteRunResults,
+                          List<Feature> reportFeatures,
+                          String cucumberReportUrl) {
+
         this.targetDir = courgetteProperties.getCourgetteOptions().reportTargetDir();
         this.reportTitle = courgetteProperties.getCourgetteOptions().reportTitle();
         this.reportDir = targetDir + "/courgette-report";
         this.courgetteProperties = courgetteProperties;
         this.courgetteRunResults = courgetteRunResults;
         this.reportFeatures = reportFeatures;
+        this.cucumberReportUrl = cucumberReportUrl;
     }
 
     public void create() {
@@ -86,7 +92,11 @@ public class CourgetteHtmlReporter {
         formattedIndexHtml = formattedIndexHtml.replaceAll("id:duration", duration);
         formattedIndexHtml = formattedIndexHtml.replaceAll("id:threads", String.valueOf(courgetteProperties.getMaxThreads()));
         formattedIndexHtml = formattedIndexHtml.replaceAll("id:runlevel", courgetteProperties.getCourgetteOptions().runLevel().toString());
-        formattedIndexHtml = formattedIndexHtml.replaceAll("id:retry", courgetteProperties.getCourgetteOptions().rerunFailedScenarios() ? "true" : "false");
+        formattedIndexHtml = formattedIndexHtml.replaceAll("id:cucumber_report", cucumberReportUrl);
+
+        formattedIndexHtml = formattedIndexHtml.replaceAll("id:os_name", System.getProperty("os.name"));
+        formattedIndexHtml = formattedIndexHtml.replaceAll("id:os_arch", System.getProperty("os.arch"));
+        formattedIndexHtml = formattedIndexHtml.replaceAll("id:java_version", System.getProperty("java.version"));
 
         String cucumberTags = System.getProperty("cucumber.tags", "Not provided");
 
@@ -104,7 +114,7 @@ public class CourgetteHtmlReporter {
 
         formattedIndexHtml = formattedIndexHtml.replaceAll("id:features", cucumberFeatures);
 
-        final HtmlReportBuilder htmlReportBuilder = HtmlReportBuilder.create(reportFeatures, courgetteRunResults);
+        final HtmlReportBuilder htmlReportBuilder = HtmlReportBuilder.create(reportFeatures, courgetteRunResults, courgetteProperties);
 
         final String results = htmlReportBuilder.getHtmlTableFeatureRows();
 

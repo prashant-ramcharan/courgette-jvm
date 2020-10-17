@@ -1,5 +1,6 @@
 package courgette.runtime.report.builder;
 
+import courgette.runtime.CourgetteProperties;
 import courgette.runtime.CourgetteRunResult;
 import courgette.runtime.report.model.Embedding;
 import courgette.runtime.report.model.Feature;
@@ -7,6 +8,7 @@ import courgette.runtime.report.model.Hook;
 import courgette.runtime.report.model.Result;
 import courgette.runtime.report.model.Scenario;
 
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.function.Function;
@@ -15,6 +17,7 @@ import java.util.stream.Collectors;
 public class HtmlReportBuilder {
     private List<Feature> featureList;
     private List<CourgetteRunResult> courgetteRunResults;
+    private CourgetteProperties courgetteProperties;
 
     private static final String PASSED = "Passed";
     private static final String PASSED_AFTER_RERUN = "Passed after Rerun";
@@ -24,13 +27,20 @@ public class HtmlReportBuilder {
     private static final String DANGER = "danger";
     private static final String WARNING = "warning";
 
-    private HtmlReportBuilder(List<Feature> featureList, List<CourgetteRunResult> courgetteRunResults) {
+    private HtmlReportBuilder(List<Feature> featureList,
+                              List<CourgetteRunResult> courgetteRunResults,
+                              CourgetteProperties courgetteProperties) {
+
         this.featureList = featureList;
         this.courgetteRunResults = courgetteRunResults;
+        this.courgetteProperties = courgetteProperties;
     }
 
-    public static HtmlReportBuilder create(List<Feature> featureList, List<CourgetteRunResult> courgetteRunResults) {
-        return new HtmlReportBuilder(featureList, courgetteRunResults);
+    public static HtmlReportBuilder create(List<Feature> featureList,
+                                           List<CourgetteRunResult> courgetteRunResults,
+                                           CourgetteProperties courgetteProperties) {
+
+        return new HtmlReportBuilder(featureList, courgetteRunResults, courgetteProperties);
     }
 
     public String getHtmlTableFeatureRows() {
@@ -47,6 +57,8 @@ public class HtmlReportBuilder {
                     List<Scenario> scenarios = feature.getScenarios();
                     scenarios.forEach(scenario -> modals.append(ModalBuilder.create(feature, scenario).getModal()));
                 });
+
+        modals.append(ModalBuilder.create(getEnvironmentInfo()).getEnvironmentInfoModal());
 
         return modals.toString();
     }
@@ -143,10 +155,19 @@ public class HtmlReportBuilder {
     static class ModalBuilder {
         private Feature feature;
         private Scenario scenario;
+        private List<String> environmentInfo;
+
+        private ModalBuilder(List<String> environmentInfo) {
+            this.environmentInfo = environmentInfo;
+        }
 
         private ModalBuilder(Feature feature, Scenario scenario) {
             this.feature = feature;
             this.scenario = scenario;
+        }
+
+        public static ModalBuilder create(List<String> environmentInfo) {
+            return new ModalBuilder(environmentInfo);
         }
 
         public static ModalBuilder create(Feature feature, Scenario scenario) {
@@ -160,6 +181,17 @@ public class HtmlReportBuilder {
                         "<div class=\"modal-header text-white bg-dark\">\n" +
                         "<span class=\"modal-title\"><h5>%s</h5>\n" +
                         "<div class=\"font-italic text-muted\">%s - line %s</div></span>\n" +
+                        "<button type=\"button\" class=\"close text-white\" data-dismiss=\"modal\" aria-label=\"Close\">\n" +
+                        "<span aria-hidden=\"true\">&times;</span>\n" +
+                        "</button>\n" +
+                        "</div>\n";
+
+        private final String MODEL_ENVIRONMENT_INFO_HEADER =
+                "<div class=\"modal fade\" id=\"environment_info\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"environment_info\" aria-hidden=\"true\">\n" +
+                        "<div class=\"modal-dialog modal-lg\" role=\"document\">\n" +
+                        "<div class=\"modal-content\">\n" +
+                        "<div class=\"modal-header text-white bg-dark\">\n" +
+                        "<span class=\"modal-title\"><h5>Environment Information</h5></span>\n" +
                         "<button type=\"button\" class=\"close text-white\" data-dismiss=\"modal\" aria-label=\"Close\">\n" +
                         "<span aria-hidden=\"true\">&times;</span>\n" +
                         "</button>\n" +
@@ -248,6 +280,26 @@ public class HtmlReportBuilder {
             });
         }
 
+        private String getEnvironmentInfoModal() {
+            final StringBuilder modal = new StringBuilder();
+            modal.append(MODEL_ENVIRONMENT_INFO_HEADER);
+
+            modal.append("<div class=\"modal-body\">\n");
+
+            environmentInfo.forEach(info -> {
+                modal.append(String.format(MODEL_BODY_ROW, info));
+                modal.append("</div>\n");
+                modal.append("</div>\n");
+                modal.append("<hr>\n");
+            });
+
+            modal.append("</div>\n" +
+                    "</div>\n" +
+                    "</div>\n\n");
+
+            return modal.toString();
+        }
+
         private String getModal() {
             final StringBuilder modal = new StringBuilder();
 
@@ -297,5 +349,27 @@ public class HtmlReportBuilder {
 
             return modal.toString();
         }
+    }
+
+    private List<String> getEnvironmentInfo() {
+        final List<String> envData = new ArrayList<>();
+
+        final String envInfo = courgetteProperties.getCourgetteOptions().environmentInfo().trim();
+
+        final String[] values = envInfo.split(";");
+
+        for (String value : values) {
+            String[] keyValue = value.trim().split("=");
+
+            if (keyValue.length == 2) {
+                envData.add(keyValue[0].trim() + " = " + keyValue[1].trim());
+            }
+        }
+
+        if (envData.isEmpty()) {
+            envData.add("No additional environment information provided.");
+        }
+
+        return envData;
     }
 }

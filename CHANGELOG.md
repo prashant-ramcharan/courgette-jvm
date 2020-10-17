@@ -1,3 +1,12 @@
+CHANGES IN VERSION 5.5.0
+=================================
+
+* [NEW] Add environment information to Courgette html report.
+* [NEW] Add new Courgette option `environmentInfo` to allow additional environment information to be provided and displayed in the Courgette html report.
+* [NEW] Add a link to the published Cucumber report from the Courgette html report.
+* [MAINTENANCE] Upgrade to Cucumber version 6.8.1
+
+
 CHANGES IN VERSION 5.4.0
 =================================
 

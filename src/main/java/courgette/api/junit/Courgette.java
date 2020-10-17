@@ -52,11 +52,12 @@ public class Courgette extends CourgetteJUnitRunner {
             if (courgetteRunner.canRunFeatures()) {
                 courgetteRunner.run();
                 courgetteRunner.createReport();
-                courgetteRunner.createCourgetteReport();
 
                 if (courgetteProperties.isCucumberReportPublisherEnabled()) {
                     courgetteRunner.publishCucumberReport();
                 }
+
+                courgetteRunner.createCourgetteReport();
 
                 if (courgetteProperties.isExtentReportsPluginEnabled()) {
                     courgetteRunner.createCourgetteExtentReports();

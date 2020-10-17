@@ -37,6 +37,8 @@ public class CourgetteRunner {
 
     private List<Feature> reportFeatures = new ArrayList<>();
 
+    private String cucumberReportUrl = "#";
+
     public CourgetteRunner(List<CourgetteRunnerInfo> runnerInfoList, CourgetteProperties courgetteProperties) {
         this.runnerInfoList = runnerInfoList;
         this.canRunFeatures = runnerInfoList.size() > 0;
@@ -139,7 +141,7 @@ public class CourgetteRunner {
 
     public void publishCucumberReport() {
         final CourgetteReporter courgetteReporter = new CourgetteReporter(reports, courgetteProperties);
-        courgetteReporter.publishCucumberReport();
+        cucumberReportUrl = courgetteReporter.publishCucumberReport().get();
     }
 
     public void createRerunFile() {
@@ -161,7 +163,7 @@ public class CourgetteRunner {
 
         if (reportJson.exists()) {
             reportFeatures = JsonReportParser.create(reportJson, runLevel).getReportFeatures();
-            final CourgetteHtmlReporter courgetteReport = new CourgetteHtmlReporter(courgetteProperties, runResults, reportFeatures);
+            final CourgetteHtmlReporter courgetteReport = new CourgetteHtmlReporter(courgetteProperties, runResults, reportFeatures, cucumberReportUrl);
             courgetteReport.create();
         }
     }

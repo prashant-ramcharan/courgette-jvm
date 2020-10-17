@@ -65,6 +65,11 @@ public class CourgetteRunOptions implements CourgetteOptions {
     }
 
     @Override
+    public String environmentInfo() {
+        return SystemPropertyUtils.getNonEmptyStringProperty(CourgetteSystemProperty.ENVIRONMENT_INFO, courgetteOptions.environmentInfo(), "");
+    }
+
+    @Override
     public Class<? extends Annotation> annotationType() {
         return null;
     }
