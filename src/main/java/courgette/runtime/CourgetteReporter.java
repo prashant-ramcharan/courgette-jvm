@@ -90,12 +90,14 @@ class CourgetteReporter {
         }
     }
 
-    void publishCucumberReport() {
+    Optional<String> publishCucumberReport() {
+        Optional<String> reportUrl = Optional.empty();
+
         if (!reports.isEmpty()) {
             List<String> cucumberMessages = filterCucumberMessages(new ArrayList<>(getReportData()));
 
             CucumberReportPublisher reportPublisher = new CucumberReportPublisher(cucumberMessages);
-            Optional<String> reportUrl = reportPublisher.publish();
+            reportUrl = reportPublisher.publish();
 
             StringBuilder out = new StringBuilder();
 
@@ -111,6 +113,7 @@ class CourgetteReporter {
                 FileUtils.writeFile(reportLinkFilename, out.toString());
             }
         }
+        return reportUrl;
     }
 
     private String formatJsonReport(List<String> reports) {

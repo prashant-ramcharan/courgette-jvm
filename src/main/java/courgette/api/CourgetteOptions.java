@@ -49,6 +49,11 @@ public @interface CourgetteOptions {
     String[] plugin() default {};
 
     /**
+     * @return custom environment information
+     */
+    String environmentInfo() default "";
+
+    /**
      * @return the Cucumber options
      */
     CucumberOptions cucumberOptions();

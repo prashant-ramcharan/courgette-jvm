@@ -37,17 +37,10 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 
 #### Maven
 ````xml
-<repositories>
-    <repository>
-      <id>jcenter</id>
-      <url>https://jcenter.bintray.com/</url>
-    </repository>
-</repositories>
-
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>5.4.0</version>
+  <version>5.5.0</version>
 </dependency>
 ````
 
@@ -57,15 +50,15 @@ repositories {
     jcenter()
 }
 
-compile 'io.github.prashant-ramcharan:courgette-jvm:5.4.0'
+compile 'io.github.prashant-ramcharan:courgette-jvm:5.5.0'
 ````
 
 #### Included Dependencies
-* cucumber-core 6.7.0
-* cucumber-java 6.7.0
-* cucumber-java8 6.7.0
-* cucumber-junit 6.7.0
-* cucumber-testng 6.7.0
+* cucumber-core 6.8.1
+* cucumber-java 6.8.1
+* cucumber-java8 6.8.1
+* cucumber-junit 6.8.1
+* cucumber-testng 6.8.1
 * extent-reports 5.0.3
 * jackson-databind 2.8.8
 * httpcomponents-httpclient 4.5.10
@@ -101,9 +94,14 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
     
     * _reportportal: Allows the test results to be published to [Report Portal](https://reportportal.io/) at the end of the test run._
     * _extentreports: Creates an interactive report based on the [Extent Framework](http://extentreports.com/)_
+  
+* **environmentInfo** : Additional environment information that is displayed in the Courgette html report.
+    * _Each grouping must be separated by a `;` character and adhere to the following format:  `key1=value1; key2=value2`._
     
 * **cucumberOptions** : The standard cucumber options for specifying feature paths, glue, tags etc..
-    * The `publish` cucumber option (_supported from version 5.1.0_) will publish a single cucumber report after parallel execution. The published report link will be displayed in the console and saved to `${reportTargetDir}/cucumber-report-link.txt`
+    * The `publish` cucumber option (_supported from version 5.1.0_) will publish a single cucumber report after parallel execution. 
+        * The published report link will be displayed in the console and saved to `${reportTargetDir}/cucumber-report-link.txt`.
+        * The published report link is also referenced in the Courgette html report.
 
 ### Additional
 
@@ -111,7 +109,7 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
 
 * A **courgette-rerun.txt** file listing all failed scenarios will be created in the specified rerun plugin path or the target folder ( _default_ )
 
-* A Courgette-JVM Html report will be created in the reportTargetDir (_defaulted to the target directory_).
+* A Courgette-JVM html report will be created in the reportTargetDir (_defaulted to the target directory_).
 
 ##### JUnit Runner
 
@@ -125,6 +123,7 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
         showTestOutput = true,
         reportTitle = "Courgette-JVM Example",
         reportTargetDir = "build",
+        environmentInfo = "browser=chrome; git_branch=master",
         cucumberOptions = @CucumberOptions(
                 features = "src/test/resources/features",
                 glue = "steps",
@@ -153,6 +152,7 @@ public class RegressionTestSuite {
         showTestOutput = true,
         reportTitle = "Courgette-JVM Example",
         reportTargetDir = "build",
+        environmentInfo = "browser=chrome; git_branch=master",
         cucumberOptions = @CucumberOptions(
                 features = "src/test/resources/features",
                 glue = "steps",
@@ -193,31 +193,31 @@ task regressionSuite(type: Test) {
 }
 ````
 
-## Gradle Run Options
+## Override Runner Options
 
-To override the hard-coded courgette options (_threads, runLevel, rerunFailedScenarios, showTestOutput, reportTargetDir_) set in the runner class, you can provide system properties to the gradle task.
+To override the hard-coded courgette options (_threads, runLevel, rerunFailedScenarios, showTestOutput, reportTargetDir, environmentInfo_) set in the runner class, you can provide system properties to the gradle or maven task.
 
-````gradle
+```java
 
-gradle regressionSuite -Dcourgette.threads=2 -Dcourgette.runLevel=FEATURE -Dcourgette.rerunFailedScenarios=false -Dcourgette.showTestOutput=true -Dcourgette.reportTargetDir=build
+[gradle | mvn] test -Dcourgette.threads=2 -Dcourgette.runLevel=FEATURE -Dcourgette.rerunFailedScenarios=false -Dcourgette.showTestOutput=true -Dcourgette.reportTargetDir=build -Dcourgette.environmentInfo="git_branch=master; platform=ci"
 
-````
+```
 
 To override the hard-coded cucumber options (_tags, glue, plugin, name, junit_) set in the runner class, you can provide comma separated system properties to the gradle task.
 
-````gradle
+```java
 
-gradle regressionSuite -Dcucumber.tags="@regression, ~@bug" -Dcucumber.glue="steps, hooks"
+[gradle | mvn] test -Dcucumber.tags="@regression and not @bug" -Dcucumber.glue="steps, hooks"
 
-````
+```
 
 To specify non standard VM options (_-X options_)
 
-````gradle
+```java
 
-gradle regressionSuite -Dcourgette.vmoptions="-Xms256m -Xmx512m"
+[gradle | mvn] test -Dcourgette.vmoptions="-Xms256m -Xmx512m"
 
-````
+```
 
 ## JUnit Callbacks
 
