@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -141,7 +142,8 @@ public class CourgetteRunner {
 
     public void publishCucumberReport() {
         final CourgetteReporter courgetteReporter = new CourgetteReporter(reports, courgetteProperties);
-        cucumberReportUrl = courgetteReporter.publishCucumberReport().get();
+        final Optional<String> publishedReport = courgetteReporter.publishCucumberReport();
+        publishedReport.ifPresent(reportUrl -> cucumberReportUrl = reportUrl);
     }
 
     public void createRerunFile() {
