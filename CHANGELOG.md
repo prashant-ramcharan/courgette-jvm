@@ -1,3 +1,9 @@
+CHANGES IN VERSION 5.5.1
+=================================
+
+* [NEW] Courgette will publish the Cucumber report using the provided token from the `CUCUMBER_PUBLISH_TOKEN` system property or environment variable.
+
+
 CHANGES IN VERSION 5.5.0
 =================================
 

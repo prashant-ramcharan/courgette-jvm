@@ -40,7 +40,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>5.5.0</version>
+  <version>5.5.1</version>
 </dependency>
 ````
 
@@ -50,7 +50,7 @@ repositories {
     jcenter()
 }
 
-compile 'io.github.prashant-ramcharan:courgette-jvm:5.5.0'
+compile 'io.github.prashant-ramcharan:courgette-jvm:5.5.1'
 ````
 
 #### Included Dependencies
@@ -101,7 +101,8 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
 * **cucumberOptions** : The standard cucumber options for specifying feature paths, glue, tags etc..
     * The `publish` cucumber option (_supported from version 5.1.0_) will publish a single cucumber report after parallel execution. 
         * The published report link will be displayed in the console and saved to `${reportTargetDir}/cucumber-report-link.txt`.
-        * The published report link is also referenced in the Courgette html report.
+        * The published report link is also linked in the Courgette html report.
+        * To keep the published report forever, provide a `CUCUMBER_PUBLISH_TOKEN` via a system property or an environment variable. You can get your token from [https://reports.cucumber.io/profile](https://reports.cucumber.io/profile)
 
 ### Additional
 

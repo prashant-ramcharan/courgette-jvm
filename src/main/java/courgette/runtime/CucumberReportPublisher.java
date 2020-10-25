@@ -11,12 +11,12 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.conn.ssl.TrustAllStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.util.EntityUtils;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,7 +26,9 @@ class CucumberReportPublisher {
             "cucumber.publish.url",
             "https://messages.cucumber.io/api/reports");
 
-    private final String CUCUMBER_REPORT_URL = "https://reports.cucumber.io";
+    private final String CUCUMBER_REPORT_URL = "https://reports.cucumber.io/reports";
+
+    private final String CUCUMBER_PUBLISH_TOKEN = "CUCUMBER_PUBLISH_TOKEN";
 
     private List<String> messages;
 
@@ -38,29 +40,36 @@ class CucumberReportPublisher {
             this.messages = messages;
             this.httpClient = createHttpClient();
         } else {
-            errors.add("There are no Cucumber messages to publish");
+            errors.add("There are no Cucumber messages to publish.");
         }
     }
 
     public Optional<String> publish() {
         String reportUrl = null;
 
+        final String token = System.getProperty(CUCUMBER_PUBLISH_TOKEN, System.getenv(CUCUMBER_PUBLISH_TOKEN));
+
         if (httpClient != null && errors.isEmpty()) {
-            final String report = createReport();
+            final String report = createReport(token);
             if (report != null) {
                 reportUrl = publishReport(report);
             }
         }
 
         if (reportUrl == null && !errors.isEmpty()) {
-            System.err.println("Unable to publish the Cucumber Report. Reason(s): " + Arrays.toString(errors.toArray()));
+            System.err.println("Courgette was unable to publish the Cucumber Report. Reason(s): " + createErrorString());
         }
         return Optional.ofNullable(reportUrl);
     }
 
-    private String createReport() {
+    private String createReport(String token) {
         try {
             HttpGet resource = new HttpGet(CUCUMBER_PUBLISH_URL);
+
+            if (token != null && !token.isEmpty()) {
+                resource.addHeader("Authorization", "Bearer " + token);
+            }
+
             HttpResponse response = httpClient.execute(resource);
             if (response != null) {
                 if (response.getStatusLine().getStatusCode() == HttpStatus.SC_ACCEPTED) {
@@ -69,13 +78,13 @@ class CucumberReportPublisher {
                         return location.getValue();
                     }
                 } else {
-                    errors.add(String.format("Create Cucumber Report: expected status code %d but received status code %d", HttpStatus.SC_ACCEPTED, response.getStatusLine().getStatusCode()));
+                    errors.add(EntityUtils.toString(response.getEntity(), "UTF-8"));
                 }
             } else {
-                errors.add("Create Cucumber Report: no response received from server");
+                errors.add("No response received from server.");
             }
         } catch (IOException e) {
-            errors.add("Create Cucumber Report: " + e.getMessage());
+            errors.add(e.getMessage());
         }
         return null;
     }
@@ -89,15 +98,17 @@ class CucumberReportPublisher {
             HttpResponse response = httpClient.execute(reportMessage);
             if (response != null) {
                 if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-                    return CUCUMBER_REPORT_URL + URI.create(resourceUrl).getPath();
+                    String reportPath = URI.create(resourceUrl).getPath();
+                    reportPath = reportPath.substring(reportPath.lastIndexOf("/"));
+                    return CUCUMBER_REPORT_URL + reportPath;
                 } else {
-                    errors.add(String.format("Publish Cucumber Report: expected status code %d but received status code %d", HttpStatus.SC_OK, response.getStatusLine().getStatusCode()));
+                    errors.add(EntityUtils.toString(response.getEntity(), "UTF-8"));
                 }
             } else {
-                errors.add("Publish Cucumber Report: no response received from server");
+                errors.add("No response received from server.");
             }
         } catch (Exception e) {
-            errors.add("Publish Cucumber Report: " + e.getMessage());
+            errors.add(e.getMessage());
         }
         return null;
     }
@@ -110,5 +121,11 @@ class CucumberReportPublisher {
             errors.add(e.getMessage());
         }
         return null;
+    }
+
+    private String createErrorString() {
+        StringBuilder errorBuilder = new StringBuilder();
+        errors.forEach(e -> errorBuilder.append("\n").append(e));
+        return errorBuilder.toString();
     }
 }
