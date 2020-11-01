@@ -1,3 +1,11 @@
+CHANGES IN VERSION 5.6.0
+=================================
+
+* [FIX] Known Courgette limitation which resulted in report data from being overridden when using `CourgetteRunLevel.FEATURE` and `rerunFailedScenarios = true`
+* [ENHANCEMENT] Use cucumber messages (ndjson) to generate Cucumber reports to improve reporting accuracy.
+* [MAINTENANCE] Upgrade to Cucumber version 6.8.2
+
+
 CHANGES IN VERSION 5.5.1
 =================================
 
