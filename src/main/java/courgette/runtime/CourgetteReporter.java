@@ -2,6 +2,8 @@ package courgette.runtime;
 
 import courgette.integration.reportportal.ReportPortalProperties;
 import courgette.runtime.utils.FileUtils;
+import io.cucumber.core.gherkin.Feature;
+import io.cucumber.messages.Messages;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -33,25 +35,34 @@ import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 class CourgetteReporter {
-    private final Map<String, CopyOnWriteArrayList<String>> reports;
 
+    private Map<String, CopyOnWriteArrayList<String>> reports;
+    private Map<Feature, CopyOnWriteArrayList<String>> reportMessages;
     private String reportFile;
     private CourgetteProperties courgetteProperties;
 
-    CourgetteReporter(String reportFile, Map<String, CopyOnWriteArrayList<String>> reports, CourgetteProperties courgetteProperties) {
+    CourgetteReporter(String reportFile,
+                      Map<String, CopyOnWriteArrayList<String>> reports,
+                      Map<Feature, CopyOnWriteArrayList<String>> reportMessages,
+                      CourgetteProperties courgetteProperties) {
+
         this.reportFile = reportFile;
+        this.reportMessages = reportMessages;
         this.reports = reports;
         this.courgetteProperties = courgetteProperties;
     }
 
-    CourgetteReporter(Map<String, CopyOnWriteArrayList<String>> reports, CourgetteProperties courgetteProperties) {
-        this.reports = reports;
+    CourgetteReporter(Map<Feature, CopyOnWriteArrayList<String>> reportMessages, CourgetteProperties courgetteProperties) {
+        this.reportMessages = reportMessages;
         this.courgetteProperties = courgetteProperties;
     }
 
     void createReport(boolean mergeTestCaseName) {
+
         if (reportFile != null && !reports.isEmpty()) {
+
             final List<String> reportData = getReportData();
+            final List<Messages.Envelope> messages = getMessages();
 
             final boolean isHtml = reportFile.endsWith(".html");
             final boolean isJson = reportFile.endsWith(".json");
@@ -59,18 +70,7 @@ class CourgetteReporter {
             final boolean isXml = reportFile.endsWith(".xml");
 
             if (isHtml) {
-                Optional<String> htmlReport = reportData.stream().filter(report -> report.startsWith("<!DOCTYPE html>")).findFirst();
-
-                if (htmlReport.isPresent()) {
-                    String report = htmlReport.get();
-                    reportData.removeIf(r -> !r.startsWith("<!DOCTYPE html>"));
-
-                    CucumberMessageUpdater messageUpdater = new CucumberMessageUpdater();
-                    reportData.forEach(messageUpdater::filterMessages);
-                    report = messageUpdater.updateMessages(report);
-
-                    FileUtils.writeFile(reportFile, report);
-                }
+                FileUtils.writeFile(reportFile, new CucumberHtmlReporter().createHtmlReport(messages));
             }
 
             if (isJson) {
@@ -79,8 +79,7 @@ class CourgetteReporter {
             }
 
             if (isNdJson) {
-                List<String> cucumberMessages = filterCucumberMessages(new ArrayList<>(reportData));
-                FileUtils.writeFile(reportFile, formatNdJsonReport(cucumberMessages));
+                FileUtils.writeFile(reportFile, messages);
             }
 
             if (isXml) {
@@ -93,10 +92,11 @@ class CourgetteReporter {
     Optional<String> publishCucumberReport() {
         Optional<String> reportUrl = Optional.empty();
 
-        if (!reports.isEmpty()) {
-            List<String> cucumberMessages = filterCucumberMessages(new ArrayList<>(getReportData()));
+        final String report = getReportNdJsonMessage();
 
-            CucumberReportPublisher reportPublisher = new CucumberReportPublisher(cucumberMessages);
+        if (!report.isEmpty()) {
+
+            CucumberReportPublisher reportPublisher = new CucumberReportPublisher(report);
             reportUrl = reportPublisher.publish();
 
             StringBuilder out = new StringBuilder();
@@ -122,12 +122,6 @@ class CourgetteReporter {
         jsonBuilder.deleteCharAt(jsonBuilder.lastIndexOf(","));
         jsonBuilder.append("]");
         return jsonBuilder.toString();
-    }
-
-    private String formatNdJsonReport(List<String> reports) {
-        StringBuilder ndJsonBuilder = new StringBuilder();
-        reports.forEach(data -> ndJsonBuilder.append(data).append("\n"));
-        return ndJsonBuilder.toString();
     }
 
     private String formatXmlReport(List<String> reports, boolean mergeTestCaseName) {
@@ -205,13 +199,6 @@ class CourgetteReporter {
                 .replace("id:testSuite", testSuite);
     }
 
-    private List<String> filterCucumberMessages(List<String> reportData) {
-        final CucumberMessageUpdater messageUpdater = new CucumberMessageUpdater();
-        reportData.removeIf(report -> !report.startsWith("{\"meta\":"));
-        reportData.forEach(messageUpdater::addMessage);
-        return messageUpdater.updateAndGetMessages();
-    }
-
     private List<String> getReportData() {
         final List<String> reportData = new ArrayList<>();
 
@@ -219,9 +206,7 @@ class CourgetteReporter {
 
         this.reports.values().removeIf(t -> t.contains(null) || t.contains("null") || t.contains("[]") || t.contains(""));
 
-        this.reports.entrySet().stream()
-                .sorted(Map.Entry.comparingByKey())
-                .forEachOrdered(x -> reportMap.put(x.getKey(), x.getValue()));
+        this.reports.forEach(reportMap::put);
 
         reportMap.values().forEach(report -> {
             try {
@@ -231,6 +216,16 @@ class CourgetteReporter {
             }
         });
         return reportData;
+    }
+
+    private List<Messages.Envelope> getMessages() {
+        final CourgetteNdJsonCreator ndJsonCreator = new CourgetteNdJsonCreator(reportMessages);
+        return courgetteProperties.isFeatureRunLevel() ? ndJsonCreator.createFeatureMessages() : ndJsonCreator.createScenarioMessages();
+    }
+
+    private String getReportNdJsonMessage() {
+        final CourgetteNdJsonCreator ndJsonCreator = new CourgetteNdJsonCreator();
+        return ndJsonCreator.toNdJsonMessageString(getMessages());
     }
 
     private double parseTime(String time) {

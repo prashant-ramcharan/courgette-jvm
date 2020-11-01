@@ -1,6 +1,5 @@
 package courgette.runtime;
 
-import courgette.api.CourgetteRunLevel;
 import courgette.runtime.report.builder.HtmlReportBuilder;
 import courgette.runtime.report.model.Feature;
 import courgette.runtime.report.model.Scenario;
@@ -54,13 +53,11 @@ public class CourgetteHtmlReporter {
                 TimeUnit.MILLISECONDS.toMinutes(elapsedMill),
                 TimeUnit.MILLISECONDS.toSeconds(elapsedMill) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(elapsedMill)));
 
-        boolean isFeatureRunLevel = courgetteProperties.getCourgetteOptions().runLevel() == CourgetteRunLevel.FEATURE;
-
-        final String featureScenarioLabel = isFeatureRunLevel ? "Features" : "Scenarios";
+        final String featureScenarioLabel = courgetteProperties.isFeatureRunLevel() ? "Features" : "Scenarios";
 
         int total, passed, failed, rerun;
 
-        if (isFeatureRunLevel) {
+        if (courgetteProperties.isFeatureRunLevel()) {
             total = reportFeatures.size();
             passed = (int) reportFeatures.stream().filter(Feature::passed).count();
         } else {
