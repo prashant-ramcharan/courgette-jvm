@@ -1,6 +1,7 @@
 package courgette.runtime;
 
 import courgette.api.CourgetteOptions;
+import courgette.api.CourgetteRunLevel;
 import courgette.runtime.utils.SystemPropertyUtils;
 
 import java.time.Instant;
@@ -45,5 +46,9 @@ public class CourgetteProperties {
 
     public boolean isCucumberReportPublisherEnabled() {
         return SystemPropertyUtils.getBoolProperty("cucumber.publish", courgetteOptions.cucumberOptions().publish());
+    }
+
+    public boolean isFeatureRunLevel() {
+        return CourgetteRunLevel.FEATURE.equals(courgetteOptions.runLevel());
     }
 }

@@ -1,7 +1,6 @@
 package courgette.api.junit;
 
 import courgette.api.CourgetteOptions;
-import courgette.api.CourgetteRunLevel;
 import courgette.runtime.CourgetteCallbacks;
 import courgette.runtime.CourgetteLoader;
 import courgette.runtime.CourgetteProperties;
@@ -32,7 +31,7 @@ public class Courgette extends CourgetteJUnitRunner {
 
         runnerInfoList = new ArrayList<>();
 
-        if (courgetteOptions.runLevel().equals(CourgetteRunLevel.FEATURE)) {
+        if (courgetteProperties.isFeatureRunLevel()) {
             features.forEach(feature -> runnerInfoList.add(new CourgetteRunnerInfo(courgetteProperties, feature, null)));
         } else {
             final Map<Location, Feature> scenarios = courgetteLoader.getCucumberScenarios();

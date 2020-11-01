@@ -30,14 +30,14 @@ class CucumberReportPublisher {
 
     private final String CUCUMBER_PUBLISH_TOKEN = "CUCUMBER_PUBLISH_TOKEN";
 
-    private List<String> messages;
+    private String report;
 
     private HttpClient httpClient;
     private List<String> errors = new ArrayList<>();
 
-    public CucumberReportPublisher(List<String> messages) {
-        if (!messages.isEmpty()) {
-            this.messages = messages;
+    public CucumberReportPublisher(String report) {
+        if (!report.isEmpty()) {
+            this.report = report;
             this.httpClient = createHttpClient();
         } else {
             errors.add("There are no Cucumber messages to publish.");
@@ -90,7 +90,7 @@ class CucumberReportPublisher {
     }
 
     private String publishReport(String resourceUrl) {
-        HttpEntity entity = EntityBuilder.create().setText(String.join("\n", messages)).build();
+        HttpEntity entity = EntityBuilder.create().setText(String.join("\n", report)).build();
 
         try {
             HttpPut reportMessage = new HttpPut(resourceUrl);

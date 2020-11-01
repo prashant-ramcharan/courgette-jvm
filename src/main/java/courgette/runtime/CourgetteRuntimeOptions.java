@@ -183,7 +183,7 @@ class CourgetteRuntimeOptions {
                         final String reportPath = String.format("message:%s.ndjson", getMultiThreadReportFile());
                         pluginCollection.add(reportPath);
                     } else {
-                        if (!extension.equals("")) {
+                        if (!extension.equals("") && !extension.equals("html")) {
                             final String reportPath = String.format("%s:%s.%s", extension, getMultiThreadReportFile(), extension);
                             pluginCollection.add(reportPath);
                         }

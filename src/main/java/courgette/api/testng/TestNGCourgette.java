@@ -1,7 +1,6 @@
 package courgette.api.testng;
 
 import courgette.api.CourgetteOptions;
-import courgette.api.CourgetteRunLevel;
 import courgette.runtime.CourgetteLoader;
 import courgette.runtime.CourgetteProperties;
 import courgette.runtime.CourgetteRunOptions;
@@ -32,7 +31,7 @@ public abstract class TestNGCourgette {
 
         runnerInfoList = new ArrayList<>();
 
-        if (courgetteOptions.runLevel().equals(CourgetteRunLevel.FEATURE)) {
+        if (courgetteProperties.isFeatureRunLevel()) {
             features.forEach(feature -> runnerInfoList.add(new CourgetteRunnerInfo(courgetteProperties, feature, null)));
         } else {
             final Map<Location, Feature> scenarios = courgetteFeatureLoader.getCucumberScenarios();
