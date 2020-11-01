@@ -24,10 +24,8 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 - Searchable and paginated **Courgette-JVM Html Report** which includes all step definitions, embedded screenshots, thrown exceptions, pie chart and Courgette run information.
 ![CourgetteJVM_Report.png](images/CourgetteJVM_Report.png)
 
-## Requirements
+## Minimum Requirements
 - Java 8
-- Java 9 and 10 (_supported from version 2.3.1_)
-- Java 11 (_supported from version 3.0.0_)
 
 ## Installation
 
@@ -40,7 +38,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>5.5.1</version>
+  <version>5.6.0</version>
 </dependency>
 ````
 
@@ -50,15 +48,15 @@ repositories {
     jcenter()
 }
 
-compile 'io.github.prashant-ramcharan:courgette-jvm:5.5.1'
+compile 'io.github.prashant-ramcharan:courgette-jvm:5.6.0'
 ````
 
 #### Included Dependencies
-* cucumber-core 6.8.1
-* cucumber-java 6.8.1
-* cucumber-java8 6.8.1
-* cucumber-junit 6.8.1
-* cucumber-testng 6.8.1
+* cucumber-core 6.8.2
+* cucumber-java 6.8.2
+* cucumber-java8 6.8.2
+* cucumber-junit 6.8.2
+* cucumber-testng 6.8.2
 * extent-reports 5.0.3
 * jackson-databind 2.8.8
 * httpcomponents-httpclient 4.5.10
@@ -315,11 +313,7 @@ To configure custom reports (_i.e. change the report name or theme_) you should 
 
 ## Limitations and Known Issues
    
-  * Each feature / scenario is run using the Cucumber CLI and because of this JUnit is not notified off the result whilst the tests are being executed. The workaround to this is the Courgette-JVM html report which lists all test passes, failures and re-runs. Alternatively, you can review the Cucumber reports or the results from the build tool.
-  
-  * When there's a failure in the feature and your runner is set to `runLevel = CourgetteRunLevel.FEATURE` and `rerunFailedScenarios = true`, the re-run cucumber feature report will override the original cucumber feature report.
-    * _Use CourgetteRunLevel.FEATURE and disable rerunFailedScenarios as this will prevent the original report from being overridden._
-    * _Use CourgetteRunLevel.SCENARIO which resolves this issue and retains all results in the cucumber report._
+  * Each feature / scenario is run using the Cucumber CLI and because of this JUnit is not notified off the result whilst the tests are being executed.
 
 ## Submitting Issues
 For any issues or requests, please submit [here](https://github.com/prashant-ramcharan/courgette-jvm/issues/new)
