@@ -1,3 +1,9 @@
+CHANGES IN VERSION 5.7.0
+=================================
+
+* [FIX] Incorrect duration value when generating the Cucumber report.
+* [MAINTENANCE] Upgrade to Cucumber version 6.9.0
+
 CHANGES IN VERSION 5.6.0
 =================================
 

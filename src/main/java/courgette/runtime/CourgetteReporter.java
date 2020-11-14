@@ -36,9 +36,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 class CourgetteReporter {
 
-    private Map<String, CopyOnWriteArrayList<String>> reports;
-    private Map<Feature, CopyOnWriteArrayList<String>> reportMessages;
     private String reportFile;
+    private Map<String, CopyOnWriteArrayList<String>> reports;
+    private List<Messages.Envelope> messages;
     private CourgetteProperties courgetteProperties;
 
     CourgetteReporter(String reportFile,
@@ -47,13 +47,13 @@ class CourgetteReporter {
                       CourgetteProperties courgetteProperties) {
 
         this.reportFile = reportFile;
-        this.reportMessages = reportMessages;
         this.reports = reports;
+        this.messages = createMessages(courgetteProperties, reportMessages);
         this.courgetteProperties = courgetteProperties;
     }
 
     CourgetteReporter(Map<Feature, CopyOnWriteArrayList<String>> reportMessages, CourgetteProperties courgetteProperties) {
-        this.reportMessages = reportMessages;
+        this.messages = createMessages(courgetteProperties, reportMessages);
         this.courgetteProperties = courgetteProperties;
     }
 
@@ -62,7 +62,6 @@ class CourgetteReporter {
         if (reportFile != null && !reports.isEmpty()) {
 
             final List<String> reportData = getReportData();
-            final List<Messages.Envelope> messages = getMessages();
 
             final boolean isHtml = reportFile.endsWith(".html");
             final boolean isJson = reportFile.endsWith(".json");
@@ -79,7 +78,7 @@ class CourgetteReporter {
             }
 
             if (isNdJson) {
-                FileUtils.writeFile(reportFile, messages);
+                FileUtils.writeFile(reportFile, formatNdJsonReport());
             }
 
             if (isXml) {
@@ -92,7 +91,7 @@ class CourgetteReporter {
     Optional<String> publishCucumberReport() {
         Optional<String> reportUrl = Optional.empty();
 
-        final String report = getReportNdJsonMessage();
+        final String report = formatNdJsonReport();
 
         if (!report.isEmpty()) {
 
@@ -199,6 +198,11 @@ class CourgetteReporter {
                 .replace("id:testSuite", testSuite);
     }
 
+    private String formatNdJsonReport() {
+        final CourgetteNdJsonCreator ndJsonCreator = new CourgetteNdJsonCreator();
+        return ndJsonCreator.toNdJsonMessageString(messages);
+    }
+
     private List<String> getReportData() {
         final List<String> reportData = new ArrayList<>();
 
@@ -218,14 +222,11 @@ class CourgetteReporter {
         return reportData;
     }
 
-    private List<Messages.Envelope> getMessages() {
+    private List<Messages.Envelope> createMessages(CourgetteProperties courgetteProperties,
+                                                   Map<Feature, CopyOnWriteArrayList<String>> reportMessages) {
+
         final CourgetteNdJsonCreator ndJsonCreator = new CourgetteNdJsonCreator(reportMessages);
         return courgetteProperties.isFeatureRunLevel() ? ndJsonCreator.createFeatureMessages() : ndJsonCreator.createScenarioMessages();
-    }
-
-    private String getReportNdJsonMessage() {
-        final CourgetteNdJsonCreator ndJsonCreator = new CourgetteNdJsonCreator();
-        return ndJsonCreator.toNdJsonMessageString(getMessages());
     }
 
     private double parseTime(String time) {

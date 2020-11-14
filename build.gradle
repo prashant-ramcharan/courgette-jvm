@@ -1,5 +1,5 @@
 group 'io.github.prashant-ramcharan'
-version '5.6.0'
+version '5.7.0'
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'
@@ -10,7 +10,7 @@ compileJava {
 }
 
 ext {
-    cucumberVersion = '6.8.2'
+    cucumberVersion = '6.9.0'
     testNGVersion = '7.1.0'
     jacksonVersion = '2.8.8'
     httpcomponentsVersion = '4.5.10'
