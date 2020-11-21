@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import static courgette.runtime.CourgetteException.printExceptionStackTrace;
 import static courgette.runtime.utils.SystemPropertyUtils.splitAndAddPropertyToList;
 
 public class CourgetteFeatureRunner {
@@ -24,7 +25,7 @@ public class CourgetteFeatureRunner {
             process = builder.start();
             process.waitFor();
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            printExceptionStackTrace(e);
         }
         return process != null ? process.exitValue() : -1;
     }

@@ -1,5 +1,9 @@
+plugins {
+    id 'org.sonatype.gradle.plugins.scan' version '1.2.4'
+}
+
 group 'io.github.prashant-ramcharan'
-version '5.7.0'
+version '5.8.0'
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'
@@ -12,9 +16,10 @@ compileJava {
 ext {
     cucumberVersion = '6.9.0'
     testNGVersion = '7.1.0'
-    jacksonVersion = '2.8.8'
-    httpcomponentsVersion = '4.5.10'
+    jacksonVersion = '2.11.3'
+    httpcomponentsVersion = '4.5.13'
     extentreportVersion = '5.0.3'
+    mustacheVersion = '0.9.6'
 }
 
 repositories {
@@ -35,6 +40,7 @@ dependencies {
     compile "org.apache.httpcomponents:httpclient:$httpcomponentsVersion"
     compile "org.apache.httpcomponents:httpmime:$httpcomponentsVersion"
     compile "com.aventstack:extentreports:$extentreportVersion"
+    compile "com.github.spullara.mustache.java:compiler:$mustacheVersion"
 }
 
 task buildJar(type: Jar, dependsOn: classes) {
@@ -53,4 +59,9 @@ publishing {
             artifact buildJar
         }
     }
+}
+
+ossIndexAudit {
+    username = getProperty('oss.username')
+    password = getProperty('oss.password')
 }

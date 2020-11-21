@@ -25,6 +25,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
+import static courgette.runtime.CourgetteException.printExceptionStackTrace;
+import static courgette.runtime.utils.FileUtils.readFile;
+import static courgette.runtime.utils.FileUtils.writeFile;
+
 public class CourgetteRunner {
     private final List<Callable<Boolean>> runners = new ArrayList<>();
     private final CopyOnWriteArrayList<String> reruns = new CopyOnWriteArrayList<>();
@@ -72,7 +76,7 @@ public class CourgetteRunner {
 
                     String rerunFile = runnerInfo.getRerunFile();
 
-                    String rerun = FileUtils.readFile(rerunFile, false);
+                    String rerun = readFile(rerunFile, false);
 
                     if (rerunFailedScenarios && rerun != null) {
 
@@ -113,8 +117,8 @@ public class CourgetteRunner {
                             boolean isJson = reportFile.endsWith(".json");
 
                             String report = isJson
-                                    ? prettyJson(FileUtils.readFile(reportFile, true))
-                                    : FileUtils.readFile(reportFile, true);
+                                    ? prettyJson(readFile(reportFile, true))
+                                    : readFile(reportFile, true);
 
                             boolean isNdJson = reportFile.endsWith(".ndjson");
 
@@ -133,7 +137,7 @@ public class CourgetteRunner {
         try {
             executor.invokeAll(runners);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            printExceptionStackTrace(e);
         } finally {
             executor.shutdownNow();
         }
@@ -152,18 +156,16 @@ public class CourgetteRunner {
         return false;
     }
 
-    public void createReport() {
+    public void createCucumberReport() {
         final List<String> reportFiles = defaultRuntimeOptions.getReportFiles();
 
-        reportFiles.forEach(reportFile -> {
-            CourgetteReporter reporter = new CourgetteReporter(reportFile, reports, reportMessages, courgetteProperties);
-            boolean mergeTestCaseName = courgetteProperties.isReportPortalPluginEnabled() && reportFile.equalsIgnoreCase(defaultRuntimeOptions.getCourgetteReportXmlForReportPortal());
-            reporter.createReport(mergeTestCaseName);
-        });
-    }
+        final CourgetteReporter courgetteReporter = new CourgetteReporter(reports, reportMessages, defaultRuntimeOptions, courgetteProperties);
 
-    public void publishCucumberReport() {
-        final CourgetteReporter courgetteReporter = new CourgetteReporter(reportMessages, courgetteProperties);
+        reportFiles.forEach(reportFile -> {
+            boolean mergeTestCaseName = courgetteProperties.isReportPortalPluginEnabled() && reportFile.equalsIgnoreCase(defaultRuntimeOptions.getCourgetteReportXmlForReportPortal());
+            courgetteReporter.createCucumberReport(reportFile, mergeTestCaseName);
+        });
+
         final Optional<String> publishedReport = courgetteReporter.publishCucumberReport();
         publishedReport.ifPresent(reportUrl -> cucumberReportUrl = reportUrl);
     }
@@ -177,25 +179,37 @@ public class CourgetteRunner {
         final String rerunFile = defaultRuntimeOptions.getCucumberRerunFile();
 
         if (rerunFile != null) {
-            FileUtils.writeFile(rerunFile, rerun);
+            writeFile(rerunFile, String.join("\n", rerun));
         }
     }
 
     public void createCourgetteReport() {
-        final File reportJson = new File(defaultRuntimeOptions.getCourgetteReportJson());
-        final CourgetteRunLevel runLevel = courgetteProperties.getCourgetteOptions().runLevel();
+        try {
+            final File reportJson = new File(defaultRuntimeOptions.getCourgetteReportJson());
+            final CourgetteRunLevel runLevel = courgetteProperties.getCourgetteOptions().runLevel();
 
-        if (reportJson.exists()) {
-            reportFeatures = JsonReportParser.create(reportJson, runLevel).getReportFeatures();
-            final CourgetteHtmlReporter courgetteReport = new CourgetteHtmlReporter(courgetteProperties, runResults, reportFeatures, cucumberReportUrl);
-            courgetteReport.create();
+            if (reportJson.exists()) {
+                reportFeatures = JsonReportParser.create(reportJson, runLevel).getReportFeatures();
+
+                final CourgetteHtmlReporter courgetteReport = new CourgetteHtmlReporter(courgetteProperties, runResults, reportFeatures, cucumberReportUrl);
+
+                courgetteReport.create();
+            }
+        } catch (Exception e) {
+            printExceptionStackTrace(e);
         }
     }
 
     public void createCourgetteExtentReports() {
-        final ExtentReportsProperties extentReportsProperties = new ExtentReportsProperties(courgetteProperties);
-        final ExtentReportsBuilder extentReportsBuilder = ExtentReportsBuilder.create(extentReportsProperties, reportFeatures);
-        extentReportsBuilder.buildReport();
+        try {
+            final ExtentReportsProperties extentReportsProperties = new ExtentReportsProperties(courgetteProperties);
+
+            final ExtentReportsBuilder extentReportsBuilder = ExtentReportsBuilder.create(extentReportsProperties, reportFeatures);
+
+            extentReportsBuilder.buildReport();
+        } catch (Exception e) {
+            printExceptionStackTrace(e);
+        }
     }
 
     public boolean hasFailures() {
@@ -211,11 +225,16 @@ public class CourgetteRunner {
     }
 
     public void publishReportToReportPortal() {
-        final ReportPortalService service = ReportPortalService.create(ReportPortalProperties.getInstance());
+        try {
+            final ReportPortalService service = ReportPortalService.create(ReportPortalProperties.getInstance());
 
-        boolean published = service.publishReport(defaultRuntimeOptions.getCourgetteReportXmlForReportPortal());
-        if (published) {
-            service.updateLaunchTags();
+            boolean published = service.publishReport(defaultRuntimeOptions.getCourgetteReportXmlForReportPortal());
+
+            if (published) {
+                service.updateLaunchTags();
+            }
+        } catch (Exception e) {
+            printExceptionStackTrace(e);
         }
     }
 

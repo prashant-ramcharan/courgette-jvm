@@ -1,0 +1,47 @@
+<div class="row">
+    <div class="col-lg-9" style="overflow-wrap:break-word;">
+        {{step_name}}
+    </div>
+
+    <div class="col-lg-3">
+         <span class="float-right">
+         <span class="badge badge-info">{{step_duration}} ms</span>
+         <span class="badge badge-{{step_badge}}">{{step_result}}</span>
+         </span>
+    </div>
+
+    {{#step_datatable}}
+        {{#datatable}}
+            <div class="mt-3 col-lg-12 text-muted" style="overflow-wrap:break-word;">
+                {{{.}}}
+            </div>
+        {{/datatable}}
+    {{/step_datatable}}
+
+    {{#step_exception}}
+        <div class="mt-3 col-lg-12 text-danger" style="overflow-wrap:break-word;">
+            {{exception}}
+        </div>
+    {{/step_exception}}
+
+    {{#step_output}}
+        <div class="mt-3 col-lg-12 text-info" style="overflow-wrap:break-word;">
+            {{#output}}
+                {{{.}}}
+            {{/output}}
+        </div>
+    {{/step_output}}
+
+    {{#step_embedding_text}}
+        <div class="mt-3 col-lg-12">
+            {{text}}
+        </div>
+    {{/step_embedding_text}}
+
+    {{#step_embedding_image}}
+        <div class="mt-3 col-lg-12">
+            <img id="{{img_id}}" src="" class="img-thumbnail">
+        </div>
+    {{/step_embedding_image}}
+</div>
+<hr>

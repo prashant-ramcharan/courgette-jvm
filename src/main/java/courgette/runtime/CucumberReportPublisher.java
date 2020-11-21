@@ -9,11 +9,13 @@ import org.apache.http.client.entity.EntityBuilder;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.conn.ssl.TrustAllStrategy;
+import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 
 import javax.net.ssl.SSLContext;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -30,14 +32,14 @@ class CucumberReportPublisher {
 
     private final String CUCUMBER_PUBLISH_TOKEN = "CUCUMBER_PUBLISH_TOKEN";
 
-    private String report;
+    private File messageFile;
 
     private HttpClient httpClient;
     private List<String> errors = new ArrayList<>();
 
-    public CucumberReportPublisher(String report) {
-        if (!report.isEmpty()) {
-            this.report = report;
+    public CucumberReportPublisher(File messageFile) {
+        if (messageFile.exists()) {
+            this.messageFile = messageFile;
             this.httpClient = createHttpClient();
         } else {
             errors.add("There are no Cucumber messages to publish.");
@@ -90,7 +92,10 @@ class CucumberReportPublisher {
     }
 
     private String publishReport(String resourceUrl) {
-        HttpEntity entity = EntityBuilder.create().setText(String.join("\n", report)).build();
+        HttpEntity entity = EntityBuilder.create()
+                .setContentType(ContentType.APPLICATION_JSON)
+                .setFile(messageFile)
+                .build();
 
         try {
             HttpPut reportMessage = new HttpPut(resourceUrl);
