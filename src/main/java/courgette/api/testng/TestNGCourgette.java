@@ -45,29 +45,27 @@ public abstract class TestNGCourgette {
     public void parallelRun() {
         final CourgetteRunner courgetteRunner = new CourgetteRunner(runnerInfoList, courgetteProperties);
 
-        if (courgetteRunner.canRunFeatures()) {
-            courgetteRunner.run();
-            courgetteRunner.createReport();
+        try {
+            if (courgetteRunner.canRunFeatures()) {
+                courgetteRunner.run();
+                courgetteRunner.createCucumberReport();
+                courgetteRunner.createCourgetteReport();
 
-            if (courgetteProperties.isCucumberReportPublisherEnabled()) {
-                courgetteRunner.publishCucumberReport();
+                if (courgetteProperties.isExtentReportsPluginEnabled()) {
+                    courgetteRunner.createCourgetteExtentReports();
+                }
+
+                if (courgetteProperties.isReportPortalPluginEnabled()) {
+                    courgetteRunner.publishReportToReportPortal();
+                }
+
+                if (courgetteRunner.hasFailures()) {
+                    courgetteRunner.createRerunFile();
+                    throw new CourgetteTestFailureException("There were failing tests. Refer to the Courgette html report for more details.");
+                }
             }
-
-            courgetteRunner.createCourgetteReport();
-
-            if (courgetteProperties.isExtentReportsPluginEnabled()) {
-                courgetteRunner.createCourgetteExtentReports();
-            }
-
-            if (courgetteProperties.isReportPortalPluginEnabled()) {
-                courgetteRunner.publishReportToReportPortal();
-            }
-        }
-
-        if (courgetteRunner.hasFailures()) {
-            courgetteRunner.createRerunFile();
+        } finally {
             courgetteRunner.cleanupCourgetteHtmlReportFiles();
-            throw new CourgetteTestFailureException("There were failing tests. Refer to the Courgette html report for more details.");
         }
     }
 

@@ -3,17 +3,20 @@ package courgette.runtime;
 import io.cucumber.htmlformatter.MessagesToHtmlWriter;
 import io.cucumber.messages.Messages;
 
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.List;
 
-public class CucumberHtmlReporter {
+import static courgette.runtime.CourgetteException.printExceptionStackTrace;
 
-    public String createHtmlReport(List<Messages.Envelope> messages) {
-        final StringWriter writer = new StringWriter();
+public final class CucumberHtmlReporter {
+
+    static void createReport(String fileName, List<Messages.Envelope> messages) {
 
         try {
-            final MessagesToHtmlWriter htmlWriter = new MessagesToHtmlWriter(writer);
+            final FileWriter reportWriter = new FileWriter(fileName, false);
+
+            final MessagesToHtmlWriter htmlWriter = new MessagesToHtmlWriter(reportWriter);
 
             for (Messages.Envelope message : messages) {
                 htmlWriter.write(message);
@@ -22,9 +25,7 @@ public class CucumberHtmlReporter {
             htmlWriter.close();
 
         } catch (IOException e) {
-            e.printStackTrace();
+            printExceptionStackTrace(e);
         }
-
-        return writer.toString();
     }
 }

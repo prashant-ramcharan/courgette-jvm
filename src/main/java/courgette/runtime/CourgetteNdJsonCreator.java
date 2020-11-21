@@ -3,12 +3,9 @@ package courgette.runtime;
 import io.cucumber.core.gherkin.Feature;
 import io.cucumber.messages.Messages;
 import io.cucumber.messages.NdjsonToMessageIterable;
-import io.cucumber.messages.internal.com.google.protobuf.util.JsonFormat;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -21,9 +18,6 @@ public class CourgetteNdJsonCreator {
 
     private Map<Feature, CopyOnWriteArrayList<String>> ndJsonData;
 
-    public CourgetteNdJsonCreator() {
-    }
-
     public CourgetteNdJsonCreator(Map<Feature, CopyOnWriteArrayList<String>> ndJsonData) {
         this.ndJsonData = ndJsonData;
     }
@@ -34,23 +28,6 @@ public class CourgetteNdJsonCreator {
 
     public List<Messages.Envelope> createScenarioMessages() {
         return getScenarioMessages();
-    }
-
-    public String toNdJsonMessageString(List<Messages.Envelope> envelopes) {
-        final StringWriter writer = new StringWriter();
-
-        final JsonFormat.Printer jsonPrinter = JsonFormat.printer().omittingInsignificantWhitespace();
-
-        envelopes.forEach(envelope -> {
-            try {
-                jsonPrinter.appendTo(envelope, writer);
-                writer.write("\n");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-
-        return writer.toString();
     }
 
     private List<Messages.Envelope> getFeatureMessages() {

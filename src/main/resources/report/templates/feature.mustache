@@ -1,0 +1,13 @@
+<tr>
+    <td>
+        <a href="" data-toggle="collapse" data-target="#{{data_target}}">{{feature_name}}</a>
+        <div class="collapse mt-2" id="{{data_target}}">
+            {{#feature_scenarios}}
+                {{{.}}}
+            {{/feature_scenarios}}
+        </div>
+    </td>
+    <td>
+        <span class="float-left badge badge-{{feature_badge}}">{{feature_result}}</span>
+    </td>
+</tr>

@@ -50,12 +50,7 @@ public class Courgette extends CourgetteJUnitRunner {
 
             if (courgetteRunner.canRunFeatures()) {
                 courgetteRunner.run();
-                courgetteRunner.createReport();
-
-                if (courgetteProperties.isCucumberReportPublisherEnabled()) {
-                    courgetteRunner.publishCucumberReport();
-                }
-
+                courgetteRunner.createCucumberReport();
                 courgetteRunner.createCourgetteReport();
 
                 if (courgetteProperties.isExtentReportsPluginEnabled()) {
@@ -70,8 +65,9 @@ public class Courgette extends CourgetteJUnitRunner {
             if (courgetteRunner.hasFailures()) {
                 courgetteRunner.createRerunFile();
             }
-            courgetteRunner.cleanupCourgetteHtmlReportFiles();
         } finally {
+            courgetteRunner.cleanupCourgetteHtmlReportFiles();
+
             callbacks.afterAll();
 
             notifyTestStarted(notifier);

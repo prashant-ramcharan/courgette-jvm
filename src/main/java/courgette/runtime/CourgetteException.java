@@ -13,4 +13,12 @@ public class CourgetteException extends RuntimeException {
     public CourgetteException(Throwable e) {
         super(e);
     }
+
+    public static void printExceptionStackTrace(Exception e) {
+        e.printStackTrace();
+    }
+
+    public static void printError(String error) {
+        System.err.println(error);
+    }
 }

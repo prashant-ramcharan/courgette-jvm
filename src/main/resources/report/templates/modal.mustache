@@ -1,0 +1,21 @@
+<div class="modal fade" id="{{modal_target}}" tabindex="-1" role="dialog" aria-labelledby="{{modal_target}}"
+     aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header text-white bg-dark">
+            <span class="modal-title">
+               <h5>{{modal_heading}}</h5>
+               <div class="font-italic text-muted">{{modal_feature_line}}</div>
+            </span>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                {{#modal_body}}
+                    {{{.}}}
+                {{/modal_body}}
+            </div>
+        </div>
+    </div>
+</div>

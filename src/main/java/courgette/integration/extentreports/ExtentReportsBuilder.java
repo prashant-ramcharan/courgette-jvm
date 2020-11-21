@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static courgette.runtime.CourgetteException.printError;
+
 public class ExtentReportsBuilder {
     private ExtentReportsProperties extentReportsProperties;
     private List<Feature> featureList;
@@ -57,7 +59,7 @@ public class ExtentReportsBuilder {
             try {
                 extentSparkReporter.loadXMLConfig(extentReportsProperties.getXMLConfigFile());
             } catch (IOException e) {
-                System.err.println("[Courgette Extent Reports Plugin] Unable to load the Extent Reports XML config. Will use default settings. Reason: " + e.getMessage());
+                printError("[Courgette Extent Reports Plugin] Unable to load the Extent Reports XML config. Will use default settings. Reason: " + e.getMessage());
             }
         }
         return extentSparkReporter;
