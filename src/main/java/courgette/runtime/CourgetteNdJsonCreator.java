@@ -5,13 +5,15 @@ import io.cucumber.messages.Messages;
 import io.cucumber.messages.NdjsonToMessageIterable;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Predicate;
 
+import static courgette.runtime.CourgetteException.printExceptionStackTrace;
 import static java.util.Comparator.comparingLong;
 
 public class CourgetteNdJsonCreator {
@@ -34,10 +36,7 @@ public class CourgetteNdJsonCreator {
         List<Messages.Envelope> featureMessages = new ArrayList<>();
 
         for (CopyOnWriteArrayList<String> messages : ndJsonData.values()) {
-            messages.forEach(message -> {
-                InputStream messageStream = new ByteArrayInputStream(message.getBytes());
-                new NdjsonToMessageIterable(messageStream).forEach(featureMessages::add);
-            });
+            messages.forEach(message -> featureMessages.addAll(buildMessages(message)));
         }
 
         return mutateMessages(featureMessages);
@@ -52,14 +51,7 @@ public class CourgetteNdJsonCreator {
 
             List<Messages.Envelope> messages = new ArrayList<>();
 
-            getReportMessages(value).forEach(message -> {
-                List<Messages.Envelope> envelopes = new ArrayList<>();
-
-                InputStream messageStream = new ByteArrayInputStream(message.getBytes());
-                new NdjsonToMessageIterable(messageStream).forEach(envelopes::add);
-
-                addMessage(envelopes, scenarios, messages);
-            });
+            new ArrayList<>(value).forEach(message -> addMessage(buildMessages(message), scenarios, messages));
 
             Messages.Envelope oldGherkinDocument = extractFirstGherkinDocument(messages);
             Messages.Envelope newGherkinDocument = createNewGherkinDocument(oldGherkinDocument, scenarios);
@@ -73,6 +65,28 @@ public class CourgetteNdJsonCreator {
         return mutateMessages(scenarioMessages);
     }
 
+    private List<Messages.Envelope> buildMessages(String message) {
+
+        List<String> messageList = Arrays.asList(message.split("\n"));
+
+        List<Messages.Envelope> envelopes = new ArrayList<>(messageList.size());
+
+        messageList.forEach(m -> {
+            try {
+                ByteArrayInputStream in = new ByteArrayInputStream(m.getBytes(StandardCharsets.UTF_8));
+
+                for (Messages.Envelope envelope : new NdjsonToMessageIterable(in)) {
+                    envelopes.add(envelope);
+                }
+
+            } catch (Exception e) {
+                printExceptionStackTrace(e);
+            }
+        });
+
+        return envelopes;
+    }
+
     private List<Messages.Envelope> mutateMessages(List<Messages.Envelope> envelopes) {
         Messages.Envelope testRunStarted = createTestRunStarted(envelopes);
         Messages.Envelope testRunFinished = createTestRunFinished(envelopes);
@@ -84,10 +98,6 @@ public class CourgetteNdJsonCreator {
         envelopes.add(testRunFinished);
 
         return envelopes;
-    }
-
-    private List<String> getReportMessages(CopyOnWriteArrayList<String> messages) {
-        return new ArrayList<>(messages);
     }
 
     private void addMessage(List<Messages.Envelope> envelopes,
