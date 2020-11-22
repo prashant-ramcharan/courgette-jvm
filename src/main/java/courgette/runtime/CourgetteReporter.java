@@ -22,7 +22,7 @@ class CourgetteReporter {
     private CourgetteProperties courgetteProperties;
 
     CourgetteReporter(Map<String, CopyOnWriteArrayList<String>> reports,
-                      Map<io.cucumber.core.gherkin.Feature, CopyOnWriteArrayList<String>> reportMessages,
+                      Map<io.cucumber.core.gherkin.Feature, List<List<Messages.Envelope>>> reportMessages,
                       CourgetteRuntimeOptions courgetteRuntimeOptions,
                       CourgetteProperties courgetteProperties) {
 
@@ -116,7 +116,7 @@ class CourgetteReporter {
         return reportData;
     }
 
-    private List<Messages.Envelope> createMessages(Map<io.cucumber.core.gherkin.Feature, CopyOnWriteArrayList<String>> reportMessages) {
+    private List<Messages.Envelope> createMessages(Map<io.cucumber.core.gherkin.Feature, List<List<Messages.Envelope>>> reportMessages) {
         final CourgetteNdJsonCreator ndJsonCreator = new CourgetteNdJsonCreator(reportMessages);
 
         return courgetteProperties.isFeatureRunLevel() ?

@@ -9,11 +9,13 @@ import courgette.integration.reportportal.ReportPortalService;
 import courgette.runtime.report.JsonReportParser;
 import courgette.runtime.report.model.Feature;
 import courgette.runtime.utils.FileUtils;
+import io.cucumber.messages.Messages;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +43,8 @@ public class CourgetteRunner {
     private final boolean canRunFeatures;
 
     private List<Feature> reportFeatures = new ArrayList<>();
-    private Map<io.cucumber.core.gherkin.Feature, CopyOnWriteArrayList<String>> reportMessages = new HashMap<>();
+
+    private Map<io.cucumber.core.gherkin.Feature, List<List<Messages.Envelope>>> reportMessages = new HashMap<>();
 
     private String cucumberReportUrl = "#";
 
@@ -123,7 +126,8 @@ public class CourgetteRunner {
                             boolean isNdJson = reportFile.endsWith(".ndjson");
 
                             if (isNdJson) {
-                                reportMessages.computeIfAbsent(feature, m -> new CopyOnWriteArrayList<>()).add(report);
+                                reportMessages.computeIfAbsent(feature, r -> new ArrayList<>())
+                                        .addAll(Collections.singleton(CourgetteNdJsonCreator.createMessages(report)));
                             } else {
                                 reports.computeIfAbsent(reportFile, r -> new CopyOnWriteArrayList<>()).add(report);
                             }

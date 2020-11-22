@@ -8,36 +8,59 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static courgette.runtime.CourgetteException.printExceptionStackTrace;
 import static java.util.Comparator.comparingLong;
 
 public class CourgetteNdJsonCreator {
 
-    private Map<Feature, CopyOnWriteArrayList<String>> ndJsonData;
+    private Map<Feature, List<List<Messages.Envelope>>> messages;
 
-    public CourgetteNdJsonCreator(Map<Feature, CopyOnWriteArrayList<String>> ndJsonData) {
-        this.ndJsonData = ndJsonData;
+    public CourgetteNdJsonCreator(Map<Feature, List<List<Messages.Envelope>>> messages) {
+        this.messages = messages;
+    }
+
+    public static List<Messages.Envelope> createMessages(String source) {
+
+        List<String> messageList = Arrays.asList(source.split("\n"));
+
+        List<Messages.Envelope> messages = new ArrayList<>(messageList.size());
+
+        messageList.forEach(m -> {
+            try {
+                ByteArrayInputStream in = new ByteArrayInputStream(m.getBytes(StandardCharsets.UTF_8));
+
+                for (Messages.Envelope message : new NdjsonToMessageIterable(in)) {
+                    messages.add(message);
+                }
+
+            } catch (Exception e) {
+                printExceptionStackTrace(e);
+            }
+        });
+
+        return messages;
     }
 
     public List<Messages.Envelope> createFeatureMessages() {
-        return getFeatureMessages();
+        return getMessages();
     }
 
     public List<Messages.Envelope> createScenarioMessages() {
         return getScenarioMessages();
     }
 
-    private List<Messages.Envelope> getFeatureMessages() {
-        List<Messages.Envelope> featureMessages = new ArrayList<>();
-
-        for (CopyOnWriteArrayList<String> messages : ndJsonData.values()) {
-            messages.forEach(message -> featureMessages.addAll(buildMessages(message)));
-        }
+    private List<Messages.Envelope> getMessages() {
+        List<Messages.Envelope> featureMessages =
+                this.messages.values().stream()
+                        .flatMap(Collection::stream)
+                        .flatMap(Collection::stream)
+                        .collect(Collectors.toList());
 
         return mutateMessages(featureMessages);
     }
@@ -45,13 +68,13 @@ public class CourgetteNdJsonCreator {
     private List<Messages.Envelope> getScenarioMessages() {
         List<Messages.Envelope> scenarioMessages = new ArrayList<>();
 
-        ndJsonData.forEach((key, value) -> {
+        messages.forEach((k, v) -> {
 
             List<Messages.GherkinDocument.Feature.Scenario.Builder> scenarios = new ArrayList<>();
 
             List<Messages.Envelope> messages = new ArrayList<>();
 
-            new ArrayList<>(value).forEach(message -> addMessage(buildMessages(message), scenarios, messages));
+            v.forEach(message -> addMessage(message, scenarios, messages));
 
             Messages.Envelope oldGherkinDocument = extractFirstGherkinDocument(messages);
             Messages.Envelope newGherkinDocument = createNewGherkinDocument(oldGherkinDocument, scenarios);
@@ -63,28 +86,6 @@ public class CourgetteNdJsonCreator {
         });
 
         return mutateMessages(scenarioMessages);
-    }
-
-    private List<Messages.Envelope> buildMessages(String message) {
-
-        List<String> messageList = Arrays.asList(message.split("\n"));
-
-        List<Messages.Envelope> envelopes = new ArrayList<>(messageList.size());
-
-        messageList.forEach(m -> {
-            try {
-                ByteArrayInputStream in = new ByteArrayInputStream(m.getBytes(StandardCharsets.UTF_8));
-
-                for (Messages.Envelope envelope : new NdjsonToMessageIterable(in)) {
-                    envelopes.add(envelope);
-                }
-
-            } catch (Exception e) {
-                printExceptionStackTrace(e);
-            }
-        });
-
-        return envelopes;
     }
 
     private List<Messages.Envelope> mutateMessages(List<Messages.Envelope> envelopes) {

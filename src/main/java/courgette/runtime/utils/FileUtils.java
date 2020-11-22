@@ -79,7 +79,13 @@ public final class FileUtils {
         try {
             File directory = new File(dir);
             if (directory.exists()) {
-                Arrays.asList(directory.listFiles()).forEach(File::delete);
+                Arrays.asList(directory.listFiles()).forEach(f -> {
+                    if (f.isDirectory()) {
+                        deleteDirectorySilently(f.getPath());
+                    } else {
+                        f.delete();
+                    }
+                });
                 directory.delete();
             }
         } catch (Exception ignored) {
