@@ -38,7 +38,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>5.7.0</version>
+  <version>5.8.0</version>
 </dependency>
 ````
 
@@ -48,7 +48,7 @@ repositories {
     jcenter()
 }
 
-compile 'io.github.prashant-ramcharan:courgette-jvm:5.7.0'
+compile 'io.github.prashant-ramcharan:courgette-jvm:5.8.0'
 ````
 
 #### Included Cucumber Dependencies
@@ -100,7 +100,7 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
 
 ### Additional
 
-* At the end of the test run, a **single report** ( _if included in the cucumberOptions_ ) listing all executed features and scenarios will be created in the specified report path. All embedded images will be placed in the images folder in the specified report path.
+* At the end of the test run, a **single report** ( _if included in the cucumberOptions_ ) listing all executed features and scenarios will be created in the specified report path.
 
 * A **courgette-rerun.txt** file listing all failed scenarios will be created in the specified rerun plugin path or the target folder ( _default_ )
 
