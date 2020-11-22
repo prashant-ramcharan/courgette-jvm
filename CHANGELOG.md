@@ -1,3 +1,15 @@
+CHANGES IN VERSION 5.8.0
+=================================
+
+* [ENHANCEMENT] Improve performance and optimize memory when generating Cucumber and Courgette reports.
+* [ENHANCEMENT] Use mustache templates when generating the Courgette html report.
+* [ENHANCEMENT] Use a new dark theme for the Courgette html report.
+* [ENHANCEMENT] Use CDN to deliver Courgette html report files.
+* [UPGRADE] Courgette html report assets (js and css)
+* [FIX] All security vulnerabilities identified by Nexus Vulnerability Scanner.
+* [FIX] Out of memory exception when generating large Cucumber and Courgette reports.
+
+
 CHANGES IN VERSION 5.7.0
 =================================
 
