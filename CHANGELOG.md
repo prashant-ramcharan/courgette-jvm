@@ -8,7 +8,7 @@ CHANGES IN VERSION 5.8.0
 * [UPGRADE] Courgette html report assets (js and css)
 * [FIX] All security vulnerabilities identified by Nexus Vulnerability Scanner.
 * [FIX] Out of memory exception when generating large Cucumber and Courgette reports.
-* [BREAKING CHANGE] Previously cached Courgette html report assets (js and css) are no longer available due to securiry vulnerabilites that exists in those files.
+* [BREAKING CHANGE] Previously cached Courgette html report assets (js and css) are no longer available due to security vulnerabilites that exists in those files.
 
 
 CHANGES IN VERSION 5.7.0
