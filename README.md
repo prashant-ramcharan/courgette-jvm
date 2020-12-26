@@ -52,11 +52,11 @@ compile 'io.github.prashant-ramcharan:courgette-jvm:5.8.1'
 ````
 
 #### Included Cucumber Dependencies
-* cucumber-core 6.9.0
-* cucumber-java 6.9.0
-* cucumber-java8 6.9.0
-* cucumber-junit 6.9.0
-* cucumber-testng 6.9.0
+* cucumber-core 6.9.1
+* cucumber-java 6.9.1
+* cucumber-java8 6.9.1
+* cucumber-junit 6.9.1
+* cucumber-testng 6.9.1
 
 
 ## Usage
