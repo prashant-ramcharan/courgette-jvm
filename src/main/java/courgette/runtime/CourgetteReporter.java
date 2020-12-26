@@ -20,6 +20,7 @@ class CourgetteReporter {
     private List<Messages.Envelope> messages;
     private CourgetteRuntimeOptions courgetteRuntimeOptions;
     private CourgetteProperties courgetteProperties;
+    private boolean canCreateCucumberReports;
 
     CourgetteReporter(Map<String, CopyOnWriteArrayList<String>> reports,
                       Map<io.cucumber.core.gherkin.Feature, List<List<Messages.Envelope>>> reportMessages,
@@ -31,7 +32,15 @@ class CourgetteReporter {
         this.courgetteProperties = courgetteProperties;
 
         this.messages = createMessages(reportMessages);
-        createNdJsonReport(this.messages);
+        this.canCreateCucumberReports = this.messages != null;
+
+        if (canCreateCucumberReports) {
+            createNdJsonReport(this.messages);
+        }
+    }
+
+    boolean canCreateCucumberReports() {
+        return canCreateCucumberReports;
     }
 
     void createCucumberReport(String reportFile, boolean mergeTestCaseName) {

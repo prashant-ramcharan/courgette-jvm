@@ -56,7 +56,7 @@ public class CourgetteRunner {
         this.defaultRuntimeOptions = new CourgetteRuntimeOptions(courgetteProperties);
     }
 
-    public void run() {
+    public RunStatus run() {
         final ExecutorService executor = Executors.newFixedThreadPool(optimizedThreadCount());
 
         final Queue<CourgetteRunnerInfo> runnerQueue = new ArrayDeque<>(runnerInfoList);
@@ -145,6 +145,10 @@ public class CourgetteRunner {
         } finally {
             executor.shutdownNow();
         }
+
+        boolean hasErrors = reportMessages.values().stream().anyMatch(List::isEmpty);
+
+        return hasErrors ? RunStatus.ERROR : RunStatus.OK;
     }
 
     private boolean rerunFeature(Map<String, List<String>> args) {
@@ -165,13 +169,16 @@ public class CourgetteRunner {
 
         final CourgetteReporter courgetteReporter = new CourgetteReporter(reports, reportMessages, defaultRuntimeOptions, courgetteProperties);
 
-        reportFiles.forEach(reportFile -> {
-            boolean mergeTestCaseName = courgetteProperties.isReportPortalPluginEnabled() && reportFile.equalsIgnoreCase(defaultRuntimeOptions.getCourgetteReportXmlForReportPortal());
-            courgetteReporter.createCucumberReport(reportFile, mergeTestCaseName);
-        });
+        if (courgetteReporter.canCreateCucumberReports()) {
 
-        final Optional<String> publishedReport = courgetteReporter.publishCucumberReport();
-        publishedReport.ifPresent(reportUrl -> cucumberReportUrl = reportUrl);
+            reportFiles.forEach(reportFile -> {
+                boolean mergeTestCaseName = courgetteProperties.isReportPortalPluginEnabled() && reportFile.equalsIgnoreCase(defaultRuntimeOptions.getCourgetteReportXmlForReportPortal());
+                courgetteReporter.createCucumberReport(reportFile, mergeTestCaseName);
+            });
+
+            final Optional<String> publishedReport = courgetteReporter.publishCucumberReport();
+            publishedReport.ifPresent(reportUrl -> cucumberReportUrl = reportUrl);
+        }
     }
 
     public void createRerunFile() {
@@ -214,10 +221,6 @@ public class CourgetteRunner {
         } catch (Exception e) {
             printExceptionStackTrace(e);
         }
-    }
-
-    public boolean hasFailures() {
-        return runResults.stream().anyMatch(result -> result.getStatus() == CourgetteRunResult.Status.FAILED);
     }
 
     public List<CourgetteRunResult> getFailures() {

@@ -1,3 +1,9 @@
+CHANGES IN VERSION 5.8.1
+=================================
+
+* [FIX] Null pointer exception when trying to create reports from missing report data.
+* [MAINTENANCE] Upgrade to Cucumber version 6.9.1
+
 CHANGES IN VERSION 5.8.0
 =================================
 

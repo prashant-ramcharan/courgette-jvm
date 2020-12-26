@@ -7,6 +7,8 @@ import courgette.runtime.CourgetteRunOptions;
 import courgette.runtime.CourgetteRunner;
 import courgette.runtime.CourgetteRunnerInfo;
 import courgette.runtime.CourgetteTestFailureException;
+import courgette.runtime.CourgetteTestErrorException;
+import courgette.runtime.RunStatus;
 import io.cucumber.core.gherkin.Feature;
 import io.cucumber.gherkin.Location;
 import org.testng.annotations.BeforeClass;
@@ -47,21 +49,28 @@ public abstract class TestNGCourgette {
 
         try {
             if (courgetteRunner.canRunFeatures()) {
-                courgetteRunner.run();
-                courgetteRunner.createCucumberReport();
-                courgetteRunner.createCourgetteReport();
 
-                if (courgetteProperties.isExtentReportsPluginEnabled()) {
-                    courgetteRunner.createCourgetteExtentReports();
-                }
+                final RunStatus runStatus = courgetteRunner.run();
 
-                if (courgetteProperties.isReportPortalPluginEnabled()) {
-                    courgetteRunner.publishReportToReportPortal();
-                }
+                if (RunStatus.OK.equals(runStatus)) {
 
-                if (courgetteRunner.hasFailures()) {
-                    courgetteRunner.createRerunFile();
-                    throw new CourgetteTestFailureException("There were failing tests. Refer to the Courgette html report for more details.");
+                    courgetteRunner.createCucumberReport();
+                    courgetteRunner.createCourgetteReport();
+
+                    if (courgetteProperties.isExtentReportsPluginEnabled()) {
+                        courgetteRunner.createCourgetteExtentReports();
+                    }
+
+                    if (courgetteProperties.isReportPortalPluginEnabled()) {
+                        courgetteRunner.publishReportToReportPortal();
+                    }
+
+                    if (!courgetteRunner.getFailures().isEmpty()) {
+                        courgetteRunner.createRerunFile();
+                        throw new CourgetteTestFailureException("There were failing tests. Refer to the Courgette html report for more details.");
+                    }
+                } else {
+                    CourgetteTestErrorException.throwTestErrorException();
                 }
             }
         } finally {

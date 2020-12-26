@@ -5,6 +5,8 @@ import courgette.runtime.CourgetteProperties;
 import courgette.runtime.CourgetteRunResult;
 import courgette.runtime.CourgetteRunnerInfo;
 import courgette.runtime.CourgetteTestFailureException;
+import courgette.runtime.CourgetteTestErrorException;
+import courgette.runtime.RunStatus;
 import io.cucumber.core.gherkin.Feature;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
@@ -83,12 +85,28 @@ public abstract class CourgetteJUnitRunner extends ParentRunner<Feature> {
         featureDescriptions.values().forEach(notifier::fireTestFinished);
     }
 
-    protected void notifyTestFailure(RunNotifier notifier, List<CourgetteRunResult> failures) {
+    protected void notifyTestFailure(RunNotifier notifier, List<CourgetteRunResult> failures, RunStatus runStatus) {
+        if (failures.isEmpty()) {
+            featureDescriptions.values().forEach(notifier::fireTestIgnored);
+            featureDescriptions.clear();
+            return;
+        }
+
         failures.forEach(failure -> {
             Feature feature = failure.getFeature();
             Description description = featureDescriptions.get(feature);
-            notifier.fireTestFailure(new Failure(description, new CourgetteTestFailureException("Please refer to the console or Courgette and Cucumber reports for more info.")));
+            notifier.fireTestFailure(new Failure(description, createFailureThrowable(feature, runStatus)));
         });
         featureDescriptions.keySet().removeAll(failures.stream().map(CourgetteRunResult::getFeature).collect(Collectors.toList()));
+    }
+
+    private Throwable createFailureThrowable(Feature feature, RunStatus runStatus) {
+        final String testId = feature.getName().orElse("Test");
+
+        if (RunStatus.ERROR.equals(runStatus)) {
+            return new CourgetteTestErrorException(testId + " was not run due to an error.");
+        } else {
+            return new CourgetteTestFailureException(testId + " failed.");
+        }
     }
 }
