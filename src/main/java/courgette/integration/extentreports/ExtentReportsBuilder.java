@@ -45,11 +45,16 @@ public class ExtentReportsBuilder {
         extentReports.setReportUsesManualConfiguration(true);
         extentReports.attachReporter(extentSparkReporter);
 
-        getDistinctFeatureUris().forEach(featureUri -> {
+        final List<String> featureUris = getDistinctFeatureUris();
+
+        featureUris.forEach(featureUri -> {
             List<Feature> features = featureList.stream().filter(f -> f.getUri().equals(featureUri)).collect(Collectors.toList());
             addFeatures(extentReports, features);
         });
-        extentReports.flush();
+
+        if (!featureUris.isEmpty()) {
+            extentReports.flush();
+        }
     }
 
     private ExtentSparkReporter createExtentSparkReporter() {

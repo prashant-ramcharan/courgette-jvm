@@ -5,8 +5,11 @@ import courgette.runtime.CourgetteCallbacks;
 import courgette.runtime.CourgetteLoader;
 import courgette.runtime.CourgetteProperties;
 import courgette.runtime.CourgetteRunOptions;
+import courgette.runtime.CourgetteRunResult;
 import courgette.runtime.CourgetteRunner;
 import courgette.runtime.CourgetteRunnerInfo;
+import courgette.runtime.CourgetteTestErrorException;
+import courgette.runtime.RunStatus;
 import courgette.runtime.junit.CourgetteJUnitRunner;
 import io.cucumber.core.gherkin.Feature;
 import io.cucumber.gherkin.Location;
@@ -14,6 +17,7 @@ import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class Courgette extends CourgetteJUnitRunner {
@@ -45,33 +49,44 @@ public class Courgette extends CourgetteJUnitRunner {
     public void run(RunNotifier notifier) {
         final CourgetteRunner courgetteRunner = new CourgetteRunner(runnerInfoList, courgetteProperties);
 
+        RunStatus runStatus = RunStatus.ERROR;
+
+        List<CourgetteRunResult> failures = new ArrayList<>();
+
         try {
             callbacks.beforeAll();
 
             if (courgetteRunner.canRunFeatures()) {
-                courgetteRunner.run();
-                courgetteRunner.createCucumberReport();
-                courgetteRunner.createCourgetteReport();
 
-                if (courgetteProperties.isExtentReportsPluginEnabled()) {
-                    courgetteRunner.createCourgetteExtentReports();
+                runStatus = courgetteRunner.run();
+
+                if (RunStatus.OK.equals(runStatus)) {
+                    courgetteRunner.createCucumberReport();
+                    courgetteRunner.createCourgetteReport();
+
+                    if (courgetteProperties.isExtentReportsPluginEnabled()) {
+                        courgetteRunner.createCourgetteExtentReports();
+                    }
+
+                    if (courgetteProperties.isReportPortalPluginEnabled()) {
+                        courgetteRunner.publishReportToReportPortal();
+                    }
+
+                    failures = courgetteRunner.getFailures();
+
+                    if (!failures.isEmpty()) {
+                        courgetteRunner.createRerunFile();
+                    }
+                } else {
+                    CourgetteTestErrorException.throwTestErrorException();
                 }
-
-                if (courgetteProperties.isReportPortalPluginEnabled()) {
-                    courgetteRunner.publishReportToReportPortal();
-                }
-            }
-
-            if (courgetteRunner.hasFailures()) {
-                courgetteRunner.createRerunFile();
             }
         } finally {
             courgetteRunner.cleanupCourgetteHtmlReportFiles();
 
             callbacks.afterAll();
-
             notifyTestStarted(notifier);
-            notifyTestFailure(notifier, courgetteRunner.getFailures());
+            notifyTestFailure(notifier, failures, runStatus);
             notifyTestSuccess(notifier);
         }
     }

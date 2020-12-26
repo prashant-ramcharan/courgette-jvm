@@ -89,16 +89,20 @@ public class CourgetteNdJsonCreator {
     }
 
     private List<Messages.Envelope> mutateMessages(List<Messages.Envelope> envelopes) {
-        Messages.Envelope testRunStarted = createTestRunStarted(envelopes);
-        Messages.Envelope testRunFinished = createTestRunFinished(envelopes);
 
-        envelopes.subList(1, envelopes.size()).removeIf(metaEnvelope);
-        envelopes.removeIf(testRunStartedOrFinishedEnvelope);
+        if (envelopes != null && !envelopes.isEmpty()) {
+            Messages.Envelope testRunStarted = createTestRunStarted(envelopes);
+            Messages.Envelope testRunFinished = createTestRunFinished(envelopes);
 
-        envelopes.add(2, testRunStarted);
-        envelopes.add(testRunFinished);
+            envelopes.subList(1, envelopes.size()).removeIf(metaEnvelope);
+            envelopes.removeIf(testRunStartedOrFinishedEnvelope);
 
-        return envelopes;
+            envelopes.add(2, testRunStarted);
+            envelopes.add(testRunFinished);
+            return envelopes;
+        }
+
+        return null;
     }
 
     private void addMessage(List<Messages.Envelope> envelopes,
