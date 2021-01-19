@@ -1,3 +1,11 @@
+CHANGES IN VERSION 5.9.0
+=================================
+
+* [NEW] Add new Courgette option `disableHtmlReport` to disable Courgette and Cucumber html reports from getting generated at the end of the test run.
+* [FIX] JUnit notifier that incorrectly set test results to be ignored.
+* [FIX] Issue with `showTestOutput=false` which caused the test execution to hang on Windows OS.
+
+
 CHANGES IN VERSION 5.8.1
 =================================
 
