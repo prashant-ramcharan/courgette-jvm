@@ -4,8 +4,8 @@ import courgette.runtime.CourgetteCallbacks;
 import courgette.runtime.CourgetteProperties;
 import courgette.runtime.CourgetteRunResult;
 import courgette.runtime.CourgetteRunnerInfo;
-import courgette.runtime.CourgetteTestFailureException;
 import courgette.runtime.CourgetteTestErrorException;
+import courgette.runtime.CourgetteTestFailureException;
 import courgette.runtime.RunStatus;
 import io.cucumber.core.gherkin.Feature;
 import org.junit.runner.Description;
@@ -86,17 +86,12 @@ public abstract class CourgetteJUnitRunner extends ParentRunner<Feature> {
     }
 
     protected void notifyTestFailure(RunNotifier notifier, List<CourgetteRunResult> failures, RunStatus runStatus) {
-        if (failures.isEmpty()) {
-            featureDescriptions.values().forEach(notifier::fireTestIgnored);
-            featureDescriptions.clear();
-            return;
-        }
-
         failures.forEach(failure -> {
             Feature feature = failure.getFeature();
             Description description = featureDescriptions.get(feature);
             notifier.fireTestFailure(new Failure(description, createFailureThrowable(feature, runStatus)));
         });
+
         featureDescriptions.keySet().removeAll(failures.stream().map(CourgetteRunResult::getFeature).collect(Collectors.toList()));
     }
 

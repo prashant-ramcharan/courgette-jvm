@@ -2,10 +2,12 @@ package courgette.runtime;
 
 import courgette.api.CourgetteOptions;
 import courgette.api.CourgetteRunLevel;
+import courgette.api.HtmlReport;
 import courgette.runtime.utils.SystemPropertyUtils;
 
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.function.Predicate;
 
 public class CourgetteProperties {
     private final CourgetteOptions courgetteOptions;
@@ -51,4 +53,14 @@ public class CourgetteProperties {
     public boolean isFeatureRunLevel() {
         return CourgetteRunLevel.FEATURE.equals(courgetteOptions.runLevel());
     }
+
+    public boolean isCourgetteHtmlReportEnabled() {
+        return checkIfReportIsEnabled.test(HtmlReport.COURGETTE_HTML);
+    }
+
+    public boolean isCucumberHtmlReportEnabled() {
+        return checkIfReportIsEnabled.test(HtmlReport.CUCUMBER_HTML);
+    }
+
+    private final Predicate<HtmlReport> checkIfReportIsEnabled = (report) -> !Arrays.asList(getCourgetteOptions().disableHtmlReport()).contains(report);
 }

@@ -169,16 +169,13 @@ public class CourgetteRunner {
 
         final CourgetteReporter courgetteReporter = new CourgetteReporter(reports, reportMessages, defaultRuntimeOptions, courgetteProperties);
 
-        if (courgetteReporter.canCreateCucumberReports()) {
+        reportFiles.forEach(reportFile -> {
+            boolean mergeTestCaseName = courgetteProperties.isReportPortalPluginEnabled() && reportFile.equalsIgnoreCase(defaultRuntimeOptions.getCourgetteReportXmlForReportPortal());
+            courgetteReporter.createCucumberReport(reportFile, mergeTestCaseName);
+        });
 
-            reportFiles.forEach(reportFile -> {
-                boolean mergeTestCaseName = courgetteProperties.isReportPortalPluginEnabled() && reportFile.equalsIgnoreCase(defaultRuntimeOptions.getCourgetteReportXmlForReportPortal());
-                courgetteReporter.createCucumberReport(reportFile, mergeTestCaseName);
-            });
-
-            final Optional<String> publishedReport = courgetteReporter.publishCucumberReport();
-            publishedReport.ifPresent(reportUrl -> cucumberReportUrl = reportUrl);
-        }
+        final Optional<String> publishedReport = courgetteReporter.publishCucumberReport();
+        publishedReport.ifPresent(reportUrl -> cucumberReportUrl = reportUrl);
     }
 
     public void createRerunFile() {
@@ -196,14 +193,8 @@ public class CourgetteRunner {
 
     public void createCourgetteReport() {
         try {
-            final File reportJson = new File(defaultRuntimeOptions.getCourgetteReportJson());
-            final CourgetteRunLevel runLevel = courgetteProperties.getCourgetteOptions().runLevel();
-
-            if (reportJson.exists()) {
-                reportFeatures = JsonReportParser.create(reportJson, runLevel).getReportFeatures();
-
-                final CourgetteHtmlReporter courgetteReport = new CourgetteHtmlReporter(courgetteProperties, runResults, reportFeatures, cucumberReportUrl);
-
+            if (courgetteProperties.isCourgetteHtmlReportEnabled()) {
+                final CourgetteHtmlReporter courgetteReport = new CourgetteHtmlReporter(courgetteProperties, runResults, getReportFeatures(), cucumberReportUrl);
                 courgetteReport.create();
             }
         } catch (Exception e) {
@@ -215,7 +206,7 @@ public class CourgetteRunner {
         try {
             final ExtentReportsProperties extentReportsProperties = new ExtentReportsProperties(courgetteProperties);
 
-            final ExtentReportsBuilder extentReportsBuilder = ExtentReportsBuilder.create(extentReportsProperties, reportFeatures);
+            final ExtentReportsBuilder extentReportsBuilder = ExtentReportsBuilder.create(extentReportsProperties, getReportFeatures());
 
             extentReportsBuilder.buildReport();
         } catch (Exception e) {
@@ -268,6 +259,20 @@ public class CourgetteRunner {
         } catch (IOException e) {
             return json;
         }
+    }
+
+    private List<Feature> getReportFeatures() {
+        if (reportFeatures.isEmpty()) {
+            final File reportJson = new File(defaultRuntimeOptions.getCourgetteReportJson());
+
+            final CourgetteRunLevel runLevel = courgetteProperties.getCourgetteOptions().runLevel();
+
+            if (reportJson.exists()) {
+                reportFeatures = JsonReportParser.create(reportJson, runLevel).getReportFeatures();
+            }
+        }
+
+        return reportFeatures;
     }
 
     private Integer optimizedThreadCount() {

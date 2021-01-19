@@ -54,6 +54,11 @@ public @interface CourgetteOptions {
     String environmentInfo() default "";
 
     /**
+     * @return the collection of disabled html reports
+     */
+    HtmlReport[] disableHtmlReport() default {};
+
+    /**
      * @return the Cucumber options
      */
     CucumberOptions cucumberOptions();

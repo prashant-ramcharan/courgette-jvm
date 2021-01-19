@@ -3,6 +3,7 @@ package courgette.runtime;
 import courgette.api.CourgetteOptions;
 import courgette.api.CourgetteRunLevel;
 import courgette.api.CucumberOptions;
+import courgette.api.HtmlReport;
 import courgette.integration.reportportal.ReportPortalProperties;
 import courgette.runtime.utils.FileUtils;
 import courgette.runtime.utils.SystemPropertyUtils;
@@ -67,6 +68,11 @@ public class CourgetteRunOptions implements CourgetteOptions {
     @Override
     public String environmentInfo() {
         return SystemPropertyUtils.getNonEmptyStringProperty(CourgetteSystemProperty.ENVIRONMENT_INFO, courgetteOptions.environmentInfo(), "");
+    }
+
+    @Override
+    public HtmlReport[] disableHtmlReport() {
+        return courgetteOptions.disableHtmlReport();
     }
 
     @Override

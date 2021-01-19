@@ -1,5 +1,8 @@
 package courgette.runtime;
 
+import courgette.runtime.utils.FileUtils;
+
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +47,14 @@ public class CourgetteFeatureRunner {
 
             if (output) {
                 builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+            } else {
+                final File tempFile = FileUtils.getTempFile();
+
+                if (tempFile != null) {
+                    builder.redirectOutput(tempFile);
+                }
             }
+
             builder.redirectErrorStream(true);
 
             final List<String> commands = new ArrayList<>();
