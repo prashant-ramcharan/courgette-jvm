@@ -28,8 +28,8 @@ class CourgetteRuntimeOptions {
     private final Feature feature;
     private final CucumberOptions cucumberOptions;
     private final String reportTargetDir;
+    private final List<String> runtimeOptions = new ArrayList<>();
 
-    private List<String> runtimeOptions = new ArrayList<>();
     private String rerunFile;
     private String cucumberResourcePath;
 
@@ -122,10 +122,11 @@ class CourgetteRuntimeOptions {
         }
 
         runtimeOptions.values().removeIf(Objects::isNull);
+
         return runtimeOptions;
     }
 
-    private BiFunction<String, String[], String[]> envCucumberOptionParser = (systemPropertyName, cucumberOptions) -> {
+    private final BiFunction<String, String[], String[]> envCucumberOptionParser = (systemPropertyName, cucumberOptions) -> {
         String cucumberOption = System.getProperty("cucumber." + systemPropertyName);
 
         if (cucumberOption != null && cucumberOption.trim().length() > 0) {
@@ -150,7 +151,7 @@ class CourgetteRuntimeOptions {
         return String.format("%s_%s", feature.hashCode(), instanceId);
     }
 
-    private Function<CourgetteProperties, String> cucumberRerunPlugin = (courgetteProperties) -> {
+    private final Function<CourgetteProperties, String> cucumberRerunPlugin = (courgetteProperties) -> {
         final String rerunPlugin = Arrays.stream(courgetteProperties.getCourgetteOptions()
                 .cucumberOptions()
                 .plugin()).filter(p -> p.startsWith("rerun")).findFirst().orElse(null);
@@ -225,7 +226,18 @@ class CourgetteRuntimeOptions {
             }
         }
 
+        checkDisabledPlugins(pluginCollection);
+
         return copyOf(pluginCollection.toArray(), pluginCollection.size(), String[].class);
+    }
+
+    private void checkDisabledPlugins(HashSet<String> plugins) {
+
+        if (plugins.stream().anyMatch(p -> p.startsWith("html"))) {
+            if (!courgetteProperties.isCucumberHtmlReportEnabled()) {
+                plugins.removeIf(p -> p.startsWith("html") || p.startsWith("message"));
+            }
+        }
     }
 
     private String[] addDefaultPlugins(String[] plugins) {
@@ -235,7 +247,7 @@ class CourgetteRuntimeOptions {
         return plugins;
     }
 
-    private BiFunction<String, Object, List<String>> optionParser = (name, options) -> {
+    private final BiFunction<String, Object, List<String>> optionParser = (name, options) -> {
         final List<String> runOptions = new ArrayList<>();
 
         final Boolean isStringArray = options instanceof String[];
@@ -261,7 +273,7 @@ class CourgetteRuntimeOptions {
         return runOptions;
     };
 
-    private BiFunction<String[], String, List<String>> featureParser = (resourceFeaturePaths, featurePath) -> {
+    private final BiFunction<String[], String, List<String>> featureParser = (resourceFeaturePaths, featurePath) -> {
         final List<String> featurePaths = new ArrayList<>();
         if (featurePath == null) {
             featurePaths.addAll(Arrays.asList(resourceFeaturePaths));

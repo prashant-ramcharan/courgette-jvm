@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -37,6 +38,15 @@ public final class FileUtils {
 
     public static List<File> getParentFiles(String path) {
         return Arrays.asList(new File(path).getParentFile().listFiles());
+    }
+
+    public static File getTempFile() {
+        try {
+            return Files.createTempFile(UUID.randomUUID().toString(), ".tmp").toFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public static File getClassPathFile(String path) {

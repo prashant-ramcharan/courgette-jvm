@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -19,7 +20,7 @@ import static java.util.Comparator.comparingLong;
 
 public class CourgetteNdJsonCreator {
 
-    private Map<Feature, List<List<Messages.Envelope>>> messages;
+    private final Map<Feature, List<List<Messages.Envelope>>> messages;
 
     public CourgetteNdJsonCreator(Map<Feature, List<List<Messages.Envelope>>> messages) {
         this.messages = messages;
@@ -111,33 +112,35 @@ public class CourgetteNdJsonCreator {
 
         final List<Messages.Envelope> envelopeList = new ArrayList<>();
 
-        final String testCaseId = extractTestCaseId(envelopes);
+        final Optional<Messages.TestCase> testCase = extractTestCase(envelopes);
 
-        final Messages.Pickle pickle = extractPickle(envelopes, testCaseId);
+        final Optional<Messages.Pickle> pickle = extractPickle(envelopes, testCase);
 
         envelopes.forEach(envelope -> {
 
-            if (Messages.Envelope.MessageCase.GHERKIN_DOCUMENT.equals(envelope.getMessageCase())) {
+            if (pickle.isPresent()) {
+                if (Messages.Envelope.MessageCase.GHERKIN_DOCUMENT.equals(envelope.getMessageCase())) {
 
-                final Messages.GherkinDocument.Feature.Scenario.Builder scenario = envelope.toBuilder()
-                        .getGherkinDocument()
-                        .getFeatureOrBuilder()
-                        .getChildrenOrBuilderList()
-                        .stream()
-                        .map(scenarioBuilder -> scenarioBuilder.getScenario().toBuilder())
-                        .filter(scenarioBuilder -> scenarioBuilder.getId().equals(pickle.getAstNodeIds(0)))
-                        .findFirst()
-                        .get();
+                    final Optional<Messages.GherkinDocument.Feature.Scenario.Builder> scenario = envelope.toBuilder()
+                            .getGherkinDocument()
+                            .getFeatureOrBuilder()
+                            .getChildrenOrBuilderList()
+                            .stream()
+                            .map(scenarioBuilder -> scenarioBuilder.getScenario().toBuilder())
+                            .filter(scenarioBuilder -> scenarioBuilder.getId().equals(pickle.get().getAstNodeIds(0)))
+                            .findFirst();
 
-                scenarios.add(scenario);
-                envelopeList.add(envelope);
+                    scenario.ifPresent(scenarios::add);
 
-            } else if (Messages.Envelope.MessageCase.PICKLE.equals(envelope.getMessageCase())) {
-                if (envelope.getPickle() == pickle) {
+                    envelopeList.add(envelope);
+
+                } else if (Messages.Envelope.MessageCase.PICKLE.equals(envelope.getMessageCase())) {
+                    if (envelope.getPickle() == pickle.get()) {
+                        envelopeList.add(envelope);
+                    }
+                } else {
                     envelopeList.add(envelope);
                 }
-            } else {
-                envelopeList.add(envelope);
             }
         });
 
@@ -176,21 +179,21 @@ public class CourgetteNdJsonCreator {
                 .build();
     }
 
-    private String extractTestCaseId(List<Messages.Envelope> envelopes) {
+    private Optional<Messages.TestCase> extractTestCase(List<Messages.Envelope> envelopes) {
         return envelopes.stream()
-                .filter(envelope -> !envelope.getTestCase().getPickleId().equals(""))
                 .map(Messages.Envelope::getTestCase)
-                .findFirst()
-                .get()
-                .getPickleId();
+                .filter(testCase -> !testCase.getPickleId().equals(""))
+                .findFirst();
     }
 
-    private Messages.Pickle extractPickle(List<Messages.Envelope> envelopes, String testCaseId) {
-        return envelopes.stream()
-                .filter(pickle -> pickle.getPickle().getId().equals(testCaseId))
-                .map(Messages.Envelope::getPickle)
-                .findFirst()
-                .get();
+    private Optional<Messages.Pickle> extractPickle(List<Messages.Envelope> envelopes, Optional<Messages.TestCase> testCase) {
+        if (!envelopes.isEmpty() && testCase.isPresent()) {
+            return envelopes.stream()
+                    .map(Messages.Envelope::getPickle)
+                    .filter(pickle -> pickle.getId().equals(testCase.get().getPickleId()))
+                    .findFirst();
+        }
+        return Optional.empty();
     }
 
     private Messages.Envelope createTestRunStarted(List<Messages.Envelope> envelopes) {
@@ -229,13 +232,13 @@ public class CourgetteNdJsonCreator {
         ).build();
     }
 
-    private Predicate<Messages.Envelope> gherkinEnvelope = (envelope) ->
+    private final Predicate<Messages.Envelope> gherkinEnvelope = (envelope) ->
             Messages.Envelope.MessageCase.GHERKIN_DOCUMENT.equals(envelope.getMessageCase());
 
-    private Predicate<Messages.Envelope> metaEnvelope = (envelope) ->
+    private final Predicate<Messages.Envelope> metaEnvelope = (envelope) ->
             Messages.Envelope.MessageCase.META.equals(envelope.getMessageCase());
 
-    private Predicate<Messages.Envelope> testRunStartedOrFinishedEnvelope = (envelope) ->
+    private final Predicate<Messages.Envelope> testRunStartedOrFinishedEnvelope = (envelope) ->
             Messages.Envelope.MessageCase.TEST_RUN_STARTED.equals(envelope.getMessageCase())
                     || Messages.Envelope.MessageCase.TEST_RUN_FINISHED.equals(envelope.getMessageCase());
 }

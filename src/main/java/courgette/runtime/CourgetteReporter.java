@@ -16,11 +16,10 @@ import static courgette.runtime.utils.FileUtils.writeFile;
 
 class CourgetteReporter {
 
-    private Map<String, CopyOnWriteArrayList<String>> reports;
-    private List<Messages.Envelope> messages;
-    private CourgetteRuntimeOptions courgetteRuntimeOptions;
-    private CourgetteProperties courgetteProperties;
-    private boolean canCreateCucumberReports;
+    private final Map<String, CopyOnWriteArrayList<String>> reports;
+    private final List<Messages.Envelope> messages;
+    private final CourgetteRuntimeOptions courgetteRuntimeOptions;
+    private final CourgetteProperties courgetteProperties;
 
     CourgetteReporter(Map<String, CopyOnWriteArrayList<String>> reports,
                       Map<io.cucumber.core.gherkin.Feature, List<List<Messages.Envelope>>> reportMessages,
@@ -32,15 +31,10 @@ class CourgetteReporter {
         this.courgetteProperties = courgetteProperties;
 
         this.messages = createMessages(reportMessages);
-        this.canCreateCucumberReports = this.messages != null;
 
-        if (canCreateCucumberReports) {
+        if (hasMessages()) {
             createNdJsonReport(this.messages);
         }
-    }
-
-    boolean canCreateCucumberReports() {
-        return canCreateCucumberReports;
     }
 
     void createCucumberReport(String reportFile, boolean mergeTestCaseName) {
@@ -54,7 +48,7 @@ class CourgetteReporter {
             final boolean isNdJson = reportFile.endsWith(".ndjson");
             final boolean isXml = reportFile.endsWith(".xml");
 
-            if (isHtml) {
+            if (isHtml && courgetteProperties.isCucumberHtmlReportEnabled()) {
                 CucumberHtmlReporter.createReport(reportFile, messages);
             }
 
@@ -63,7 +57,7 @@ class CourgetteReporter {
                 CucumberJsonReporter.createReport(reportFile, reportData);
             }
 
-            if (isNdJson) {
+            if (isNdJson && hasMessages()) {
                 if (!reportFile.equals(courgetteRuntimeOptions.getCourgetteReportNdJson())) {
                     CucumberNdJsonReporter.copyReport(courgetteRuntimeOptions.getCourgetteReportNdJson(), reportFile);
                 }
@@ -79,7 +73,9 @@ class CourgetteReporter {
     Optional<String> publishCucumberReport() {
         Optional<String> reportUrl = Optional.empty();
 
-        if (courgetteProperties.isCucumberReportPublisherEnabled()) {
+        if (courgetteProperties.isCucumberReportPublisherEnabled()
+                && courgetteProperties.isCucumberHtmlReportEnabled()
+                && hasMessages()) {
 
             final File ndJsonReport = new File(courgetteRuntimeOptions.getCourgetteReportNdJson());
 
@@ -134,5 +130,9 @@ class CourgetteReporter {
 
     private void createNdJsonReport(List<Messages.Envelope> messages) {
         CucumberNdJsonReporter.createReport(courgetteRuntimeOptions.getCourgetteReportNdJson(), messages);
+    }
+
+    private boolean hasMessages() {
+        return messages != null;
     }
 }
