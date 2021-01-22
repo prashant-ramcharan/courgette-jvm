@@ -20,6 +20,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 - Supports **JUnit** and **TestNG**
 - Integrates with **Extent Reports** to create interactive reports.
 - Integrates with **Report Portal** to support AI powered dashboards.
+- Integrates with **Allure** to generate test reports.  
 - Can be used with **Gradle** and **Maven**.
 - Searchable and paginated **Courgette-JVM Html Report** which includes all step definitions, embedded screenshots, thrown exceptions, pie chart and Courgette run information.
 ![CourgetteJVM_Report.png](images/CourgetteJVM_Report.png)
@@ -63,8 +64,11 @@ compile 'io.github.prashant-ramcharan:courgette-jvm:5.9.0'
 
 Example projects:
 
-* [Courgette-JVM Example](https://github.com/prashant-ramcharan/courgette-jvm-example)
+* [Courgette-JVM with Gradle Example](https://github.com/prashant-ramcharan/courgette-jvm-example)
+* [Courgette-JVM with Maven Example](https://github.com/prashant-ramcharan/courgette-jvm-maven-example)
 * [Courgette-JVM with Selenium Example (_multiple browsers_)](https://github.com/prashant-ramcharan/courgette-jvm-selenium)
+* [Courgette-JVM with Spring Example](https://github.com/prashant-ramcharan/courgette-jvm-spring-example)
+* [Courgette-JVM with Allure Example](https://github.com/prashant-ramcharan/courgette-jvm-allure-example)
 
 Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios in parallel. A JUnit runner class must be annotated with **@RunWith(Courgette.class)** and a TestNG runner class must extend **TestNGCourgette**.
 
@@ -309,6 +313,21 @@ To configure custom reports (_i.e. change the report name or theme_) you should 
 
 ![CourgetteJVM_ExtentReports.png](images/CourgetteJVM_ExtentReports.png)
 
+## Allure Integration
+
+Courgette allows the generation of Allure reports using the Allure Cucumber plugin.
+
+````java
+@CourgetteOptions(
+      ...
+      cucumberOptions = @CucumberOptions(
+         plugin = {
+            "io.qameta.allure.cucumber6jvm.AllureCucumber6Jvm"
+         }
+      )
+)
+````
+![CourgetteJVM-AllureReport.png](images/CourgetteJVM-AllureReport.png)
 
 ## Limitations and Known Issues
    
