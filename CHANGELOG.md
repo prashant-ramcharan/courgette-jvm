@@ -1,3 +1,8 @@
+CHANGES IN VERSION 5.9.1
+=================================
+
+* [FIX] Add missing step keyword in the Courgette html report.
+
 CHANGES IN VERSION 5.9.0
 =================================
 

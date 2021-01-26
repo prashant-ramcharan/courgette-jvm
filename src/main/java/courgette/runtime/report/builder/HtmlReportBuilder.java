@@ -48,6 +48,7 @@ public class HtmlReportBuilder {
     private static final String MODAL_HEADING = "modal_heading";
     private static final String MODAL_FEATURE_LINE = "modal_feature_line";
     private static final String MODAL_BODY = "modal_body";
+    private static final String STEP_KEYWORD = "step_keyword";
     private static final String STEP_NAME = "step_name";
     private static final String STEP_DURATION = "step_duration";
     private static final String STEP_BADGE = "step_badge";
@@ -250,6 +251,7 @@ public class HtmlReportBuilder {
 
         String stepResult = statusLabel.apply(step.getResult());
 
+        stepData.put(STEP_KEYWORD, step.getKeyword());
         stepData.put(STEP_NAME, step.getName());
         stepData.put(STEP_DURATION, step.getResult().getDuration());
         stepData.put(STEP_BADGE, stepStatusBadge);
