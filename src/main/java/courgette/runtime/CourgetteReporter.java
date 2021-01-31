@@ -48,7 +48,7 @@ class CourgetteReporter {
             final boolean isNdJson = reportFile.endsWith(".ndjson");
             final boolean isXml = reportFile.endsWith(".xml");
 
-            if (isHtml && courgetteProperties.isCucumberHtmlReportEnabled()) {
+            if (isHtml && courgetteProperties.isCucumberHtmlReportEnabled() && hasMessages()) {
                 CucumberHtmlReporter.createReport(reportFile, messages);
             }
 

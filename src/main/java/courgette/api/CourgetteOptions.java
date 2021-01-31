@@ -59,6 +59,11 @@ public @interface CourgetteOptions {
     HtmlReport[] disableHtmlReport() default {};
 
     /**
+     * @return custom classpath
+     */
+    String[] classPath() default "";
+
+    /**
      * @return the Cucumber options
      */
     CucumberOptions cucumberOptions();

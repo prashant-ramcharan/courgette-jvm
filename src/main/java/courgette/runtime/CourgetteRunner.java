@@ -242,8 +242,7 @@ public class CourgetteRunner {
 
     private boolean runFeature(Map<String, List<String>> args) {
         try {
-            final boolean showTestOutput = courgetteProperties.getCourgetteOptions().showTestOutput();
-            return 0 == new CourgetteFeatureRunner(args, showTestOutput).run();
+            return 0 == new CourgetteFeatureRunner(args, courgetteProperties).run();
         } catch (Throwable throwable) {
             throwable.printStackTrace();
             return false;

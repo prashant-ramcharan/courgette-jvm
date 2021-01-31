@@ -13,12 +13,12 @@ import static courgette.runtime.CourgetteException.printExceptionStackTrace;
 import static courgette.runtime.utils.SystemPropertyUtils.splitAndAddPropertyToList;
 
 public class CourgetteFeatureRunner {
-    private Map<String, List<String>> runnerArgs;
-    private Boolean output;
+    private final Map<String, List<String>> runnerArgs;
+    private final CourgetteProperties courgetteProperties;
 
-    CourgetteFeatureRunner(Map<String, List<String>> runnerArgs, Boolean output) {
+    CourgetteFeatureRunner(Map<String, List<String>> runnerArgs, CourgetteProperties courgetteProperties) {
         this.runnerArgs = runnerArgs;
-        this.output = output;
+        this.courgetteProperties = courgetteProperties;
     }
 
     public int run() {
@@ -45,7 +45,7 @@ public class CourgetteFeatureRunner {
 
             environmentVariablesToRemove().forEach(builder.environment()::remove);
 
-            if (output) {
+            if (courgetteProperties.getCourgetteOptions().showTestOutput()) {
                 builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
             } else {
                 final File tempFile = FileUtils.getTempFile();
@@ -61,6 +61,7 @@ public class CourgetteFeatureRunner {
             commands.add("java");
             splitAndAddPropertyToList(CourgetteSystemProperty.VM_OPTIONS, commands);
             commands.addAll(getSystemProperties());
+            checkCustomClassPath(commands);
             commands.add("io.cucumber.core.cli.Main");
             runnerArgs.forEach((key, value) -> commands.addAll(value));
 
@@ -90,6 +91,14 @@ public class CourgetteFeatureRunner {
             final List<String> environment = new ArrayList<>();
             environment.add(CUCUMBER_PUBLISH_TOKEN);
             return environment;
+        }
+
+        private void checkCustomClassPath(List<String> commands) {
+            if (courgetteProperties.useCustomClasspath()) {
+                commands.removeIf(c -> c.startsWith("-Djava.class.path"));
+                commands.add("-cp");
+                commands.add(String.join(File.pathSeparator, courgetteProperties.getCourgetteOptions().classPath()));
+            }
         }
     }
 }

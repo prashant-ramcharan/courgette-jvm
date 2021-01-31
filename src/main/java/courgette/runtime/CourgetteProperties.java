@@ -62,5 +62,9 @@ public class CourgetteProperties {
         return checkIfReportIsEnabled.test(HtmlReport.CUCUMBER_HTML);
     }
 
+    public boolean useCustomClasspath() {
+        return courgetteOptions.classPath().length > 0;
+    }
+
     private final Predicate<HtmlReport> checkIfReportIsEnabled = (report) -> !Arrays.asList(getCourgetteOptions().disableHtmlReport()).contains(report);
 }
