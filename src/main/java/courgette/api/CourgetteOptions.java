@@ -61,7 +61,7 @@ public @interface CourgetteOptions {
     /**
      * @return custom classpath
      */
-    String[] classPath() default "";
+    String[] classPath() default {};
 
     /**
      * @return the Cucumber options
