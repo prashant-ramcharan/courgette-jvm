@@ -1,3 +1,9 @@
+CHANGES IN VERSION 5.9.2
+=================================
+
+* [NEW] Add new Courgette option `classPath` to allow Courgette to use a custom class path when running Cucumber tests. 
+    * This should provide a workaround to the `CreateProcess error=206` limitation on Windows operating systems.
+
 CHANGES IN VERSION 5.9.1
 =================================
 

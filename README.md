@@ -39,7 +39,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>5.9.1</version>
+  <version>5.9.2</version>
 </dependency>
 ````
 
@@ -49,7 +49,7 @@ repositories {
     jcenter()
 }
 
-compile 'io.github.prashant-ramcharan:courgette-jvm:5.9.1'
+compile 'io.github.prashant-ramcharan:courgette-jvm:5.9.2'
 ````
 
 #### Included Cucumber Dependencies
@@ -69,6 +69,7 @@ Example projects:
 * [Courgette-JVM with Selenium Example (_multiple browsers_)](https://github.com/prashant-ramcharan/courgette-jvm-selenium)
 * [Courgette-JVM with Spring Example](https://github.com/prashant-ramcharan/courgette-jvm-spring-example)
 * [Courgette-JVM with Allure Example](https://github.com/prashant-ramcharan/courgette-jvm-allure-example)
+* [Courgette-JVM with Custom Class Path Example](https://github.com/prashant-ramcharan/courgette-jvm-classpath-example)
 
 Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios in parallel. A JUnit runner class must be annotated with **@RunWith(Courgette.class)** and a TestNG runner class must extend **TestNGCourgette**.
 
@@ -98,6 +99,9 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
 
 * **disableHtmlReport**: If set, the Courgette and Cucumber html reports will not be generated at the end of the test run.
     * _Options are `HtmlReport.COURGETTE_HTML` and `HtmlReport.CUCUMBER_HTML`_
+    
+* **classPath**: Allows a custom class path to be used when running tests.
+    * _The class path should point to:_ `{ "path-to-project-jars", "path-to-test-classes" }`
   
 * **cucumberOptions** : The standard cucumber options for specifying feature paths, glue, tags etc..
     * The `publish` cucumber option (_supported from version 5.1.0_) will publish a single cucumber report after parallel execution. 
