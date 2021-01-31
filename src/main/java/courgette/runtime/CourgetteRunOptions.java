@@ -76,6 +76,11 @@ public class CourgetteRunOptions implements CourgetteOptions {
     }
 
     @Override
+    public String[] classPath() {
+        return courgetteOptions.classPath();
+    }
+
+    @Override
     public Class<? extends Annotation> annotationType() {
         return null;
     }
