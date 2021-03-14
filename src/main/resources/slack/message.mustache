@@ -1,0 +1,78 @@
+{"channel":"{{channel}}",
+"blocks": [
+    {
+        "type": "divider",
+        "block_id": "divider1"
+    },
+    {
+        "type": "header",
+        "text": {
+            "type": "plain_text",
+            "text": ":{{icon}}: {{description}}"
+        }
+    },
+    {
+        "type": "divider",
+        "block_id": "divider2"
+    },
+    {
+        "type": "context",
+        "elements": [
+            {
+                "type": "mrkdwn",
+                "text": "*Timestamp:* {{timestamp}}"
+            }
+        ]
+    },
+    {
+        "type": "context",
+        "elements": [
+            {
+                "type": "mrkdwn",
+                "text": "*Session Id:* {{session_id}}"
+            }
+        ]
+    },
+    {{#section}}
+    {
+        "type": "context",
+        "elements": [
+            {
+                "type": "mrkdwn",
+                "text": "*Feature:* {{feature}}"
+            }
+        ]
+    },
+    {{#optional1}}
+    {
+        "type": "context",
+        "elements": [
+            {
+                "type": "mrkdwn",
+                "text": "*Scenario:* {{scenario}}"
+            }
+        ]
+    },
+    {
+        "type": "context",
+        "elements": [
+            {
+                "type": "mrkdwn",
+                "text": "*Line:* {{line}}"
+            }
+        ]
+    },    
+    {{/optional1}}
+    {{#optional2}}
+    {
+        "type": "context",
+        "elements": [
+            {
+                "type": "mrkdwn",
+                "text": "*Rerun:* {{rerun}}"
+            }
+        ]
+    }
+    {{/optional2}}
+    {{/section}}
+]}

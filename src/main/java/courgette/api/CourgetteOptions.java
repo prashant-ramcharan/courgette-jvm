@@ -1,5 +1,7 @@
 package courgette.api;
 
+import courgette.runtime.event.CourgetteEvent;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -62,6 +64,21 @@ public @interface CourgetteOptions {
      * @return custom classpath
      */
     String[] classPath() default {};
+
+    /**
+     * @return the Slack webhook URL
+     */
+    String slackWebhookUrl() default "";
+
+    /**
+     * @return the Slack channels
+     */
+    String[] slackChannel() default {};
+
+    /**
+     * @return the Courgette events subscriptions
+     */
+    CourgetteEvent[] slackEventSubscription() default {};
 
     /**
      * @return the Cucumber options

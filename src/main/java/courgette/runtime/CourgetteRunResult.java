@@ -35,7 +35,8 @@ public class CourgetteRunResult {
         PASSED("Passed"),
         FAILED("Failed"),
         RERUN("Re-run"),
-        PASSED_AFTER_RERUN("Passed after Rerun");
+        PASSED_AFTER_RERUN("Passed after Rerun"),
+        FAILED_AFTER_RERUN("Failed after Rerun");
 
         private String description;
 
