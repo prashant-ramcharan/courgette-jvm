@@ -5,6 +5,7 @@ import courgette.api.CourgetteRunLevel;
 import courgette.api.CucumberOptions;
 import courgette.api.HtmlReport;
 import courgette.integration.reportportal.ReportPortalProperties;
+import courgette.runtime.event.CourgetteEvent;
 import courgette.runtime.utils.FileUtils;
 import courgette.runtime.utils.SystemPropertyUtils;
 
@@ -18,6 +19,7 @@ public class CourgetteRunOptions implements CourgetteOptions {
     public CourgetteRunOptions(Class clazz) {
         validate(clazz);
         validatePlugins();
+        validateSlackOptions();
     }
 
     @Override
@@ -81,6 +83,21 @@ public class CourgetteRunOptions implements CourgetteOptions {
     }
 
     @Override
+    public String slackWebhookUrl() {
+        return SystemPropertyUtils.getNonEmptyStringProperty(CourgetteSystemProperty.SLACK_WEBHOOK_URL, courgetteOptions.slackWebhookUrl(), "");
+    }
+
+    @Override
+    public String[] slackChannel() {
+        return courgetteOptions.slackChannel();
+    }
+
+    @Override
+    public CourgetteEvent[] slackEventSubscription() {
+        return courgetteOptions.slackEventSubscription();
+    }
+
+    @Override
     public Class<? extends Annotation> annotationType() {
         return null;
     }
@@ -108,6 +125,15 @@ public class CourgetteRunOptions implements CourgetteOptions {
                 throw new CourgetteException("The " + reportPortalPropertiesFilename + " file must be in your classpath to use the Courgette reportportal plugin");
             }
             ReportPortalProperties.getInstance().validate();
+        }
+    }
+
+    private void validateSlackOptions() {
+        final CourgetteSlackOptions slackOptions = new CourgetteSlackOptions(
+                slackWebhookUrl(), Arrays.asList(slackChannel()), Arrays.asList(slackEventSubscription()));
+
+        if (slackOptions.shouldValidate() && !slackOptions.isValid()) {
+            throw new CourgetteException("You must provide a Slack webhook URL and valid Slack channels");
         }
     }
 }

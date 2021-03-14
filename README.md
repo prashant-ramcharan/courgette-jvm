@@ -18,6 +18,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 - **Single re-run file** listing all failed scenarios that occurred during parallel execution.
 - Supports **Cucumber-JVM 6**
 - Supports **JUnit** and **TestNG**
+- Integrates with **Slack** to provide real time test results.
 - Integrates with **Extent Reports** to create interactive reports.
 - Integrates with **Report Portal** to support AI powered dashboards.
 - Integrates with **Allure** to generate test reports.  
@@ -39,7 +40,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>5.9.2</version>
+  <version>5.10.0</version>
 </dependency>
 ````
 
@@ -49,15 +50,15 @@ repositories {
     jcenter()
 }
 
-compile 'io.github.prashant-ramcharan:courgette-jvm:5.9.2'
+compile 'io.github.prashant-ramcharan:courgette-jvm:5.10.0'
 ````
 
 #### Included Cucumber Dependencies
-* cucumber-core 6.9.1
-* cucumber-java 6.9.1
-* cucumber-java8 6.9.1
-* cucumber-junit 6.9.1
-* cucumber-testng 6.9.1
+* cucumber-core 6.10.1
+* cucumber-java 6.10.1
+* cucumber-java8 6.10.1
+* cucumber-junit 6.10.1
+* cucumber-testng 6.10.1
 
 
 ## Usage
@@ -102,7 +103,13 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
     
 * **classPath**: Allows a custom class path to be used when running tests.
     * _The class path should point to:_ `{ "path-to-project-jars", "path-to-test-classes" }`
-  
+    
+* **slackWebhookUrl**: The incoming webhook URL that Courgette uses to send messages to Slack.
+
+* **slackChannel**: The Slack channels that Courgette will post messages to.
+
+* **slackEventSubscription**: The Courgette events to subscribe to that gets published to Slack channels. 
+ 
 * **cucumberOptions** : The standard cucumber options for specifying feature paths, glue, tags etc..
     * The `publish` cucumber option (_supported from version 5.1.0_) will publish a single cucumber report after parallel execution. 
         * The published report link will be displayed in the console and saved to `${reportTargetDir}/cucumber-report-link.txt`.
@@ -247,6 +254,44 @@ public class RegressionTestSuite {
 
 You can add any number of annotated methods to your test suite class. 
 If you need your callbacks to run in a specific order, pass `order` to the annotation: `@CourgetteBeforeAll(order = 2)`.
+
+## Slack Integration
+
+Courgette allows real time test results and events to be posted to Slack as tests are run.
+
+To enable this feature, add the following Courgette options to the Courgette runner:
+
+````java
+@CourgetteOptions(
+      ...
+      slackWebhookUrl = "https://hooks.slack.com/services/your-slack-url",
+      slackChannel = {"channel1", "channel2"},
+      slackEventSubscription = {CourgetteEvent.ALL},
+      cucumberOptions = @CucumberOptions(
+      // cucumber options here
+      )
+)
+````
+
+###Slack Incoming Webhook URL
+
+You need to create an incoming webhook URL to allow Courgette to post messages to your Slack application. 
+
+https://api.slack.com/messaging/webhooks#create_a_webhook
+
+
+### Event Subscription
+
+You can subscribe to single or multiple Courgette events. When events are triggered as the tests run, Courgette will post a message to the Slack channels defined in the runner.
+  - ALL
+  - TEST_RUN_STARTED
+  - TEST_RUN_FINISHED
+  - TEST_PASSED
+  - TEST_PASSED_AFTER_RERUN
+  - TEST_FAILED  
+  - TEST_RERUN
+
+![CourgetteJVM_Slack.png](images/CourgetteJVM_Slack.png)
 
 ## Report Portal Integration
 

@@ -10,4 +10,5 @@ final class CourgetteSystemProperty {
     final static String REPORT_TITLE = "courgette.reportTitle";
     final static String REPORT_TARGET_DIR = "courgette.reportTargetDir";
     final static String ENVIRONMENT_INFO = "courgette.environmentInfo";
+    final static String SLACK_WEBHOOK_URL = "courgette.slackWebhookUrl";
 }

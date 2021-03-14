@@ -6,6 +6,12 @@ import courgette.integration.extentreports.ExtentReportsBuilder;
 import courgette.integration.extentreports.ExtentReportsProperties;
 import courgette.integration.reportportal.ReportPortalProperties;
 import courgette.integration.reportportal.ReportPortalService;
+import courgette.integration.slack.SlackMessageSender;
+import courgette.integration.slack.SlackService;
+import courgette.runtime.event.EventPublisher;
+import courgette.runtime.event.EventSender;
+import courgette.runtime.event.EventSubscriberCreator;
+import courgette.runtime.event.CourgetteEvent;
 import courgette.runtime.report.JsonReportParser;
 import courgette.runtime.report.model.Feature;
 import courgette.runtime.utils.FileUtils;
@@ -39,6 +45,7 @@ public class CourgetteRunner {
     private final CourgetteProperties courgetteProperties;
     private final CourgetteRuntimeOptions defaultRuntimeOptions;
     private final List<CourgetteRunResult> runResults = new ArrayList<>();
+    private final EventPublisher eventPublisher;
     private final boolean rerunFailedScenarios;
     private final boolean canRunFeatures;
 
@@ -54,6 +61,7 @@ public class CourgetteRunner {
         this.courgetteProperties = courgetteProperties;
         this.rerunFailedScenarios = courgetteProperties.getCourgetteOptions().rerunFailedScenarios();
         this.defaultRuntimeOptions = new CourgetteRuntimeOptions(courgetteProperties);
+        this.eventPublisher = createEventPublisher(createSlackEventSender());
     }
 
     public RunStatus run() {
@@ -73,7 +81,7 @@ public class CourgetteRunner {
             this.runners.add(() -> {
                 try {
                     if (runFeature(cucumberArgs)) {
-                        runResults.add(new CourgetteRunResult(feature, lineId, featureUri, CourgetteRunResult.Status.PASSED));
+                        addResultAndPublish(new CourgetteRunResult(feature, lineId, featureUri, CourgetteRunResult.Status.PASSED));
                         return true;
                     }
 
@@ -85,29 +93,31 @@ public class CourgetteRunner {
 
                         if (courgetteProperties.isFeatureRunLevel()) {
 
-                            runResults.add(new CourgetteRunResult(feature, lineId, featureUri, CourgetteRunResult.Status.RERUN));
+                            CourgetteRunResult rerunResult = new CourgetteRunResult(feature, lineId, featureUri, CourgetteRunResult.Status.RERUN);
+                            runResults.add(rerunResult);
 
-                            if (rerunFeature(cucumberArgs)) {
-                                runResults.add(new CourgetteRunResult(feature, lineId, featureUri, CourgetteRunResult.Status.PASSED_AFTER_RERUN));
+                            if (rerunFeature(cucumberArgs, rerunResult)) {
+                                addResultAndPublish(new CourgetteRunResult(feature, lineId, featureUri, CourgetteRunResult.Status.PASSED_AFTER_RERUN));
                                 return true;
                             } else {
-                                runResults.add(new CourgetteRunResult(feature, lineId, featureUri, CourgetteRunResult.Status.FAILED));
+                                addResultAndPublish(new CourgetteRunResult(feature, lineId, featureUri, CourgetteRunResult.Status.FAILED_AFTER_RERUN));
                             }
                         } else {
                             final Map<String, List<String>> rerunCucumberArgs = runnerInfo.getRerunRuntimeOptions(rerun);
 
                             final String rerunFeatureUri = rerunCucumberArgs.get(null).get(0);
 
-                            runResults.add(new CourgetteRunResult(feature, lineId, rerunFeatureUri, CourgetteRunResult.Status.RERUN));
+                            CourgetteRunResult rerunResult = new CourgetteRunResult(feature, lineId, rerunFeatureUri, CourgetteRunResult.Status.RERUN);
+                            runResults.add(rerunResult);
 
-                            if (rerunFeature(rerunCucumberArgs)) {
-                                runResults.add(new CourgetteRunResult(feature, lineId, rerunFeatureUri, CourgetteRunResult.Status.PASSED_AFTER_RERUN));
+                            if (rerunFeature(rerunCucumberArgs, rerunResult)) {
+                                addResultAndPublish(new CourgetteRunResult(feature, lineId, rerunFeatureUri, CourgetteRunResult.Status.PASSED_AFTER_RERUN));
                                 return true;
                             }
-                            runResults.add(new CourgetteRunResult(feature, lineId, rerunFeatureUri, CourgetteRunResult.Status.FAILED));
+                            addResultAndPublish(new CourgetteRunResult(feature, lineId, rerunFeatureUri, CourgetteRunResult.Status.FAILED_AFTER_RERUN));
                         }
                     } else {
-                        runResults.add(new CourgetteRunResult(feature, lineId, featureUri, CourgetteRunResult.Status.FAILED));
+                        addResultAndPublish(new CourgetteRunResult(feature, lineId, featureUri, CourgetteRunResult.Status.FAILED));
                     }
 
                     if (rerun != null) {
@@ -139,29 +149,18 @@ public class CourgetteRunner {
         }
 
         try {
+            publishEvent(CourgetteEvent.TEST_RUN_STARTED);
             executor.invokeAll(runners);
         } catch (InterruptedException e) {
             printExceptionStackTrace(e);
         } finally {
+            publishEvent(CourgetteEvent.TEST_RUN_FINISHED);
             executor.shutdownNow();
         }
 
         boolean hasErrors = reportMessages.values().stream().anyMatch(List::isEmpty);
 
         return hasErrors ? RunStatus.ERROR : RunStatus.OK;
-    }
-
-    private boolean rerunFeature(Map<String, List<String>> args) {
-        int rerunAttempts = courgetteProperties.getCourgetteOptions().rerunAttempts();
-
-        rerunAttempts = Math.max(rerunAttempts, 1);
-
-        while (rerunAttempts-- > 0) {
-            if (runFeature(args)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public void createCucumberReport() {
@@ -215,7 +214,9 @@ public class CourgetteRunner {
     }
 
     public List<CourgetteRunResult> getFailures() {
-        return runResults.stream().filter(t -> t.getStatus() == CourgetteRunResult.Status.FAILED).collect(Collectors.toList());
+        return runResults.stream()
+                .filter(t -> t.getStatus().equals(CourgetteRunResult.Status.FAILED) || t.getStatus().equals(CourgetteRunResult.Status.FAILED_AFTER_RERUN))
+                .collect(Collectors.toList());
     }
 
     public boolean canRunFeatures() {
@@ -249,6 +250,22 @@ public class CourgetteRunner {
         }
     }
 
+    private boolean rerunFeature(Map<String, List<String>> args, CourgetteRunResult rerunResult) {
+        int rerunAttempts = courgetteProperties.getCourgetteOptions().rerunAttempts();
+
+        rerunAttempts = Math.max(rerunAttempts, 1);
+
+        while (rerunAttempts-- > 0) {
+
+            publishEvent(CourgetteEvent.TEST_RERUN, rerunResult);
+
+            if (runFeature(args)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private String prettyJson(String json) {
         final ObjectMapper mapper = new ObjectMapper();
 
@@ -280,5 +297,54 @@ public class CourgetteRunner {
                 : courgetteProperties.getMaxThreads() < 1
                 ? 1
                 : courgetteProperties.getMaxThreads();
+    }
+
+    private void publishEvent(CourgetteEvent courgetteEvent) {
+        publishEvent(courgetteEvent, null);
+    }
+
+    private synchronized void publishEvent(CourgetteEvent courgetteEvent, CourgetteRunResult courgetteRunResult) {
+        if (eventPublisher != null) {
+            eventPublisher.publishEvent(courgetteEvent, courgetteProperties, courgetteRunResult);
+        }
+    }
+
+    private EventSender createSlackEventSender() {
+        if (courgetteProperties.publishEventsToSlack()) {
+            CourgetteSlackOptions slackOptions = courgetteProperties.slackOptions();
+            SlackService slackService = new SlackService(slackOptions.getWebhookUrl());
+            return new SlackMessageSender(slackService, slackOptions);
+        }
+
+        return null;
+    }
+
+    private EventPublisher createEventPublisher(EventSender eventSender) {
+        if (eventSender != null) {
+            EventPublisher eventPublisher = new EventPublisher(eventSender);
+            EventSubscriberCreator.createEventSubscribers(eventPublisher, courgetteProperties.slackOptions().getEvents());
+            return eventPublisher;
+        }
+
+        return null;
+    }
+
+    private void addResultAndPublish(CourgetteRunResult courgetteRunResult) {
+        runResults.add(courgetteRunResult);
+
+        if (eventPublisher != null) {
+            switch (courgetteRunResult.getStatus()) {
+                case PASSED:
+                    publishEvent(CourgetteEvent.TEST_PASSED, courgetteRunResult);
+                    break;
+                case PASSED_AFTER_RERUN:
+                    publishEvent(CourgetteEvent.TEST_PASSED_AFTER_RERUN, courgetteRunResult);
+                    break;
+                case FAILED:
+                case FAILED_AFTER_RERUN:
+                    publishEvent(CourgetteEvent.TEST_FAILED, courgetteRunResult);
+                    break;
+            }
+        }
     }
 }

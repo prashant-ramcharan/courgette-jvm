@@ -1,3 +1,8 @@
+CHANGES IN VERSION 5.10.0
+=================================
+* [NEW] Add Slack integration to allow real time results and events to be posted to Slack channels.
+* [MAINTENANCE] Upgrade to Cucumber version 6.10.1
+
 CHANGES IN VERSION 5.9.2
 =================================
 

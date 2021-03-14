@@ -66,5 +66,15 @@ public class CourgetteProperties {
         return courgetteOptions.classPath().length > 0;
     }
 
+    public CourgetteSlackOptions slackOptions() {
+        return new CourgetteSlackOptions(courgetteOptions.slackWebhookUrl(),
+                Arrays.asList(courgetteOptions.slackChannel()),
+                Arrays.asList(courgetteOptions.slackEventSubscription()));
+    }
+
+    public boolean publishEventsToSlack() {
+        return slackOptions().isValid();
+    }
+
     private final Predicate<HtmlReport> checkIfReportIsEnabled = (report) -> !Arrays.asList(getCourgetteOptions().disableHtmlReport()).contains(report);
 }
