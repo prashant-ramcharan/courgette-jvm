@@ -108,7 +108,7 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
 
 * **slackChannel**: The Slack channels that Courgette will post messages to.
 
-* **slackEventSubscription**: The Courgette events to subscribe to that gets published to Slack channels. 
+* **slackEventSubscription**: The Courgette events to subscribe to that gets posted to Slack. 
  
 * **cucumberOptions** : The standard cucumber options for specifying feature paths, glue, tags etc..
     * The `publish` cucumber option (_supported from version 5.1.0_) will publish a single cucumber report after parallel execution. 
@@ -273,7 +273,7 @@ To enable this feature, add the following Courgette options to the Courgette run
 )
 ````
 
-###Slack Incoming Webhook URL
+### Slack Incoming Webhook URL
 
 You need to create an incoming webhook URL to allow Courgette to post messages to your Slack application. 
 
