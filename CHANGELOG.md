@@ -1,3 +1,7 @@
+CHANGES IN VERSION 5.10.1
+=================================
+* [FIX] Bug which raised uncaught exceptions when sending messages to Slack.
+
 CHANGES IN VERSION 5.10.0
 =================================
 * [NEW] Add Slack integration to allow real time results and events to be posted to Slack channels.
