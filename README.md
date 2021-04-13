@@ -1,6 +1,5 @@
 
 [![Build Status](https://travis-ci.org/prashant-ramcharan/courgette-jvm.svg?branch=master)](https://travis-ci.org/prashant-ramcharan/courgette-jvm)
-[ ![Download](https://api.bintray.com/packages/prashantr/Courgette-JVM/courgette-jvm/images/download.svg) ](https://bintray.com/prashantr/Courgette-JVM/courgette-jvm/_latestVersion)
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.prashant-ramcharan/courgette-jvm.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22io.github.prashant-ramcharan%22%20AND%20a:%22courgette-jvm%22)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -31,26 +30,18 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 
 ## Installation
 
-#### Repository: [jcenter](https://bintray.com/bintray/jcenter?filterByPkgName=courgette-jvm)
-
-<a href='https://bintray.com/prashantr/Courgette-JVM/courgette-jvm?source=watch' alt='Get automatic notifications about new "courgette-jvm" versions'><img src='https://www.bintray.com/docs/images/bintray_badge_color.png'></a>
-
 #### Maven
 ````xml
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>5.10.0</version>
+  <version>5.10.1</version>
 </dependency>
 ````
 
 #### Gradle
 ````gradle
-repositories {
-    jcenter()
-}
-
-compile 'io.github.prashant-ramcharan:courgette-jvm:5.10.0'
+compile 'io.github.prashant-ramcharan:courgette-jvm:5.10.1'
 ````
 
 #### Included Cucumber Dependencies
