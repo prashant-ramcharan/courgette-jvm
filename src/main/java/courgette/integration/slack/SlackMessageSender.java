@@ -7,6 +7,7 @@ import courgette.runtime.CourgetteSlackOptions;
 import courgette.runtime.event.CourgetteEvent;
 import courgette.runtime.event.EventHolder;
 import courgette.runtime.event.EventSender;
+import io.cucumber.core.gherkin.Feature;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -16,10 +17,11 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
+import static courgette.runtime.CourgetteException.printError;
 import static courgette.runtime.CourgetteException.printExceptionStackTrace;
 
 public class SlackMessageSender implements EventSender {
@@ -36,15 +38,22 @@ public class SlackMessageSender implements EventSender {
 
     @Override
     public void send(EventHolder eventHolder) {
-        slackOptions.getChannels().forEach(channel -> slackService.postMessage(createMessage(channel, eventHolder)));
+        slackOptions.getChannels().forEach(channel ->
+                createMessage(channel, eventHolder).ifPresent(slackService::postMessage));
     }
 
-    private String createMessage(String channel, EventHolder eventHolder) {
-        if (isInfoEvent(eventHolder)) {
-            return createFromTemplate(messageTemplate, createInfoMessageData(channel, eventHolder));
-        } else {
-            return createFromTemplate(messageTemplate, createMessageData(channel, eventHolder));
+    private Optional<String> createMessage(String channel, EventHolder eventHolder) {
+        try {
+            if (isInfoEvent(eventHolder)) {
+                return Optional.of(createFromTemplate(messageTemplate, createInfoMessageData(channel, eventHolder)));
+            } else {
+                return Optional.of(createFromTemplate(messageTemplate, createMessageData(channel, eventHolder)));
+            }
+        } catch (Exception e) {
+            printError("Courgette Slack Message: There was an error creating the slack message -> " + e.getMessage());
         }
+
+        return Optional.empty();
     }
 
     private boolean isInfoEvent(EventHolder eventHolder) {
@@ -57,10 +66,10 @@ public class SlackMessageSender implements EventSender {
     }
 
     private Map<String, Object> createMessageData(String channel, EventHolder eventHolder) {
-        HashMap<String, Object> section2 = new HashMap<>();
-        addOptional(section2, eventHolder);
+        HashMap<String, Object> section = new HashMap<>();
+        addOptional(section, eventHolder);
         HashMap<String, Object> data = createDefaultData(channel, eventHolder);
-        data.put("section", section2);
+        data.put("section", section);
         return data;
     }
 
@@ -77,25 +86,13 @@ public class SlackMessageSender implements EventSender {
     private void addOptional(Map<String, Object> data, EventHolder eventHolder) {
         CourgetteRunResult courgetteRunResult = eventHolder.getCourgetteRunResult();
 
-        String featureFile = Arrays.stream(courgetteRunResult.getFeatureUri().split(File.separator))
-                .reduce((x, y) -> y)
-                .orElse(courgetteRunResult.getFeatureUri());
+        data.put("feature", trimFeatureName(courgetteRunResult.getFeature()));
 
-        if (featureFile.contains(":")) {
+        if (courgetteRunResult.getLineId() != null) {
             Map<String, Object> optional1 = new HashMap<>();
-
-            String[] parts = featureFile.split(":");
-            featureFile = parts[0];
-            String lineNumber = parts[1];
-
-            optional1.put("scenario", getScenarioName(courgetteRunResult, lineNumber));
-            optional1.put("line", lineNumber);
-
-            data.put("feature", trimFeature(featureFile));
+            optional1.put("scenario", getScenarioName(courgetteRunResult, courgetteRunResult.getLineId()));
+            optional1.put("line", courgetteRunResult.getLineId());
             data.put("optional1", optional1);
-
-        } else {
-            data.put("feature", trimFeature(featureFile));
         }
 
         if (eventHolder.getCourgetteProperties().getCourgetteOptions().rerunFailedScenarios()
@@ -126,14 +123,14 @@ public class SlackMessageSender implements EventSender {
         }
     }
 
-    private String trimFeature(String feature) {
-        return feature.split("\\.")[0].trim();
+    private String trimFeatureName(Feature feature) {
+        return new File(feature.getUri()).getName().split("\\.")[0].trim();
     }
 
-    private String getScenarioName(CourgetteRunResult courgetteRunResult, String lineNumber) {
+    private String getScenarioName(CourgetteRunResult courgetteRunResult, Integer lineNumber) {
         return courgetteRunResult.getFeature()
                 .getPickles()
-                .stream().filter(t -> t.getLocation().getLine() == Integer.parseInt(lineNumber))
+                .stream().filter(t -> t.getLocation().getLine() == lineNumber)
                 .findFirst()
                 .get()
                 .getName();
