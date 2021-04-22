@@ -83,18 +83,19 @@ public class ReportPortalService {
 
             final String testName = createFeatureName(runnerInfo.getFeature());
 
+            final String testId = testIds.get(testName);
+
             final File reportFile = runnerInfo.getJsonReportFile();
 
             if (reportFile == null) {
                 printError("Courgette Report Portal Service: unable to add test due to missing report data. Feature URI -> " + runnerInfo.getFeature().getUri());
+                finishTest(testId);
                 return;
             }
 
             final List<courgette.runtime.report.model.Feature> features = JsonReportParser
                     .create(reportFile, courgetteProperties.getCourgetteOptions().runLevel())
                     .getReportFeatures();
-
-            final String testId = testIds.get(testName);
 
             List<Scenario> scenarios = features.stream()
                     .flatMap(feature -> feature.getScenarios().stream())
@@ -173,14 +174,14 @@ public class ReportPortalService {
     }
 
     private HttpPost post(final String uri, HttpEntity entity) {
-        HttpPost post = new HttpPost(uri);
+        final HttpPost post = new HttpPost(uri);
         post.addHeader(authHeader());
         post.setEntity(entity);
         return post;
     }
 
     private HttpPut put(final String uri, HttpEntity entity) {
-        HttpPut put = new HttpPut(uri);
+        final HttpPut put = new HttpPut(uri);
         put.addHeader(authHeader());
         put.setEntity(entity);
         return put;
@@ -192,7 +193,7 @@ public class ReportPortalService {
 
     private HttpClient createHttpClient() {
         try {
-            SSLContext trustedSSLContext = new SSLContextBuilder().loadTrustMaterial(null, TrustAllStrategy.INSTANCE).build();
+            final SSLContext trustedSSLContext = new SSLContextBuilder().loadTrustMaterial(null, TrustAllStrategy.INSTANCE).build();
             return HttpClientBuilder.create().setSSLContext(trustedSSLContext).build();
         } catch (Exception e) {
             printError("Courgette Report Portal Service: error creating a secure http client: " + e.getMessage());
