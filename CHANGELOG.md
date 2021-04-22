@@ -1,3 +1,9 @@
+CHANGES IN VERSION 5.11.0
+=================================
+* [NEW] Publish real time results to Report Portal as tests execute.
+* [NEW] Include scenario tags under each scenario in the Courgette html report.
+* [MAINTENANCE] Upgrade to Cucumber version 6.10.3
+
 CHANGES IN VERSION 5.10.1
 =================================
 * [FIX] Bug which raised uncaught exceptions when sending messages to Slack.

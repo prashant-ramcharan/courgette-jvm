@@ -54,8 +54,8 @@ public class ReportPortalProperties {
         return getProperty("rp.testsuite", "Test Suite").trim();
     }
 
-    public String getTags() {
-        return getProperty("rp.tags", "").trim();
+    public String getAttributes() {
+        return getProperty("rp.attributes", "").trim();
     }
 
     public void validate() {

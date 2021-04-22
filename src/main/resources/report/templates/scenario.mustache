@@ -5,4 +5,9 @@
     <div class="col-lg-3">
         <span class="float-right badge badge-{{scenario_badge}}">{{scenario_result}}</span>
     </div>
+    <div class="col-lg-9">
+        {{#scenario_tags}}
+            {{{.}}}
+        {{/scenario_tags}}
+    </div>
 </div>

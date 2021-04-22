@@ -3,6 +3,7 @@ package courgette.runtime;
 import courgette.api.CourgetteRunLevel;
 import io.cucumber.core.gherkin.Feature;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -60,5 +61,14 @@ public class CourgetteRunnerInfo {
 
     public List<String> getReportFiles() {
         return courgetteRuntimeOptions.getReportFiles();
+    }
+
+    public File getJsonReportFile() {
+        final String jsonReport = courgetteRuntimeOptions.getJsonReportFile();
+
+        if (jsonReport != null) {
+            return new File(jsonReport);
+        }
+        return null;
     }
 }

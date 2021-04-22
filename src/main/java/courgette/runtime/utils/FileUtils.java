@@ -9,6 +9,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -49,6 +50,15 @@ public final class FileUtils {
         return null;
     }
 
+    public static File getTempFile(String ext) {
+        try {
+            return Files.createTempFile(UUID.randomUUID().toString(), "." + ext).toFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public static File getClassPathFile(String path) {
         URL classPathResource = Thread.currentThread().getContextClassLoader().getResource(path);
 
@@ -56,6 +66,10 @@ public final class FileUtils {
             return new File(classPathResource.getFile());
         }
         return null;
+    }
+
+    public static String getFileName(URI uri) {
+        return new File(uri).getName();
     }
 
     public static File zipFile(String filePath, boolean removeFileExtension) {
