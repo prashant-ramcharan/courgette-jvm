@@ -87,6 +87,14 @@ class CourgetteRuntimeOptions {
         return reportFiles;
     }
 
+    public String getJsonReportFile() {
+        return getReportFiles().stream()
+                .filter(isJsonReportPlugin)
+                .filter(r -> r.contains(courgetteProperties.getSessionId()))
+                .findFirst()
+                .orElse(null);
+    }
+
     public String getCourgetteReportDataDirectory() {
         return reportTargetDir + "/courgette-report/data";
     }
@@ -163,6 +171,8 @@ class CourgetteRuntimeOptions {
     };
 
     private final Predicate<String> isReportPlugin = (plugin) -> plugin.startsWith("html:") || plugin.startsWith("json:") || plugin.startsWith("junit:") || plugin.startsWith("message:");
+
+    private final Predicate<String> isJsonReportPlugin = (plugin) -> plugin.endsWith(".json");
 
     private String[] parsePlugins(String[] plugins) {
         HashSet<String> pluginCollection = new HashSet<>();

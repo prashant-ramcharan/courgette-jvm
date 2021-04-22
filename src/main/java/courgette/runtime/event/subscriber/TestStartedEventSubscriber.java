@@ -1,8 +1,8 @@
 package courgette.runtime.event.subscriber;
 
+import courgette.runtime.event.CourgetteEvent;
 import courgette.runtime.event.EventSender;
 import courgette.runtime.event.EventSubscriber;
-import courgette.runtime.event.CourgetteEvent;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

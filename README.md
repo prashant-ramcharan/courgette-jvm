@@ -317,9 +317,9 @@ rp.launch = My Demo Project
 # Report Portal test suite (optional)
 rp.testsuite = Regression Test Suite
 
-# Report Portal launch tags (optional)
-# Each tag must be separated by ';'
-rp.tags = regression;build.12345;sprint15
+# Report Portal launch attributes (optional)
+# Each attribute must be separated by ';'
+rp.attributes = suite:regression;build:12345
 ````
 
 _Note: Any property other than those defined above will be ignored by Courgette._

@@ -44,6 +44,7 @@ public class HtmlReportBuilder {
     private static final String SCENARIO_NAME = "scenario_name";
     private static final String SCENARIO_BADGE = "scenario_badge";
     private static final String SCENARIO_RESULT = "scenario_result";
+    private static final String SCENARIO_TAGS = "scenario_tags";
     private static final String MODAL_TARGET = "modal_target";
     private static final String MODAL_HEADING = "modal_heading";
     private static final String MODAL_FEATURE_LINE = "modal_feature_line";
@@ -64,6 +65,7 @@ public class HtmlReportBuilder {
     private static final String STEP_EMBEDDING_IMAGE = "step_embedding_image";
     private static final String IMAGE_ID = "img_id";
     private static final String ROW_INFO = "row_info";
+    private static final String TAG = "tag";
 
     private List<Feature> featureList;
     private List<CourgetteRunResult> courgetteRunResults;
@@ -75,6 +77,7 @@ public class HtmlReportBuilder {
     private Mustache modalEnvironmentTemplate;
     private Mustache modalRowTemplate;
     private Mustache scenarioTemplate;
+    private Mustache scenarioTagTemplate;
 
     private HtmlReportBuilder(List<Feature> featureList,
                               List<CourgetteRunResult> courgetteRunResults,
@@ -90,6 +93,7 @@ public class HtmlReportBuilder {
         this.modalEnvironmentTemplate = readTemplate("/report/templates/modal_environment.mustache");
         this.modalRowTemplate = readTemplate("/report/templates/modal_row.mustache");
         this.scenarioTemplate = readTemplate("/report/templates/scenario.mustache");
+        this.scenarioTagTemplate = readTemplate("/report/templates/scenario_tag.mustache");
     }
 
     public static HtmlReportBuilder create(List<Feature> featureList,
@@ -152,6 +156,19 @@ public class HtmlReportBuilder {
         });
     }
 
+    private List<String> createScenarioTags(Scenario scenario) {
+
+        final LinkedList<String> scenarioTags = new LinkedList<>();
+
+        scenario.getTags().forEach(tag -> {
+            final LinkedHashMap<String, Object> scenarioTagData = new LinkedHashMap<>();
+            scenarioTagData.put(TAG, tag.getName());
+            scenarioTags.add(createFromTemplate(scenarioTagTemplate, scenarioTagData));
+        });
+
+        return scenarioTags;
+    }
+
     private String createScenarioRow(String featureId, Scenario scenario, boolean hasReruns) {
 
         final LinkedHashMap<String, Object> scenarioData = new LinkedHashMap<>();
@@ -184,6 +201,7 @@ public class HtmlReportBuilder {
         scenarioData.put(SCENARIO_NAME, scenarioName);
         scenarioData.put(SCENARIO_BADGE, scenarioBadge);
         scenarioData.put(SCENARIO_RESULT, scenarioResult);
+        scenarioData.put(SCENARIO_TAGS, createScenarioTags(scenario));
 
         return createFromTemplate(scenarioTemplate, scenarioData);
     }

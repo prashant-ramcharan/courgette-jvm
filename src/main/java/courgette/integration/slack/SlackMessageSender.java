@@ -38,8 +38,7 @@ public class SlackMessageSender implements EventSender {
 
     @Override
     public void send(EventHolder eventHolder) {
-        slackOptions.getChannels().forEach(channel ->
-                createMessage(channel, eventHolder).ifPresent(slackService::postMessage));
+        slackOptions.getChannels().forEach(channel -> createMessage(channel, eventHolder).ifPresent(slackService::postMessage));
     }
 
     private Optional<String> createMessage(String channel, EventHolder eventHolder) {

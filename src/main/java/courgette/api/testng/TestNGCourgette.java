@@ -61,10 +61,6 @@ public abstract class TestNGCourgette {
                         courgetteRunner.createCourgetteExtentReports();
                     }
 
-                    if (courgetteProperties.isReportPortalPluginEnabled()) {
-                        courgetteRunner.publishReportToReportPortal();
-                    }
-
                     if (!courgetteRunner.getFailures().isEmpty()) {
                         courgetteRunner.createRerunFile();
                         throw new CourgetteTestFailureException("There were failing tests. Refer to the Courgette html report for more details.");

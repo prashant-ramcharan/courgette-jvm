@@ -68,10 +68,6 @@ public class Courgette extends CourgetteJUnitRunner {
                         courgetteRunner.createCourgetteExtentReports();
                     }
 
-                    if (courgetteProperties.isReportPortalPluginEnabled()) {
-                        courgetteRunner.publishReportToReportPortal();
-                    }
-
                     failures = courgetteRunner.getFailures();
 
                     if (!failures.isEmpty()) {
