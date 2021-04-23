@@ -286,7 +286,7 @@ You can subscribe to single or multiple Courgette events. When events are trigge
 
 ## Report Portal Integration
 
-Courgette allows test results to be published to the [Report Portal](https://reportportal.io/) server at the end of the test run. 
+Courgette allows test results to be published in real time to the [Report Portal](https://reportportal.io/) server as tests run. 
 
 To enable this feature, add the following Courgette option to the Courgette runner:
 
