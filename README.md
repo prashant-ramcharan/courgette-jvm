@@ -8,8 +8,8 @@
 Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run cucumber tests in parallel on a feature level or on a scenario level**. It also provides an option to **automatically re-run failed scenarios**.
 
 ## Key Features
-- **All features** can be executed in parallel where each feature is run on an independant JVM process.
-- **All scenarios** can be executed in parallel where each scenario is run on an independant JVM process.
+- **All features** can be executed in parallel.
+- **All scenarios** can be executed in parallel.
 - **Automatic re-run** of failed scenarios.
 - **Requires only 1 annotated class** to run all feature files in parallel.
 - **Single report generation** for all executed features including embedded files (Json and Html reports)
