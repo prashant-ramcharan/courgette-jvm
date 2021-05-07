@@ -65,7 +65,7 @@ Example projects:
 
 Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios in parallel. A JUnit runner class must be annotated with **@RunWith(Courgette.class)** and a TestNG runner class must extend **TestNGCourgette**.
 
-* **threads** : The number of concurrent threads to run cucumber features where each thread is effectively run on an independant JVM process.
+* **threads** : The number of concurrent threads to run cucumber features where each thread is started in an independant JVM process.
 
     * _Example: If you have 10 cucumber features and you use 6 threads, 6 features would first run in parallel then the following 4 features would run in parallel_.
 
