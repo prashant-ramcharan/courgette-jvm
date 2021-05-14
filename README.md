@@ -74,6 +74,8 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
     * _If set to feature level, all features would run in parallel. If set to scenario level, all scenarios would be run in parallel._
     
 * **rerunFailedScenarios** : If set to true, any failed scenario will be immediately re-run in the same thread. If the re-run succeeds, the initial failure will be ignored and not cause the build to fail.
+    * _When using CourgetteRunLevel.SCENARIO, only failed scenarios will be re-run._
+    * _When using CourgetteRunLevel.FEATURE, the entire feature (including all scenarios) will be re-run._
 
 * **rerunAttempts** : The number of re-run attempts for a failed scenario. (_rerunFailedScenarios must be set to true_)
 
