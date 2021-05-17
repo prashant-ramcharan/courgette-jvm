@@ -48,6 +48,13 @@ artifacts {
     archives buildJar
 }
 
+jar {
+    manifest {
+        // add automatic module name attribute to the generated manifest file:
+        attributes 'Automatic-Module-Name': 'prashant.ramcharan.courgette.jvm'
+    }
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
