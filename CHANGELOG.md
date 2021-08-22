@@ -1,3 +1,8 @@
+CHANGES IN VERSION 5.12.0
+=================================
+* [FIX] Add a new line for each scenario.log() message in Courgette html report.
+* [MAINTENANCE] Upgrade to Cucumber version 6.11.0
+
 CHANGES IN VERSION 5.11.0
 =================================
 * [NEW] Publish real time results to Report Portal as tests execute.

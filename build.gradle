@@ -1,5 +1,5 @@
 group 'io.github.prashant-ramcharan'
-version '5.11.0'
+version '5.12.0'
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'
@@ -10,7 +10,7 @@ compileJava {
 }
 
 ext {
-    cucumberVersion = '6.10.3'
+    cucumberVersion = '6.11.0'
     testNGVersion = '7.1.0'
     jacksonVersion = '2.11.3'
     httpcomponentsVersion = '4.5.13'
@@ -50,7 +50,6 @@ artifacts {
 
 jar {
     manifest {
-        // add automatic module name attribute to the generated manifest file:
         attributes 'Automatic-Module-Name': 'prashant.ramcharan.courgette.jvm'
     }
 }
