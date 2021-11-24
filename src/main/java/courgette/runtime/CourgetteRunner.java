@@ -10,7 +10,7 @@ import courgette.runtime.event.CourgetteEvent;
 import courgette.runtime.report.JsonReportParser;
 import courgette.runtime.report.model.Feature;
 import courgette.runtime.utils.FileUtils;
-import io.cucumber.messages.Messages;
+import io.cucumber.messages.types.Envelope;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,7 +48,7 @@ public class CourgetteRunner {
 
     private List<Feature> reportFeatures = new ArrayList<>();
 
-    private Map<io.cucumber.core.gherkin.Feature, List<List<Messages.Envelope>>> reportMessages = new HashMap<>();
+    private final Map<io.cucumber.core.gherkin.Feature, List<List<Envelope>>> reportMessages = new HashMap<>();
 
     private String cucumberReportUrl = "#";
 

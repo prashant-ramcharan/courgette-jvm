@@ -1,6 +1,6 @@
 package courgette.runtime;
 
-import io.cucumber.messages.Messages;
+import io.cucumber.messages.types.Envelope;
 
 import java.io.File;
 import java.time.Instant;
@@ -17,12 +17,12 @@ import static courgette.runtime.utils.FileUtils.writeFile;
 class CourgetteReporter {
 
     private final Map<String, CopyOnWriteArrayList<String>> reports;
-    private final List<Messages.Envelope> messages;
+    private final List<Envelope> messages;
     private final CourgetteRuntimeOptions courgetteRuntimeOptions;
     private final CourgetteProperties courgetteProperties;
 
     CourgetteReporter(Map<String, CopyOnWriteArrayList<String>> reports,
-                      Map<io.cucumber.core.gherkin.Feature, List<List<Messages.Envelope>>> reportMessages,
+                      Map<io.cucumber.core.gherkin.Feature, List<List<Envelope>>> reportMessages,
                       CourgetteRuntimeOptions courgetteRuntimeOptions,
                       CourgetteProperties courgetteProperties) {
 
@@ -92,7 +92,7 @@ class CourgetteReporter {
                     out.append("\nCourgette published your Cucumber Report to:\n");
                     out.append(reportUrl.get());
                     out.append("\n------------------------------------------------------------------------\n");
-                    System.out.println(out.toString());
+                    System.out.println(out);
 
                     String reportLinkFilename = courgetteProperties.getCourgetteOptions().reportTargetDir() + File.separator + "cucumber-report-link.txt";
                     writeFile(reportLinkFilename, out.toString());
@@ -105,11 +105,9 @@ class CourgetteReporter {
     private List<String> getReportData() {
         final List<String> reportData = new ArrayList<>();
 
-        final Map<String, CopyOnWriteArrayList<String>> reportMap = new LinkedHashMap<>();
-
         this.reports.values().removeIf(t -> t.contains(null) || t.contains("null") || t.contains("[]") || t.contains(""));
 
-        this.reports.forEach(reportMap::put);
+        final Map<String, CopyOnWriteArrayList<String>> reportMap = new LinkedHashMap<>(this.reports);
 
         reportMap.values().forEach(report -> {
             try {
@@ -121,14 +119,14 @@ class CourgetteReporter {
         return reportData;
     }
 
-    private List<Messages.Envelope> createMessages(Map<io.cucumber.core.gherkin.Feature, List<List<Messages.Envelope>>> reportMessages) {
+    private List<Envelope> createMessages(Map<io.cucumber.core.gherkin.Feature, List<List<Envelope>>> reportMessages) {
         final CourgetteNdJsonCreator ndJsonCreator = new CourgetteNdJsonCreator(reportMessages);
 
         return courgetteProperties.isFeatureRunLevel() ?
                 ndJsonCreator.createFeatureMessages() : ndJsonCreator.createScenarioMessages();
     }
 
-    private void createNdJsonReport(List<Messages.Envelope> messages) {
+    private void createNdJsonReport(List<Envelope> messages) {
         CucumberNdJsonReporter.createReport(courgetteRuntimeOptions.getCourgetteReportNdJson(), messages);
     }
 

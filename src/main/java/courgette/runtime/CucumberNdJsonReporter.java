@@ -1,7 +1,7 @@
 package courgette.runtime;
 
-import io.cucumber.messages.Messages;
-import io.cucumber.messages.internal.com.google.protobuf.util.JsonFormat;
+import io.cucumber.messages.JSON;
+import io.cucumber.messages.types.Envelope;
 import org.testng.reporters.Files;
 
 import java.io.File;
@@ -15,14 +15,12 @@ import static courgette.runtime.CourgetteException.printExceptionStackTrace;
 
 final class CucumberNdJsonReporter {
 
-    static void createReport(String fileName, List<Messages.Envelope> messages) {
+    static void createReport(String fileName, List<Envelope> messages) {
         try {
             final FileWriter fileWriter = new FileWriter(fileName, false);
 
-            final JsonFormat.Printer jsonPrinter = JsonFormat.printer().omittingInsignificantWhitespace();
-
-            for (Messages.Envelope message : messages) {
-                fileWriter.write(jsonPrinter.print(message));
+            for (Envelope message : messages) {
+                fileWriter.write(JSON.writeValueAsString(message));
                 fileWriter.write("\n");
             }
 
