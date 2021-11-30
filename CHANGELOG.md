@@ -1,3 +1,8 @@
+CHANGES IN VERSION 6.0.0
+=================================
+* [NEW] Add new Courgette option `excludeFeaturesFromRerun` to allow Courgette to exclude features from re-running when it fails.
+* [MAINTENANCE] Upgrade to Cucumber version 7.0.0
+
 CHANGES IN VERSION 5.12.0
 =================================
 * [FIX] Add a new line for each scenario.log() message in Courgette html report.
@@ -6,7 +11,7 @@ CHANGES IN VERSION 5.12.0
 CHANGES IN VERSION 5.11.0
 =================================
 * [NEW] Publish real time results to Report Portal as tests execute.
-* [NEW] Include scenario tags under each scenario in the Courgette html report.
+  * [NEW] Include scenario tags under each scenario in the Courgette html report.
 * [MAINTENANCE] Upgrade to Cucumber version 6.10.3
 
 CHANGES IN VERSION 5.10.1
