@@ -86,7 +86,7 @@ public class CourgetteRunner {
 
                     String rerun = readFile(rerunFile, false);
 
-                    if (rerunFailedScenarios && rerun != null) {
+                    if (rerunFailedScenarios && rerun != null && courgetteProperties.allowFeatureRerun(rerun)) {
 
                         if (courgetteProperties.isFeatureRunLevel()) {
 
