@@ -15,7 +15,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 - **Single report generation** for all executed features including embedded files (Json and Html reports)
 - **Publishes a single Cucumber Report** to https://reports.cucumber.io/ after parallel execution.
 - **Single re-run file** listing all failed scenarios that occurred during parallel execution.
-- Supports **Cucumber-JVM 6**
+- Supports **Cucumber-JVM 7**
 - Supports **JUnit** and **TestNG**
 - Integrates with **Slack** to provide real time test results.
 - Integrates with **Extent Reports** to create interactive reports.
@@ -35,21 +35,21 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>5.12.0</version>
+  <version>6.0.0</version>
 </dependency>
 ````
 
 #### Gradle
 ````gradle
-compile 'io.github.prashant-ramcharan:courgette-jvm:5.12.0'
+compile 'io.github.prashant-ramcharan:courgette-jvm:6.0.0'
 ````
 
 #### Included Cucumber Dependencies
-* cucumber-core 6.11.0
-* cucumber-java 6.11.0
-* cucumber-java8 6.11.0
-* cucumber-junit 6.11.0
-* cucumber-testng 6.11.0
+* cucumber-core 7.0.0
+* cucumber-java 7.0.0
+* cucumber-java8 7.0.0
+* cucumber-junit 7.0.0
+* cucumber-testng 7.0.0
 
 
 ## Usage
@@ -76,6 +76,9 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
 * **rerunFailedScenarios** : If set to true, any failed scenario will be immediately re-run in the same thread. If the re-run succeeds, the initial failure will be ignored and not cause the build to fail.
     * _When using CourgetteRunLevel.SCENARIO, only failed scenarios will be re-run._
     * _When using CourgetteRunLevel.FEATURE, the entire feature (including all scenarios) will be re-run._
+
+* **excludeFeaturesFromRerun** : If set, Courgette will prevent features from re-running when it fails.
+    * _Example: If `excludeFeaturesFromRerun = {Feature1.feature, Feature2.feature}` and `Feature1.feature` and `Feature2.feature` both fail, Courgette will not re-run `Feature1.feature` but will re-run `Feature2.feature`. This is useful when you need to prevent a specific feature or scenario from re-running._
 
 * **rerunAttempts** : The number of re-run attempts for a failed scenario. (_rerunFailedScenarios must be set to true_)
 
@@ -133,7 +136,7 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
         cucumberOptions = @CucumberOptions(
                 features = "src/test/resources/features",
                 glue = "steps",
-                tags = {"@regression", "not @wip"},
+                tags = "@regression and not @bug",
                 publish = true,
                 plugin = {
                         "pretty",
@@ -162,7 +165,7 @@ public class RegressionTestSuite {
         cucumberOptions = @CucumberOptions(
                 features = "src/test/resources/features",
                 glue = "steps",
-                tags = {"@regression", "not @wip"},
+                tags = "@regression and not @bug",
                 publish = true,
                 plugin = {
                         "pretty",
@@ -364,7 +367,7 @@ Courgette allows the generation of Allure reports using the Allure Cucumber plug
       ...
       cucumberOptions = @CucumberOptions(
          plugin = {
-            "io.qameta.allure.cucumber6jvm.AllureCucumber6Jvm"
+            "io.qameta.allure.cucumber7jvm.AllureCucumber7Jvm"
          }
       )
 )
