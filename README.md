@@ -78,7 +78,7 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
     * _When using CourgetteRunLevel.FEATURE, the entire feature (including all scenarios) will be re-run._
 
 * **excludeFeaturesFromRerun** : If set, Courgette will prevent features from re-running when it fails.
-    * _Example: If `excludeFeaturesFromRerun = {Feature1.feature, Feature2.feature}` and `Feature1.feature` and `Feature2.feature` both fail, Courgette will not re-run `Feature1.feature` but will re-run `Feature2.feature`. This is useful when you need to prevent a specific feature or scenario from re-running._
+    * _Example: If `excludeFeaturesFromRerun = {Feature1.feature}` and `Feature1.feature` and `Feature2.feature` both fail, Courgette will not re-run `Feature1.feature` but will re-run `Feature2.feature`. This is useful when you need to prevent a specific feature or scenario from re-running._
 
 * **rerunAttempts** : The number of re-run attempts for a failed scenario. (_rerunFailedScenarios must be set to true_)
 
