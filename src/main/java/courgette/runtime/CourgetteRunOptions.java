@@ -38,6 +38,11 @@ public class CourgetteRunOptions implements CourgetteOptions {
     }
 
     @Override
+    public String[] excludeFeaturesFromRerun() {
+        return courgetteOptions.excludeFeaturesFromRerun();
+    }
+
+    @Override
     public int rerunAttempts() {
         return SystemPropertyUtils.getIntProperty(CourgetteSystemProperty.RERUN_ATTEMPTS, courgetteOptions.rerunAttempts());
     }

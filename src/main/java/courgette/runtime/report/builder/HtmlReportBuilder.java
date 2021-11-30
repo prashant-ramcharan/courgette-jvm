@@ -127,7 +127,8 @@ public class HtmlReportBuilder {
 
     private String createFeatureRow(Feature feature, List<CourgetteRunResult> courgetteRunResults) {
 
-        boolean hasReruns = courgetteRunResults.stream().anyMatch(result -> result.getStatus() == CourgetteRunResult.Status.RERUN);
+        boolean hasReruns = courgetteProperties.allowFeatureRerun(feature.getUri()) &&
+                courgetteRunResults.stream().anyMatch(result -> result.getStatus() == CourgetteRunResult.Status.RERUN);
 
         final LinkedHashMap<String, Object> featureData = new LinkedHashMap<>();
 
