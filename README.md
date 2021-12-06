@@ -60,6 +60,7 @@ Example projects:
 * [Courgette-JVM with Maven Example](https://github.com/prashant-ramcharan/courgette-jvm-maven-example)
 * [Courgette-JVM with Selenium Example (_multiple browsers_)](https://github.com/prashant-ramcharan/courgette-jvm-selenium)
 * [Courgette-JVM with Appium Example (_iOS_)](https://github.com/prashant-ramcharan/courgette-jvm-appium-ios)
+* [Courgette-JVM with Appium Example (_Android_)](https://github.com/prashant-ramcharan/courgette-jvm-appium-android)
 * [Courgette-JVM with Spring Example](https://github.com/prashant-ramcharan/courgette-jvm-spring-example)
 * [Courgette-JVM with Allure Example](https://github.com/prashant-ramcharan/courgette-jvm-allure-example)
 * [Courgette-JVM with Custom Class Path Example](https://github.com/prashant-ramcharan/courgette-jvm-classpath-example)
