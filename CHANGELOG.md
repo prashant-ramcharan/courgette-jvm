@@ -2,7 +2,7 @@ CHANGES IN VERSION 6.1.0
 =================================
 * [FIX] Issue where Courgette html report did not render custom html when using `scenario.log()`
 * [MAINTENANCE] Upgrade to Cucumber version 7.1.0
-* 
+ 
 CHANGES IN VERSION 6.0.0
 =================================
 * [NEW] Add new Courgette option `excludeFeaturesFromRerun` to allow Courgette to exclude features from re-running when it fails.
