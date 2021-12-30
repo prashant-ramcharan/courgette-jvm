@@ -1,6 +1,7 @@
 package courgette.runtime;
 
 import courgette.api.CourgetteOptions;
+import courgette.api.CourgettePlugin;
 import courgette.api.CourgetteRunLevel;
 import courgette.api.HtmlReport;
 import courgette.runtime.utils.SystemPropertyUtils;
@@ -8,6 +9,7 @@ import courgette.runtime.utils.SystemPropertyUtils;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class CourgetteProperties {
     private final CourgetteOptions courgetteOptions;
@@ -38,12 +40,23 @@ public class CourgetteProperties {
         return maxThreads;
     }
 
+    public int getMaxThreadsFromMobileDevices() {
+        return Arrays.stream(courgetteOptions.mobileDevice())
+                .distinct()
+                .map(device -> device.toLowerCase().trim())
+                .collect(Collectors.toSet()).size();
+    }
+
     public boolean isReportPortalPluginEnabled() {
-        return Arrays.stream(courgetteOptions.plugin()).anyMatch(plugin -> plugin.equalsIgnoreCase("reportportal"));
+        return Arrays.stream(courgetteOptions.plugin()).anyMatch(plugin -> plugin.equalsIgnoreCase(CourgettePlugin.REPORT_PORTAL));
     }
 
     public boolean isExtentReportsPluginEnabled() {
-        return Arrays.stream(courgetteOptions.plugin()).anyMatch(plugin -> plugin.equalsIgnoreCase("extentreports"));
+        return Arrays.stream(courgetteOptions.plugin()).anyMatch(plugin -> plugin.equalsIgnoreCase(CourgettePlugin.EXTENT_REPORTS));
+    }
+
+    public boolean isMobileDeviceAllocationPluginEnabled() {
+        return Arrays.stream(courgetteOptions.plugin()).anyMatch(plugin -> plugin.equalsIgnoreCase(CourgettePlugin.MOBILE_DEVICE_ALLOCATOR));
     }
 
     public boolean isCucumberReportPublisherEnabled() {
@@ -77,7 +90,7 @@ public class CourgetteProperties {
     }
 
     public boolean allowFeatureRerun(final String feature) {
-        return Arrays.stream(getCourgetteOptions().excludeFeaturesFromRerun())
+        return Arrays.stream(getCourgetteOptions().excludeFeatureFromRerun())
                 .map(String::toLowerCase)
                 .noneMatch(featureName -> feature.toLowerCase().contains(featureName));
     }

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import static courgette.runtime.CourgetteException.printExceptionStackTrace;
@@ -15,30 +16,38 @@ import static courgette.runtime.utils.SystemPropertyUtils.splitAndAddPropertyToL
 public class CourgetteFeatureRunner {
     private final Map<String, List<String>> runnerArgs;
     private final CourgetteProperties courgetteProperties;
+    private final CourgettePluginService courgettePluginService;
 
-    CourgetteFeatureRunner(Map<String, List<String>> runnerArgs, CourgetteProperties courgetteProperties) {
+    CourgetteFeatureRunner(Map<String, List<String>> runnerArgs, CourgetteProperties courgetteProperties, CourgettePluginService courgettePluginService) {
         this.runnerArgs = runnerArgs;
         this.courgetteProperties = courgetteProperties;
+        this.courgettePluginService = courgettePluginService;
     }
 
     public int run() {
         Process process = null;
+        Builder thisBuilder = new Builder();
         try {
-            final ProcessBuilder builder = new Builder().buildProcess();
+            final ProcessBuilder builder = thisBuilder.buildProcess();
             process = builder.start();
             process.waitFor();
         } catch (IOException | InterruptedException e) {
             printExceptionStackTrace(e);
+        } finally {
+            if (thisBuilder.getDevice().isPresent()) {
+                courgettePluginService.getCourgetteMobileDeviceAllocatorService().deallocateDevice(thisBuilder.getDevice().get());
+            }
         }
         return process != null ? process.exitValue() : -1;
     }
 
     class Builder {
-
         private static final String CUCUMBER_PROPERTY = "-Dcucumber";
         private static final String CUCUMBER_PROPERTY_PUBLISH_DISABLED = "-Dcucumber.publish.enabled=false";
         private static final String CUCUMBER_PROPERTY_PUBLISH_QUITE = "-Dcucumber.publish.quiet=true";
         private static final String CUCUMBER_PUBLISH_TOKEN = "CUCUMBER_PUBLISH_TOKEN";
+
+        private CourgetteMobileDevice device;
 
         ProcessBuilder buildProcess() {
             final ProcessBuilder builder = new ProcessBuilder();
@@ -56,7 +65,6 @@ public class CourgetteFeatureRunner {
             }
 
             builder.redirectErrorStream(true);
-
             final List<String> commands = new ArrayList<>();
             commands.add("java");
             splitAndAddPropertyToList(CourgetteSystemProperty.VM_OPTIONS, commands);
@@ -64,23 +72,37 @@ public class CourgetteFeatureRunner {
             checkCustomClassPath(commands);
             commands.add("io.cucumber.core.cli.Main");
             runnerArgs.forEach((key, value) -> commands.addAll(value));
-
             builder.command(commands);
             return builder;
         }
 
+        public Optional<CourgetteMobileDevice> getDevice() {
+            return Optional.ofNullable(device);
+        }
+
         private List<String> getSystemProperties() {
             final List<String> systemPropertyList = new ArrayList<>();
-
             System.getProperties().keySet().forEach(property -> systemPropertyList.add(String.format("-D%s=%s", property, System.getProperty(property.toString()))));
             systemPropertyList.removeIf(cucumberSystemPropertiesRequiresRemoval());
             addCucumberSystemProperties(systemPropertyList);
+            addCourgetteMobileDeviceAllocatorProperties(systemPropertyList);
             return systemPropertyList;
         }
 
         private void addCucumberSystemProperties(final List<String> systemPropertyList) {
             systemPropertyList.add(CUCUMBER_PROPERTY_PUBLISH_DISABLED);
             systemPropertyList.add(CUCUMBER_PROPERTY_PUBLISH_QUITE);
+        }
+
+        private void addCourgetteMobileDeviceAllocatorProperties(final List<String> systemPropertyList) {
+            if (courgetteProperties.isMobileDeviceAllocationPluginEnabled()) {
+                device = courgettePluginService.getCourgetteMobileDeviceAllocatorService().allocateDevice();
+                systemPropertyList.add(String.format("-D%s=%s", CourgetteSystemProperty.DEVICE_NAME_SYSTEM_PROPERTY, device.getDeviceName()));
+                systemPropertyList.add(String.format("-D%s=%s", CourgetteSystemProperty.PARALLEL_PORT_SYSTEM_PROPERTY, device.getParallelPort()));
+                if (device.getUdid() != null) {
+                    systemPropertyList.add(String.format("-D%s=%s", CourgetteSystemProperty.UDID_SYSTEM_PROPERTY, device.getUdid()));
+                }
+            }
         }
 
         private Predicate<String> cucumberSystemPropertiesRequiresRemoval() {

@@ -1,6 +1,7 @@
 package courgette.runtime;
 
 import courgette.api.CourgetteOptions;
+import courgette.api.CourgettePlugin;
 import courgette.api.CourgetteRunLevel;
 import courgette.api.CucumberOptions;
 import courgette.api.HtmlReport;
@@ -12,6 +13,7 @@ import courgette.runtime.utils.SystemPropertyUtils;
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class CourgetteRunOptions implements CourgetteOptions {
     private CourgetteOptions courgetteOptions;
@@ -38,8 +40,8 @@ public class CourgetteRunOptions implements CourgetteOptions {
     }
 
     @Override
-    public String[] excludeFeaturesFromRerun() {
-        return courgetteOptions.excludeFeaturesFromRerun();
+    public String[] excludeFeatureFromRerun() {
+        return courgetteOptions.excludeFeatureFromRerun();
     }
 
     @Override
@@ -103,6 +105,11 @@ public class CourgetteRunOptions implements CourgetteOptions {
     }
 
     @Override
+    public String[] mobileDevice() {
+        return courgetteOptions.mobileDevice();
+    }
+
+    @Override
     public Class<? extends Annotation> annotationType() {
         return null;
     }
@@ -117,19 +124,34 @@ public class CourgetteRunOptions implements CourgetteOptions {
     private void validatePlugins() {
         if (plugin().length > 0) {
             validateReportPortalPlugin();
+            validateMobileDeviceAllocatorPlugin();
         }
     }
 
     private void validateReportPortalPlugin() {
         final String reportPortalPropertiesFilename = "reportportal.properties";
 
-        if (Arrays.stream(courgetteOptions.plugin()).anyMatch(plugin -> plugin.equalsIgnoreCase("reportportal"))) {
+        if (Arrays.stream(courgetteOptions.plugin()).anyMatch(plugin -> plugin.equalsIgnoreCase(CourgettePlugin.REPORT_PORTAL))) {
             File reportPortalPropertiesFile = FileUtils.getClassPathFile(reportPortalPropertiesFilename);
 
             if (reportPortalPropertiesFile == null) {
                 throw new CourgetteException("The " + reportPortalPropertiesFilename + " file must be in your classpath to use the Courgette reportportal plugin");
             }
             ReportPortalProperties.getInstance().validate();
+        }
+    }
+
+    private void validateMobileDeviceAllocatorPlugin() {
+        if (Arrays.stream(courgetteOptions.plugin()).anyMatch(plugin -> plugin.equalsIgnoreCase(CourgettePlugin.MOBILE_DEVICE_ALLOCATOR))) {
+            if (courgetteOptions.mobileDevice().length == 0 ||
+                    Arrays.stream(courgetteOptions.mobileDevice())
+                            .map(device -> device.replace(":", ""))
+                            .map(String::trim)
+                            .collect(Collectors.toSet())
+                            .stream()
+                            .allMatch(device -> device.equals(""))) {
+                throw new CourgetteException("Mobile device is required when using the Courgette Mobile Device Allocator plugin");
+            }
         }
     }
 
