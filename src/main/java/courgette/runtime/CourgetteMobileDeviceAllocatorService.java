@@ -11,6 +11,8 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
+import static courgette.runtime.CourgetteException.printError;
+
 public class CourgetteMobileDeviceAllocatorService {
 
     private final CopyOnWriteArrayList<CourgetteMobileDevice> availableDevices = new CopyOnWriteArrayList<>();
@@ -70,7 +72,7 @@ public class CourgetteMobileDeviceAllocatorService {
             parallelPort = socket.getLocalPort();
             socket.close();
         } catch (IOException e) {
-            System.err.println("Courgette Mobile Device Allocator: Unable to find a free port");
+            printError("Courgette Mobile Device Allocator: Unable to find a free port");
         }
         return parallelPort;
     }

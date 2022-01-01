@@ -17,6 +17,7 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 - **Single re-run file** listing all failed scenarios that occurred during parallel execution.
 - Supports **Cucumber-JVM 7**
 - Supports **JUnit** and **TestNG**
+- Provides a **Mobile Device Allocator** to support parallel mobile testing on simulators and real devices.
 - Integrates with **Slack** to provide real time test results.
 - Integrates with **Extent Reports** to create interactive reports.
 - Integrates with **Report Portal** to support AI powered dashboards.
@@ -35,13 +36,13 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>6.1.0</version>
+  <version>6.2.0</version>
 </dependency>
 ````
 
 #### Gradle
 ````gradle
-compile 'io.github.prashant-ramcharan:courgette-jvm:6.1.0'
+compile 'io.github.prashant-ramcharan:courgette-jvm:6.2.0'
 ````
 
 #### Included Cucumber Dependencies
@@ -79,8 +80,8 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
     * _When using CourgetteRunLevel.SCENARIO, only failed scenarios will be re-run._
     * _When using CourgetteRunLevel.FEATURE, the entire feature (including all scenarios) will be re-run._
 
-* **excludeFeaturesFromRerun** : If set, Courgette will prevent features from re-running when it fails.
-    * _Example: If `excludeFeaturesFromRerun = {Feature1.feature}` and `Feature1.feature` and `Feature2.feature` both fail, Courgette will not re-run `Feature1.feature` but will re-run `Feature2.feature`. This is useful when you need to prevent a specific feature or scenario from re-running._
+* **excludeFeatureFromRerun** : If set, Courgette will prevent features from re-running when it fails.
+    * _Example: If `excludeFeatureFromRerun = {Feature1.feature}` and `Feature1.feature` and `Feature2.feature` both fail, Courgette will not re-run `Feature1.feature` but will re-run `Feature2.feature`. This is useful when you need to prevent a specific feature or scenario from re-running._
 
 * **rerunAttempts** : The number of re-run attempts for a failed scenario. (_rerunFailedScenarios must be set to true_)
 
@@ -92,6 +93,7 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
     
     * _reportportal: Allows the test results to be published to [Report Portal](https://reportportal.io/) at the end of the test run._
     * _extentreports: Creates an interactive report based on the [Extent Framework](http://extentreports.com/)_
+    * _mobile-device-allocator: Allows Courgette to track and allocate devices for mobile tests._
   
 * **environmentInfo** : Additional environment information that is displayed in the Courgette html report.
     * _Each grouping must be separated by a `;` character and adhere to the following format:  `key1=value1; key2=value2`._
@@ -108,6 +110,9 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
 
 * **slackEventSubscription**: The Courgette events to subscribe to that gets posted to Slack. 
  
+* **mobileDevices**: The devices that Courgette will use to track and allocate for parallel mobile tests.
+  * This option is required when using the `CourgettePlugin.MOBILE_DEVICE_ALLOCATOR` plugin.
+
 * **cucumberOptions** : The standard cucumber options for specifying feature paths, glue, tags etc..
     * The `publish` cucumber option (_supported from version 5.1.0_) will publish a single cucumber report after parallel execution. 
         * The published report link will be displayed in the console and saved to `${reportTargetDir}/cucumber-report-link.txt`.
@@ -184,22 +189,18 @@ public class RegressionTestSuite extends TestNGCourgette {
 ````gradle
 tasks.withType(Test) {
     systemProperties = System.getProperties()
-    systemProperties.remove("java.endorsed.dirs") // needs to be removed from Java 9
 }
 
 // JUnit
 task regressionSuite(type: Test) {
     include '**/RegressionTestSuite.class'
-
     outputs.upToDateWhen { false }
 }
 
 // TestNG
 task regressionSuite(type: Test) {
     useTestNG()
-
     include '**/RegressionTestSuite.class'
-
     outputs.upToDateWhen { false }
 }
 ````
@@ -300,7 +301,7 @@ To enable this feature, add the following Courgette option to the Courgette runn
 ````java
 @CourgetteOptions(
       ...  
-      plugin = { "reportportal" },
+      plugin = { CourgettePlugin.REPORT_PORTAL },
       cucumberOptions = @CucumberOptions(
       // cucumber options here
       )
@@ -347,7 +348,7 @@ To enable this feature, add the following Courgette option to the Courgette runn
 ````java
 @CourgetteOptions(
       ...  
-      plugin = { "extentreports" },
+      plugin = { CourgettePlugin.EXTENT_REPORTS },
       cucumberOptions = @CucumberOptions(
       // cucumber options here
       )
@@ -375,6 +376,90 @@ Courgette allows the generation of Allure reports using the Allure Cucumber plug
 )
 ````
 ![CourgetteJVM-AllureReport.png](images/CourgetteJVM-AllureReport.png)
+
+## Courgette Mobile Device Allocator
+
+Courgette provides a mobile device allocator to allocate and keep track of devices for parallel mobile testing. Courgette keeps track of devices that are currently in use and automatically allocates a free device for each test.
+
+````java
+@CourgetteOptions(
+        ...
+        plugin = { CourgettePlugin.MOBILE_DEVICE_ALLOCATOR },
+        mobileDevice = {
+                "iPhone 8",
+                "iPhone 12",
+                "iPhone 13"
+        },
+        cucumberOptions = @CucumberOptions(
+        // cucumber options here
+        )
+)
+````
+The Courgette mobile device allocator plugin will:
+
+* Create a pool of devices based on `mobileDevice` and will automatically allocate a randomly selected available device for each parallel test.
+* Determine the optimal parallel threads based on the sum of devices defined in `mobileDevice`. The sum of `mobileDevice` will take precedence over `threads` defined in the Courgette runner.
+* Expose the device name, parallel port and uuid (_if provided_) during the runtime of each parallel test.
+
+Notes:
+
+* Each `mobileDevice` must be unique unless using real devices where a `UUID` is also required.
+* Courgette will remove any duplicate devices if detected.
+* Courgette will allocate a randomly selected device for every test run. Specific device allocation cannot be guaranteed per test.
+
+### How to integrate Courgette Mobile Device Allocator
+
+* `CourgetteMobileDeviceAllocator.DEVICE_NAME` returns one of the available devices from the `mobileDevice` list.
+* `CourgetteMobileDeviceAllocator.UDID` returns the UUID for the device (_only required for real devices_).
+* `CourgetteMobileDeviceAllocator.PARALLEL_PORT` returns a free local port (_required for parallel device testing_).
+
+The above properties are only available when running tests using a Courgette runner with the `CourgettePlugin.MOBILE_DEVICE_ALLOCATOR` plugin.
+
+#### iOS Appium Test Configuration
+
+````java
+DesiredCapabilities capabilities = new DesiredCapabilities();
+capabilities.setCapability("deviceName", CourgetteMobileDeviceAllocator.DEVICE_NAME); 
+capabilities.setCapability("udid", CourgetteMobileDeviceAllocator.UDID); 
+capabilities.setCapability("wdaLocalPort", CourgetteMobileDeviceAllocator.PARALLEL_PORT);
+````
+
+#### Android Appium Test Configuration
+
+````java
+DesiredCapabilities capabilities = new DesiredCapabilities();
+capabilities.setCapability("avd", CourgetteMobileDeviceAllocator.DEVICE_NAME); 
+capabilities.setCapability("udid", CourgetteMobileDeviceAllocator.UDID); 
+capabilities.setCapability("systemPort", CourgetteMobileDeviceAllocator.PARALLEL_PORT);
+````
+
+#### SauceLabs Appium Test Configuration
+
+````java
+MutableCapabilities capabilities = new MutableCapabilities();
+capabilities.setCapability("appium:deviceName", CourgetteMobileDeviceAllocator.DEVICE_NAME);
+````
+
+#### BrowserStack Appium Test Configuration
+
+````java
+DesiredCapabilities capabilities = new DesiredCapabilities();
+capabilities.setCapability("device", CourgetteMobileDeviceAllocator.DEVICE_NAME);
+````
+
+#### Using Real Devices
+
+Unlike simulators where the device name must be unique, on real devices you can specify the same device name as long as the UUIDs are different for each device.
+
+Format: `deviceName:deviceUUID`
+
+````java
+mobileDevice = {
+     "iPhone 8:00000000-000-0000-0000-000000000001",
+     "iPhone 8:00000000-000-0000-0000-000000000002",
+     "iPhone 8:00000000-000-0000-0000-000000000003"
+}
+````
 
 ## Limitations and Known Issues
    

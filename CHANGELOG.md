@@ -1,3 +1,9 @@
+CHANGES IN VERSION 6.2.0
+=================================
+* [NEW] Add Courgette Mobile Device Allocator plugin to support parallel mobile application testing.
+* [NEW] Add Courgette option `mobileDevice` to allow Courgette to track and allocate devices for mobile tests.
+* [UPDATE] Rename Courgette option `excludeFeaturesFromRerun` to `excludeFeatureFromRerun`
+
 CHANGES IN VERSION 6.1.0
 =================================
 * [FIX] Issue where Courgette html report did not render custom html when using `scenario.log()`
