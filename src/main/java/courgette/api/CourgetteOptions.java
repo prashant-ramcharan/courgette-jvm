@@ -28,7 +28,7 @@ public @interface CourgetteOptions {
     /**
      * @return the features to exclude from re-running when it fails
      */
-    String[] excludeFeaturesFromRerun() default {};
+    String[] excludeFeatureFromRerun() default {};
 
     /**
      * @return the number of re-run attempts
@@ -84,6 +84,11 @@ public @interface CourgetteOptions {
      * @return the Courgette events subscriptions
      */
     CourgetteEvent[] slackEventSubscription() default {};
+
+    /**
+     * @return the mobile devices for device allocation
+     */
+    String[] mobileDevice() default {};
 
     /**
      * @return the Cucumber options

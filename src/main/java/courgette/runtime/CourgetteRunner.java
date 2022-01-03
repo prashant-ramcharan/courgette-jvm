@@ -43,6 +43,7 @@ public class CourgetteRunner {
     private final CourgetteRuntimeOptions defaultRuntimeOptions;
     private final List<CourgetteRunResult> runResults = new ArrayList<>();
     private final CourgetteRuntimePublisher runtimePublisher;
+    private final CourgettePluginService courgettePluginService;
     private final boolean rerunFailedScenarios;
     private final boolean canRunFeatures;
 
@@ -59,6 +60,7 @@ public class CourgetteRunner {
         this.rerunFailedScenarios = courgetteProperties.getCourgetteOptions().rerunFailedScenarios();
         this.defaultRuntimeOptions = new CourgetteRuntimeOptions(courgetteProperties);
         this.runtimePublisher = createRuntimePublisher(courgetteProperties, extractRunnerInfoFeatures());
+        this.courgettePluginService = createCourgettePluginService();
     }
 
     public RunStatus run() {
@@ -226,7 +228,7 @@ public class CourgetteRunner {
 
     private boolean runFeature(Map<String, List<String>> args) {
         try {
-            return 0 == new CourgetteFeatureRunner(args, courgetteProperties).run();
+            return 0 == new CourgetteFeatureRunner(args, courgetteProperties, courgettePluginService).run();
         } catch (Throwable throwable) {
             throwable.printStackTrace();
             return false;
@@ -270,16 +272,23 @@ public class CourgetteRunner {
                 reportFeatures = JsonReportParser.create(reportJson, runLevel).getReportFeatures();
             }
         }
-
         return reportFeatures;
     }
 
-    private Integer optimizedThreadCount() {
-        return courgetteProperties.getMaxThreads() > runnerInfoList.size()
+    private int optimizedThreadCount() {
+        return requiredThreadCount() > runnerInfoList.size()
                 ? runnerInfoList.size()
-                : courgetteProperties.getMaxThreads() < 1
-                ? 1
-                : courgetteProperties.getMaxThreads();
+                : Math.max(requiredThreadCount(), 1);
+    }
+
+    private int requiredThreadCount() {
+        if (courgetteProperties.isMobileDeviceAllocationPluginEnabled()) {
+            int mobileDeviceThreads = courgetteProperties.getMaxThreadsFromMobileDevices();
+            return mobileDeviceThreads > courgetteProperties.getMaxThreads()
+                    ? courgetteProperties.getMaxThreads() : mobileDeviceThreads;
+        } else {
+            return courgetteProperties.getMaxThreads();
+        }
     }
 
     private List<io.cucumber.core.gherkin.Feature> extractRunnerInfoFeatures() {
@@ -291,6 +300,13 @@ public class CourgetteRunner {
         publishers.add(new SlackPublisher(courgetteProperties));
         publishers.add(new ReportPortalPublisher(courgetteProperties, features));
         return new CourgetteRuntimePublisher(publishers);
+    }
+
+    private CourgettePluginService createCourgettePluginService() {
+        final CourgetteMobileDeviceAllocatorService mobileDeviceAllocatorService =
+                new CourgetteMobileDeviceAllocatorService(courgetteProperties.getCourgetteOptions().mobileDevice());
+
+        return new CourgettePluginService(mobileDeviceAllocatorService);
     }
 
     private synchronized void addResultAndPublish(CourgetteRunnerInfo courgetteRunnerInfo, CourgetteRunResult courgetteRunResult) {
