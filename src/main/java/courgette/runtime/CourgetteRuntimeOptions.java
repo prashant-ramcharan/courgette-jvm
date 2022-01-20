@@ -33,7 +33,7 @@ class CourgetteRuntimeOptions {
     private String rerunFile;
     private String cucumberResourcePath;
 
-    private final int instanceId = UUID.randomUUID().hashCode();
+    private final int instanceId = Math.abs(UUID.randomUUID().hashCode());
 
     CourgetteRuntimeOptions(CourgetteProperties courgetteProperties, Feature feature) {
         this.courgetteProperties = courgetteProperties;
@@ -99,6 +99,10 @@ class CourgetteRuntimeOptions {
         return reportTargetDir + "/courgette-report/data";
     }
 
+    public String getSessionReportsDirectory() {
+        return String.format("%s/session-reports/%s/", reportTargetDir, courgetteProperties.getSessionId());
+    }
+
     public String getCourgetteReportJson() {
         return String.format("%s/report.json", getCourgetteReportDataDirectory());
     }
@@ -153,6 +157,13 @@ class CourgetteRuntimeOptions {
 
     private String getMultiThreadReportFile() {
         return getTempDirectory() + courgetteProperties.getSessionId() + "_thread_report_" + getFeatureId(feature);
+    }
+
+    private String getFeatureReportFile() {
+        final String featureName = Arrays.stream(feature.getUri().getPath().split("/")).reduce((x, y) -> y)
+                .get().replace(".feature", "")
+                .toLowerCase();
+        return getSessionReportsDirectory() + String.format("%s_%s", featureName, instanceId);
     }
 
     private String getFeatureId(Feature feature) {
@@ -234,6 +245,12 @@ class CourgetteRuntimeOptions {
             if (pluginCollection.stream().noneMatch(plugin -> plugin.equals(junitReportPlugin))) {
                 pluginCollection.add(junitReportPlugin);
             }
+
+            if (courgetteProperties.shouldPersistCucumberJsonReports()) {
+                final String featureReportFile = getFeatureReportFile();
+                pluginCollection.add(String.format("json:%s.json", featureReportFile));
+                pluginCollection.add(String.format("message:%s.ndjson", featureReportFile));
+            }
         }
 
         checkDisabledPlugins(pluginCollection);
@@ -242,10 +259,11 @@ class CourgetteRuntimeOptions {
     }
 
     private void checkDisabledPlugins(HashSet<String> plugins) {
-
         if (plugins.stream().anyMatch(p -> p.startsWith("html"))) {
             if (!courgetteProperties.isCucumberHtmlReportEnabled()) {
-                plugins.removeIf(p -> p.startsWith("html") || p.startsWith("message"));
+                plugins.removeIf(p -> p.startsWith("html") || (
+                        !courgetteProperties.shouldPersistCucumberJsonReports() && p.startsWith("message"))
+                );
             }
         }
     }

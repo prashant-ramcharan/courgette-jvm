@@ -7,6 +7,7 @@ import courgette.integration.extentreports.ExtentReportsProperties;
 import courgette.integration.reportportal.ReportPortalPublisher;
 import courgette.integration.slack.SlackPublisher;
 import courgette.runtime.event.CourgetteEvent;
+import courgette.runtime.event.CourgetteEventHolder;
 import courgette.runtime.report.JsonReportParser;
 import courgette.runtime.report.model.Feature;
 import courgette.runtime.utils.FileUtils;
@@ -41,6 +42,7 @@ public class CourgetteRunner {
     private final List<CourgetteRunnerInfo> runnerInfoList;
     private final CourgetteProperties courgetteProperties;
     private final CourgetteRuntimeOptions defaultRuntimeOptions;
+    private final CourgetteTestStatistics testStatistics;
     private final List<CourgetteRunResult> runResults = new ArrayList<>();
     private final CourgetteRuntimePublisher runtimePublisher;
     private final CourgettePluginService courgettePluginService;
@@ -58,6 +60,7 @@ public class CourgetteRunner {
         this.canRunFeatures = runnerInfoList.size() > 0;
         this.courgetteProperties = courgetteProperties;
         this.rerunFailedScenarios = courgetteProperties.getCourgetteOptions().rerunFailedScenarios();
+        this.testStatistics = CourgetteTestStatistics.current();
         this.defaultRuntimeOptions = new CourgetteRuntimeOptions(courgetteProperties);
         this.runtimePublisher = createRuntimePublisher(courgetteProperties, extractRunnerInfoFeatures());
         this.courgettePluginService = createCourgettePluginService();
@@ -124,7 +127,7 @@ public class CourgetteRunner {
                     }
                 } finally {
                     runnerInfo.getReportFiles().forEach(reportFile -> {
-                        if (reportFile.contains(courgetteProperties.getSessionId())) {
+                        if (shouldProcessReport(reportFile)) {
 
                             boolean isJson = reportFile.endsWith(".json");
 
@@ -134,7 +137,7 @@ public class CourgetteRunner {
 
                             boolean isNdJson = reportFile.endsWith(".ndjson");
 
-                            if (isNdJson) {
+                            if (isNdJson && shouldProcessCucumberMessages()) {
                                 reportMessages.computeIfAbsent(feature, r -> new ArrayList<>())
                                         .addAll(Collections.singleton(CourgetteNdJsonCreator.createMessages(report)));
                             } else {
@@ -148,12 +151,14 @@ public class CourgetteRunner {
         }
 
         try {
-            runtimePublisher.publish(CourgetteEvent.TEST_RUN_STARTED);
+            runtimePublisher.publish(createEventHolder(CourgetteEvent.TEST_RUN_STARTED));
             executor.invokeAll(runners);
         } catch (InterruptedException e) {
             printExceptionStackTrace(e);
         } finally {
-            runtimePublisher.publish(CourgetteEvent.TEST_RUN_FINISHED);
+            testStatistics.calculate(runResults, courgetteProperties);
+            runtimePublisher.publish(createEventHolder(CourgetteEvent.TEST_RUN_FINISHED));
+            runtimePublisher.publish(createTestRunSummaryEventHolder());
             executor.shutdownNow();
         }
 
@@ -193,7 +198,7 @@ public class CourgetteRunner {
         try {
             if (courgetteProperties.isCourgetteHtmlReportEnabled()) {
                 final CourgetteHtmlReporter courgetteReport = new CourgetteHtmlReporter(courgetteProperties, runResults, getReportFeatures(), cucumberReportUrl);
-                courgetteReport.create();
+                courgetteReport.create(testStatistics);
             }
         } catch (Exception e) {
             printExceptionStackTrace(e);
@@ -241,9 +246,7 @@ public class CourgetteRunner {
         rerunAttempts = Math.max(rerunAttempts, 1);
 
         while (rerunAttempts-- > 0) {
-
-            runtimePublisher.publish(CourgetteEvent.TEST_RERUN, rerunResult);
-
+            runtimePublisher.publish(createEventHolder(CourgetteEvent.TEST_RERUN, null, rerunResult));
             if (runFeature(args)) {
                 return true;
             }
@@ -314,15 +317,35 @@ public class CourgetteRunner {
 
         switch (courgetteRunResult.getStatus()) {
             case PASSED:
-                runtimePublisher.publish(CourgetteEvent.TEST_PASSED, courgetteRunnerInfo, courgetteRunResult);
+                runtimePublisher.publish(createEventHolder(CourgetteEvent.TEST_PASSED, courgetteRunnerInfo, courgetteRunResult));
                 break;
             case PASSED_AFTER_RERUN:
-                runtimePublisher.publish(CourgetteEvent.TEST_PASSED_AFTER_RERUN, courgetteRunnerInfo, courgetteRunResult);
+                runtimePublisher.publish(createEventHolder(CourgetteEvent.TEST_PASSED_AFTER_RERUN, courgetteRunnerInfo, courgetteRunResult));
                 break;
             case FAILED:
             case FAILED_AFTER_RERUN:
-                runtimePublisher.publish(CourgetteEvent.TEST_FAILED, courgetteRunnerInfo, courgetteRunResult);
+                runtimePublisher.publish(createEventHolder(CourgetteEvent.TEST_FAILED, courgetteRunnerInfo, courgetteRunResult));
                 break;
         }
+    }
+
+    private CourgetteEventHolder createEventHolder(CourgetteEvent courgetteEvent) {
+        return new CourgetteEventHolder(courgetteEvent, courgetteProperties);
+    }
+
+    private CourgetteEventHolder createEventHolder(CourgetteEvent courgetteEvent, CourgetteRunnerInfo courgetteRunnerInfo, CourgetteRunResult courgetteRunResult) {
+        return new CourgetteEventHolder(courgetteEvent, courgetteProperties, courgetteRunnerInfo, courgetteRunResult);
+    }
+
+    private CourgetteEventHolder createTestRunSummaryEventHolder() {
+        return new CourgetteEventHolder(CourgetteEvent.TEST_RUN_SUMMARY, courgetteProperties, testStatistics);
+    }
+
+    private boolean shouldProcessCucumberMessages() {
+        return courgetteProperties.isCucumberHtmlReportEnabled();
+    }
+
+    private boolean shouldProcessReport(String reportFile) {
+        return !reportFile.contains("/session-reports/") && reportFile.contains(courgetteProperties.getSessionId());
     }
 }

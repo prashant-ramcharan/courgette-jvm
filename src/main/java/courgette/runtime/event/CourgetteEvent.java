@@ -8,7 +8,8 @@ public enum CourgetteEvent {
     TEST_PASSED("Test Passed"),
     TEST_PASSED_AFTER_RERUN("Test Passed"),
     TEST_FAILED("Test Failed"),
-    TEST_RERUN("Test Rerun");
+    TEST_RERUN("Test Rerun"),
+    TEST_RUN_SUMMARY("Test Run Summary");
 
     private final String description;
 

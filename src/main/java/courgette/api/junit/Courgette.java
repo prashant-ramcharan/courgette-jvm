@@ -8,6 +8,7 @@ import courgette.runtime.CourgetteRunOptions;
 import courgette.runtime.CourgetteRunResult;
 import courgette.runtime.CourgetteRunner;
 import courgette.runtime.CourgetteRunnerInfo;
+import courgette.runtime.CourgetteSession;
 import courgette.runtime.CourgetteTestErrorException;
 import courgette.runtime.RunStatus;
 import courgette.runtime.junit.CourgetteJUnitRunner;
@@ -26,7 +27,7 @@ public class Courgette extends CourgetteJUnitRunner {
         super(clazz);
 
         final CourgetteOptions courgetteOptions = new CourgetteRunOptions(clazz);
-        courgetteProperties = new CourgetteProperties(courgetteOptions, createSessionId(), courgetteOptions.threads());
+        courgetteProperties = new CourgetteProperties(courgetteOptions, CourgetteSession.current().sessionId(), courgetteOptions.threads());
 
         callbacks = new CourgetteCallbacks(clazz);
 

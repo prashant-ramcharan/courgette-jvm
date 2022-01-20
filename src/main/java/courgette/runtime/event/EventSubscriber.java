@@ -4,7 +4,7 @@ import java.beans.PropertyChangeEvent;
 
 public abstract class EventSubscriber {
 
-    protected EventHolder eventHolder;
+    protected CourgetteEventHolder eventHolder;
 
     protected boolean matchesEvent(CourgetteEvent courgetteEvent) {
         return eventHolder.getCourgetteEvent().equals(courgetteEvent);
@@ -14,7 +14,7 @@ public abstract class EventSubscriber {
 
     protected void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals("eventHolder")) {
-            this.eventHolder = (EventHolder) evt.getNewValue();
+            this.eventHolder = (CourgetteEventHolder) evt.getNewValue();
         } else {
             sendEvent((EventSender) evt.getNewValue());
         }

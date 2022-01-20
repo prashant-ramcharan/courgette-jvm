@@ -1,0 +1,103 @@
+{"channel":"{{channel}}",
+"blocks": [
+    {
+        "type": "divider",
+        "block_id": "divider1"
+    },
+    {
+        "type": "header",
+        "text": {
+            "type": "plain_text",
+            "text": ":{{icon}}: {{description}}"
+        }
+    },
+    {
+        "type": "divider",
+        "block_id": "divider2"
+    },
+    {
+        "type": "context",
+        "elements": [
+            {
+                "type": "mrkdwn",
+                "text": "*Timestamp:* {{timestamp}}"
+            }
+        ]
+    },
+    {
+        "type": "context",
+        "elements": [
+            {
+                "type": "mrkdwn",
+                "text": "*Session Id:* {{session_id}}"
+            }
+        ]
+    },
+    {
+        "type": "context",
+        "elements": [
+            {
+                "type": "mrkdwn",
+                "text": "*Run Duration:* {{duration}}"
+            }
+        ]
+    },
+    {
+        "type": "context",
+        "elements": [
+            {
+                "type": "mrkdwn",
+                "text": "*Run Summary:* {{passed_percentage}}% passed, {{failed_percentage}}% failed"
+            }
+        ]
+    },
+    {
+        "type": "context",
+        "elements": [
+            {
+                "type": "mrkdwn",
+                "text": "*Total {{run_level}}s:* {{total}}"
+            }
+        ]
+    },
+    {
+        "type": "context",
+        "elements": [
+            {
+                "type": "mrkdwn",
+                "text": "*Passed:* {{passed}}"
+            }
+        ]
+    },
+    {
+        "type": "context",
+        "elements": [
+            {
+                "type": "mrkdwn",
+                "text": "*Failed:* {{failed}}"
+            }
+        ]
+    },
+    {{#optional1}}
+    {
+        "type": "context",
+        "elements": [
+            {
+                "type": "mrkdwn",
+                "text": "*Rerun:* {{rerun}}"
+            }
+         ]
+     },
+    {{/optional1}}
+    {{#optional2}}
+     {
+        "type": "context",
+        "elements": [
+            {
+                "type": "mrkdwn",
+                "text": "*Passed after Rerun:* {{passed_rerun}}"
+            }
+         ]
+     },
+    {{/optional2}}
+]}

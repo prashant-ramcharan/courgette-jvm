@@ -85,6 +85,11 @@ public class CourgetteRunOptions implements CourgetteOptions {
     }
 
     @Override
+    public boolean persistParallelCucumberJsonReports() {
+        return SystemPropertyUtils.getBoolProperty(CourgetteSystemProperty.PERSIST_PARALLEL_CUCUMBER_JSON_REPORTS, courgetteOptions.persistParallelCucumberJsonReports());
+    }
+
+    @Override
     public String[] classPath() {
         return courgetteOptions.classPath();
     }
