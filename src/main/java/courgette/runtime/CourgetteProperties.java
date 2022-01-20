@@ -75,6 +75,10 @@ public class CourgetteProperties {
         return checkIfReportIsEnabled.test(HtmlReport.CUCUMBER_HTML);
     }
 
+    public boolean shouldPersistCucumberJsonReports() {
+        return courgetteOptions.persistParallelCucumberJsonReports();
+    }
+
     public boolean useCustomClasspath() {
         return courgetteOptions.classPath().length > 0;
     }
@@ -95,5 +99,6 @@ public class CourgetteProperties {
                 .noneMatch(featureName -> feature.toLowerCase().contains(featureName));
     }
 
-    private final Predicate<HtmlReport> checkIfReportIsEnabled = (report) -> !Arrays.asList(getCourgetteOptions().disableHtmlReport()).contains(report);
+    private final Predicate<HtmlReport> checkIfReportIsEnabled = (report) ->
+            Arrays.stream(getCourgetteOptions().disableHtmlReport()).noneMatch(r -> r.equals(HtmlReport.COURGETTE_AND_CUCUMBER_HTML) || r.equals(report));
 }

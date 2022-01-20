@@ -66,6 +66,11 @@ public @interface CourgetteOptions {
     HtmlReport[] disableHtmlReport() default {};
 
     /**
+     * @return true to save Cucumber json and ndjson reports for each test run
+     */
+    boolean persistParallelCucumberJsonReports() default false;
+
+    /**
      * @return custom classpath
      */
     String[] classPath() default {};

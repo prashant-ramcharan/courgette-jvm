@@ -36,13 +36,13 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>6.2.0</version>
+  <version>6.3.0</version>
 </dependency>
 ````
 
 #### Gradle
 ````gradle
-compile 'io.github.prashant-ramcharan:courgette-jvm:6.2.0'
+compile 'io.github.prashant-ramcharan:courgette-jvm:6.3.0'
 ````
 
 #### Included Cucumber Dependencies
@@ -99,8 +99,10 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
     * _Each grouping must be separated by a `;` character and adhere to the following format:  `key1=value1; key2=value2`._
 
 * **disableHtmlReport**: If set, the Courgette and Cucumber html reports will not be generated at the end of the test run.
-    * _Options are `HtmlReport.COURGETTE_HTML` and `HtmlReport.CUCUMBER_HTML`_
-    
+    * _Options are `HtmlReport.COURGETTE_HTML`, `HtmlReport.CUCUMBER_HTML` and `HtmlReport.COURGETTE_AND_CUCUMBER_HTML`_
+
+* **persistParallelCucumberJsonReports**: If set to true, Courgette will save the Cucumber json and ndjson reports for each parallel test to `reportTargetDir/session-reports/{session}`
+ 
 * **classPath**: Allows a custom class path to be used when running tests.
     * _The class path should point to:_ `{ "path-to-project-jars", "path-to-test-classes" }`
     
@@ -254,6 +256,53 @@ public class RegressionTestSuite {
 You can add any number of annotated methods to your test suite class. 
 If you need your callbacks to run in a specific order, pass `order` to the annotation: `@CourgetteBeforeAll(order = 2)`.
 
+## Courgette Run Information
+
+You can access test statistics and additional run information if you need to analyze or perform extra tasks before or after the parallel test run.
+
+_Note: `CourgetteRunInfo` can only be accessed from a Courgette runner class._
+
+JUnit Runner 
+````java
+@RunWith(Courgette.class)
+@CourgetteOptions(/* Your Courgette options here... */)
+public class RegressionTestSuite {
+
+    @CourgetteBeforeAll
+    public static void beforeRun() {
+        System.out.println("Starting Courgette parallel run: " + CourgetteRunInfo.sessionId());
+    }
+
+    @CourgetteAfterAll
+    public static void afterRun() {
+      if (CourgetteRunInfo.testStatistics().hasFailures()) {
+        // do something extra here
+      }
+    }
+}
+````
+
+TestNG Runner 
+````java
+@Test
+@CourgetteOptions(/* Your Courgette options here... */)
+public class RegressionTestSuite extends TestNGCourgette {
+
+    @BeforeTest
+    public static void beforeRun() {
+        System.out.println("Starting Courgette parallel run: " + CourgetteRunInfo.sessionId());
+    }
+
+    @AfterTest
+    public static void afterRun() {
+        if (CourgetteRunInfo.testStatistics().hasFailures()) {
+            // do something extra here
+        }
+    }
+}
+````
+
+
 ## Slack Integration
 
 Courgette allows real time test results and events to be posted to Slack as tests are run.
@@ -289,6 +338,7 @@ You can subscribe to single or multiple Courgette events. When events are trigge
   - TEST_PASSED_AFTER_RERUN
   - TEST_FAILED  
   - TEST_RERUN
+  - TEST_RUN_SUMMARY
 
 ![CourgetteJVM_Slack.png](images/CourgetteJVM_Slack.png)
 

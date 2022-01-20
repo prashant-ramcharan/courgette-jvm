@@ -2,6 +2,7 @@ package courgette.runtime.report.builder;
 
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
+import courgette.runtime.CourgetteEnvironmentInfo;
 import courgette.runtime.CourgetteProperties;
 import courgette.runtime.CourgetteRunResult;
 import courgette.runtime.report.model.Feature;
@@ -312,28 +313,16 @@ public class HtmlReportBuilder {
     }
 
     private String createEnvironmentInfoModal() {
-        final List<String> envData = new ArrayList<>();
+        String environmentInfo = courgetteProperties.getCourgetteOptions().environmentInfo();
 
-        final String envInfo = courgetteProperties.getCourgetteOptions().environmentInfo().trim();
-
-        final String[] values = envInfo.split(";");
-
-        for (String value : values) {
-            String[] keyValue = value.trim().split("=");
-
-            if (keyValue.length == 2) {
-                envData.add(keyValue[0].trim() + " = " + keyValue[1].trim());
-            }
+        List<String> environment = new CourgetteEnvironmentInfo(environmentInfo).list();
+        if (environment.isEmpty()) {
+            environment.add("No additional environment information provided.");
         }
 
-        if (envData.isEmpty()) {
-            envData.add("No additional environment information provided.");
-        }
-
-        final LinkedHashMap<String, Object> environmentInfoData = new LinkedHashMap<>();
-
-        final LinkedList<String> rowInfo = new LinkedList();
-        envData.forEach(info -> rowInfo.add(createModalRow(info)));
+        LinkedHashMap<String, Object> environmentInfoData = new LinkedHashMap<>();
+        LinkedList<String> rowInfo = new LinkedList<>();
+        environment.forEach(info -> rowInfo.add(createModalRow(info)));
 
         environmentInfoData.put(MODAL_BODY, rowInfo);
 

@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 public abstract class CourgetteJUnitRunner extends ParentRunner<Feature> {
@@ -53,10 +52,6 @@ public abstract class CourgetteJUnitRunner extends ParentRunner<Feature> {
 
     @Override
     protected void runChild(Feature child, RunNotifier notifier) {
-    }
-
-    protected String createSessionId() {
-        return UUID.randomUUID().toString().replaceAll("-", "");
     }
 
     private void createDescription() {

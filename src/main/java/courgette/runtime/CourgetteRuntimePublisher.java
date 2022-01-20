@@ -1,6 +1,6 @@
 package courgette.runtime;
 
-import courgette.runtime.event.CourgetteEvent;
+import courgette.runtime.event.CourgetteEventHolder;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -14,19 +14,8 @@ public class CourgetteRuntimePublisher implements CourgettePublisher {
             this.publishers.addAll(publishers);
         }
     }
-
     @Override
-    public void publish(CourgetteEvent event) {
-        publishers.forEach(p -> p.publish(event));
-    }
-
-    @Override
-    public void publish(CourgetteEvent event, CourgetteRunResult result) {
-        publishers.forEach(p -> p.publish(event, result));
-    }
-
-    @Override
-    public void publish(CourgetteEvent event, CourgetteRunnerInfo runnerInfo, CourgetteRunResult result) {
-        publishers.forEach(p -> p.publish(event, runnerInfo, result));
+    public void publish(CourgetteEventHolder eventHolder) {
+        publishers.forEach(p -> p.publish(eventHolder));
     }
 }

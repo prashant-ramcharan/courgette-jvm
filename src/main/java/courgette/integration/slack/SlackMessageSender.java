@@ -2,10 +2,11 @@ package courgette.integration.slack;
 
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
+import courgette.runtime.event.CourgetteEventHolder;
 import courgette.runtime.CourgetteRunResult;
 import courgette.runtime.CourgetteSlackOptions;
+import courgette.runtime.CourgetteTestStatistics;
 import courgette.runtime.event.CourgetteEvent;
-import courgette.runtime.event.EventHolder;
 import courgette.runtime.event.EventSender;
 import io.cucumber.core.gherkin.Feature;
 
@@ -29,20 +30,25 @@ public class SlackMessageSender implements EventSender {
     private final SlackService slackService;
     private final CourgetteSlackOptions slackOptions;
     private final Mustache messageTemplate;
+    private final Mustache summaryTemplate;
 
     public SlackMessageSender(SlackService slackService, CourgetteSlackOptions slackOptions) {
         this.slackService = slackService;
         this.slackOptions = slackOptions;
         this.messageTemplate = readTemplate("/slack/message.mustache");
+        this.summaryTemplate = readTemplate("/slack/summary.mustache");
     }
 
     @Override
-    public void send(EventHolder eventHolder) {
+    public void send(CourgetteEventHolder eventHolder) {
         slackOptions.getChannels().forEach(channel -> createMessage(channel, eventHolder).ifPresent(slackService::postMessage));
     }
 
-    private Optional<String> createMessage(String channel, EventHolder eventHolder) {
+    private Optional<String> createMessage(String channel, CourgetteEventHolder eventHolder) {
         try {
+            if (isTestRunSummaryEvent((eventHolder))) {
+                return Optional.of(createFromTemplate(summaryTemplate, createSummaryMessageData(channel, eventHolder)));
+            }
             if (isInfoEvent(eventHolder)) {
                 return Optional.of(createFromTemplate(messageTemplate, createInfoMessageData(channel, eventHolder)));
             } else {
@@ -55,16 +61,20 @@ public class SlackMessageSender implements EventSender {
         return Optional.empty();
     }
 
-    private boolean isInfoEvent(EventHolder eventHolder) {
+    private boolean isInfoEvent(CourgetteEventHolder eventHolder) {
         return eventHolder.getCourgetteEvent().equals(CourgetteEvent.TEST_RUN_STARTED)
                 || eventHolder.getCourgetteEvent().equals(CourgetteEvent.TEST_RUN_FINISHED);
     }
 
-    private Map<String, Object> createInfoMessageData(String channel, EventHolder eventHolder) {
+    private boolean isTestRunSummaryEvent(CourgetteEventHolder eventHolder) {
+        return eventHolder.getCourgetteEvent().equals(CourgetteEvent.TEST_RUN_SUMMARY);
+    }
+
+    private Map<String, Object> createInfoMessageData(String channel, CourgetteEventHolder eventHolder) {
         return createDefaultData(channel, eventHolder);
     }
 
-    private Map<String, Object> createMessageData(String channel, EventHolder eventHolder) {
+    private Map<String, Object> createMessageData(String channel, CourgetteEventHolder eventHolder) {
         HashMap<String, Object> section = new HashMap<>();
         addOptional(section, eventHolder);
         HashMap<String, Object> data = createDefaultData(channel, eventHolder);
@@ -72,7 +82,34 @@ public class SlackMessageSender implements EventSender {
         return data;
     }
 
-    private HashMap<String, Object> createDefaultData(String channel, EventHolder eventHolder) {
+    private Map<String, Object> createSummaryMessageData(String channel, CourgetteEventHolder eventHolder) {
+        CourgetteTestStatistics testStatistics = eventHolder.getCourgetteTestStatistics();
+
+        HashMap<String, Object> data = createDefaultData(channel, eventHolder);
+        data.put("run_level", eventHolder.getCourgetteProperties().getCourgetteOptions().runLevel().toString());
+        data.put("total", testStatistics.total());
+        data.put("passed", testStatistics.passed());
+        data.put("passed_percentage", testStatistics.passedPercentage());
+        data.put("failed", testStatistics.failed());
+        data.put("failed_percentage", testStatistics.failedPercentage());
+        data.put("duration", testStatistics.duration());
+
+        if (eventHolder.getCourgetteProperties().getCourgetteOptions().rerunFailedScenarios()
+                && testStatistics.rerun() > 0) {
+            Map<String, Object> optional1 = new HashMap<>();
+            optional1.put("rerun", testStatistics.rerun());
+            data.put("optional1", optional1);
+
+            if (testStatistics.passedAfterRerun() > 0) {
+                Map<String, Object> optional2 = new HashMap<>();
+                optional2.put("passed_rerun", testStatistics.passedAfterRerun());
+                data.put("optional2", optional2);
+            }
+        }
+        return data;
+    }
+
+    private HashMap<String, Object> createDefaultData(String channel, CourgetteEventHolder eventHolder) {
         HashMap<String, Object> data = new HashMap<>();
         data.put("channel", channel);
         data.put("description", eventHolder.getCourgetteEvent().getDescription());
@@ -82,7 +119,7 @@ public class SlackMessageSender implements EventSender {
         return data;
     }
 
-    private void addOptional(Map<String, Object> data, EventHolder eventHolder) {
+    private void addOptional(Map<String, Object> data, CourgetteEventHolder eventHolder) {
         CourgetteRunResult courgetteRunResult = eventHolder.getCourgetteRunResult();
 
         data.put("feature", trimFeatureName(courgetteRunResult.getFeature()));
@@ -107,6 +144,7 @@ public class SlackMessageSender implements EventSender {
         switch (event) {
             case TEST_RUN_STARTED:
             case TEST_RUN_FINISHED:
+            case TEST_RUN_SUMMARY:
                 data.put("icon", "information_source");
                 break;
             case TEST_PASSED:

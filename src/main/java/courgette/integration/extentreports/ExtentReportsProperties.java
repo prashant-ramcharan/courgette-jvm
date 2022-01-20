@@ -8,9 +8,11 @@ import java.io.File;
 
 public class ExtentReportsProperties {
     private final String reportPath;
+    private final String environmentInfo;
 
     public ExtentReportsProperties(CourgetteProperties courgetteProperties) {
         this.reportPath = courgetteProperties.getCourgetteOptions().reportTargetDir() + "/courgette-extentreports/";
+        this.environmentInfo = courgetteProperties.getCourgetteOptions().environmentInfo();
         createReportDir();
     }
 
@@ -20,6 +22,10 @@ public class ExtentReportsProperties {
 
     public File getXMLConfigFile() {
         return FileUtils.getClassPathFile("extent-config.xml");
+    }
+
+    public String getEnvironmentInfo() {
+        return environmentInfo;
     }
 
     private void createReportDir() {

@@ -5,7 +5,9 @@ import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.GherkinKeyword;
 import com.aventstack.extentreports.MediaEntityBuilder;
 import com.aventstack.extentreports.Status;
+import com.aventstack.extentreports.model.SystemEnvInfo;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
+import courgette.runtime.CourgetteEnvironmentInfo;
 import courgette.runtime.CourgetteException;
 import courgette.runtime.report.model.Embedding;
 import courgette.runtime.report.model.Feature;
@@ -44,6 +46,7 @@ public class ExtentReportsBuilder {
         final ExtentReports extentReports = new ExtentReports();
         extentReports.setReportUsesManualConfiguration(true);
         extentReports.attachReporter(extentSparkReporter);
+        addSystemEnvInfo(extentReports);
 
         final List<String> featureUris = getDistinctFeatureUris();
 
@@ -236,6 +239,16 @@ public class ExtentReportsBuilder {
             endTime = endTime + calculateDuration.apply(scenario.getSteps().stream().flatMap(s -> s.getAfter().stream()).map(Hook::getResult).collect(Collectors.toList()));
         }
         return new Date(startTime + endTime);
+    }
+
+    private void addSystemEnvInfo(ExtentReports report) {
+        List<SystemEnvInfo> systemEnvInfo = new ArrayList<>();
+
+        new CourgetteEnvironmentInfo(extentReportsProperties.getEnvironmentInfo())
+                .defaultEnvironment()
+                .forEach((key, value) -> systemEnvInfo.add(new SystemEnvInfo(key, value)));
+
+        report.getReport().getSystemEnvInfo().addAll(systemEnvInfo);
     }
 
     private Function<List<Result>, Long> calculateDuration = (source) -> source.stream().mapToLong(Result::getDuration).sum();

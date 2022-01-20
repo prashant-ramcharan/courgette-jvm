@@ -6,6 +6,7 @@ import courgette.runtime.event.subscriber.TestPassedAfterRerunEventSubscriber;
 import courgette.runtime.event.subscriber.TestPassedEventSubscriber;
 import courgette.runtime.event.subscriber.TestRerunEventSubscriber;
 import courgette.runtime.event.subscriber.TestStartedEventSubscriber;
+import courgette.runtime.event.subscriber.TestSummaryEventSubscriber;
 
 import java.util.List;
 
@@ -21,6 +22,7 @@ public final class EventSubscriberCreator {
                 eventPublisher.addEventSubscriber(new TestFailedEventSubscriber());
                 eventPublisher.addEventSubscriber(new TestRerunEventSubscriber());
                 eventPublisher.addEventSubscriber(new TestPassedAfterRerunEventSubscriber());
+                eventPublisher.addEventSubscriber(new TestSummaryEventSubscriber());
             } else {
                 courgetteEvents.forEach(eventType -> {
                     switch (eventType) {
@@ -41,6 +43,9 @@ public final class EventSubscriberCreator {
                             break;
                         case TEST_RERUN:
                             eventPublisher.addEventSubscriber(new TestRerunEventSubscriber());
+                            break;
+                        case TEST_RUN_SUMMARY:
+                            eventPublisher.addEventSubscriber(new TestSummaryEventSubscriber());
                             break;
                     }
                 });

@@ -2,5 +2,5 @@ package courgette.runtime.event;
 
 public interface EventSender {
 
-    void send(EventHolder eventHolder);
+    void send(CourgetteEventHolder eventHolder);
 }

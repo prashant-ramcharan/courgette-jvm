@@ -1,3 +1,11 @@
+CHANGES IN VERSION 6.3.0
+=================================
+* [NEW] Add `CourgetteRunInfo` to allow access to test statistics and additional run information from a Courgette runner class.
+* [NEW] Add `CourgetteEvent.TEST_RUN_SUMMARY` Slack event to allow Courgette to send a summary of the test results to Slack.
+* [NEW] Add Courgette option `persistParallelCucumberJsonReports` to support saving Cucumber json and ndjson reports for each parallel test.
+* [ENHANCEMENT] Add system and environment information to Extent Reports.
+* [ENHANCEMENT] Add additional property `COURGETTE_AND_CUCUMBER_HTML` associated to Courgette option `disableHtmlReport`
+
 CHANGES IN VERSION 6.2.0
 =================================
 * [NEW] Add Courgette Mobile Device Allocator plugin to support parallel mobile application testing.

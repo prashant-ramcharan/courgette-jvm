@@ -1,7 +1,7 @@
 package courgette.integration.reportportal;
 
+import courgette.runtime.event.CourgetteEventHolder;
 import courgette.runtime.CourgetteRunnerInfo;
-import courgette.runtime.event.EventHolder;
 import courgette.runtime.event.EventSender;
 
 public class ReportPortalSender implements EventSender {
@@ -13,7 +13,7 @@ public class ReportPortalSender implements EventSender {
     }
 
     @Override
-    public synchronized void send(EventHolder eventHolder) {
+    public synchronized void send(CourgetteEventHolder eventHolder) {
         final CourgetteRunnerInfo runnerInfo = eventHolder.getCourgetteRunnerInfo();
 
         switch (eventHolder.getCourgetteEvent()) {

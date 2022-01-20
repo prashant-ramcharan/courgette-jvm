@@ -1,10 +1,8 @@
 package courgette.integration.reportportal;
 
+import courgette.runtime.event.CourgetteEventHolder;
 import courgette.runtime.CourgetteProperties;
 import courgette.runtime.CourgettePublisher;
-import courgette.runtime.CourgetteRunResult;
-import courgette.runtime.CourgetteRunnerInfo;
-import courgette.runtime.event.CourgetteEvent;
 import courgette.runtime.event.EventPublisher;
 import courgette.runtime.event.EventSubscriberCreator;
 import io.cucumber.core.gherkin.Feature;
@@ -21,13 +19,9 @@ import static courgette.runtime.event.CourgetteEvent.TEST_RUN_STARTED;
 
 public class ReportPortalPublisher implements CourgettePublisher {
 
-    private final CourgetteProperties courgetteProperties;
-
     private Optional<EventPublisher> eventPublisher = Optional.empty();
 
     public ReportPortalPublisher(CourgetteProperties courgetteProperties, List<Feature> features) {
-
-        this.courgetteProperties = courgetteProperties;
 
         if (courgetteProperties.isReportPortalPluginEnabled()) {
             final ReportPortalService reportPortalService = new ReportPortalService(ReportPortalProperties.getInstance(), courgetteProperties, features);
@@ -40,17 +34,7 @@ public class ReportPortalPublisher implements CourgettePublisher {
     }
 
     @Override
-    public void publish(CourgetteEvent event) {
-        eventPublisher.ifPresent(p -> p.publishEvent(event, courgetteProperties, null, null));
-    }
-
-    @Override
-    public void publish(CourgetteEvent event, CourgetteRunResult result) {
-        eventPublisher.ifPresent(p -> p.publishEvent(event, courgetteProperties, null, result));
-    }
-
-    @Override
-    public void publish(CourgetteEvent event, CourgetteRunnerInfo runnerInfo, CourgetteRunResult result) {
-        eventPublisher.ifPresent(p -> p.publishEvent(event, courgetteProperties, runnerInfo, result));
+    public void publish(CourgetteEventHolder eventHolder) {
+        eventPublisher.ifPresent(p -> p.publishEvent(eventHolder));
     }
 }

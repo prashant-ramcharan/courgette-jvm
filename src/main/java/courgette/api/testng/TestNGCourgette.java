@@ -6,6 +6,7 @@ import courgette.runtime.CourgetteProperties;
 import courgette.runtime.CourgetteRunOptions;
 import courgette.runtime.CourgetteRunner;
 import courgette.runtime.CourgetteRunnerInfo;
+import courgette.runtime.CourgetteSession;
 import courgette.runtime.CourgetteTestErrorException;
 import courgette.runtime.CourgetteTestFailureException;
 import courgette.runtime.RunStatus;
@@ -17,7 +18,6 @@ import org.testng.annotations.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 public abstract class TestNGCourgette {
     private CourgetteProperties courgetteProperties;
@@ -26,7 +26,7 @@ public abstract class TestNGCourgette {
     @BeforeClass(alwaysRun = true)
     public void initialize() {
         final CourgetteOptions courgetteOptions = new CourgetteRunOptions(this.getClass());
-        courgetteProperties = new CourgetteProperties(courgetteOptions, createSessionId(), courgetteOptions.threads());
+        courgetteProperties = new CourgetteProperties(courgetteOptions, CourgetteSession.current().sessionId(), courgetteOptions.threads());
 
         CourgetteLoader courgetteFeatureLoader = new CourgetteLoader(courgetteProperties);
         List<Feature> features = courgetteFeatureLoader.getFeatures();
@@ -72,9 +72,5 @@ public abstract class TestNGCourgette {
         } finally {
             courgetteRunner.cleanupCourgetteHtmlReportFiles();
         }
-    }
-
-    private String createSessionId() {
-        return UUID.randomUUID().toString().replaceAll("-", "");
     }
 }

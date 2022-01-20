@@ -5,7 +5,6 @@ import com.github.mustachejava.Mustache;
 import courgette.runtime.report.builder.HtmlReportBuilder;
 import courgette.runtime.report.model.Embedding;
 import courgette.runtime.report.model.Feature;
-import courgette.runtime.report.model.Scenario;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -16,13 +15,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Writer;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class CourgetteHtmlReporter {
@@ -49,36 +46,15 @@ public class CourgetteHtmlReporter {
         this.cucumberReportUrl = cucumberReportUrl;
     }
 
-    public void create() throws IOException {
+    public void create(CourgetteTestStatistics testStatistics) throws IOException {
         createReportDirectories();
-        generateHtmlReport();
+        generateHtmlReport(testStatistics);
     }
 
-    private void generateHtmlReport() throws IOException {
-        final long elapsedMill = (Instant.now().minus(courgetteProperties.getSessionStartTime().toEpochMilli(), ChronoUnit.MILLIS)).toEpochMilli();
-
-        String duration = String.format("%d min, %d sec",
-                TimeUnit.MILLISECONDS.toMinutes(elapsedMill),
-                TimeUnit.MILLISECONDS.toSeconds(elapsedMill) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(elapsedMill)));
-
-        final String featureScenarioLabel = courgetteProperties.isFeatureRunLevel() ? "Features" : "Scenarios";
-
-        int total, passed, failed, rerun;
-
-        if (courgetteProperties.isFeatureRunLevel()) {
-            total = reportFeatures.size();
-            passed = (int) reportFeatures.stream().filter(Feature::passed).count();
-        } else {
-            List<Scenario> scenarioList = reportFeatures.stream().flatMap(f -> f.getScenarios().stream()).collect(Collectors.toList());
-            total = scenarioList.size();
-            passed = (int) scenarioList.stream().filter(Scenario::passed).count();
-        }
-
-        failed = total - passed;
-        rerun = courgetteProperties.getCourgetteOptions().rerunFailedScenarios() ? (int) courgetteRunResults.stream().filter(result -> result.getStatus().equals(CourgetteRunResult.Status.RERUN)).count() : 0;
+    private void generateHtmlReport(CourgetteTestStatistics testStatistics) throws IOException {
+        String featureScenarioLabel = courgetteProperties.isFeatureRunLevel() ? "Features" : "Scenarios";
 
         String cucumberTags = System.getProperty("cucumber.tags", "Not provided");
-
         if (cucumberTags.equals("Not provided")) {
             String[] tags = courgetteProperties.getCourgetteOptions().cucumberOptions().tags();
             if (tags.length > 0) {
@@ -98,12 +74,12 @@ public class CourgetteHtmlReporter {
         final HashMap<String, Object> reportData = new HashMap<>();
         reportData.put("reportTitle", reportTitle);
         reportData.put("label", featureScenarioLabel);
-        reportData.put("total", total);
-        reportData.put("passed", passed);
-        reportData.put("failed", failed);
-        reportData.put("rerun", rerun);
+        reportData.put("total", testStatistics.total());
+        reportData.put("passed", testStatistics.passed());
+        reportData.put("failed", testStatistics.failed());
+        reportData.put("rerun", testStatistics.rerun());
         reportData.put("timestamp", Instant.now().toString());
-        reportData.put("duration", duration);
+        reportData.put("duration", testStatistics.duration());
         reportData.put("threads", courgetteProperties.getMaxThreads());
         reportData.put("run_level", courgetteProperties.getCourgetteOptions().runLevel().toString());
         reportData.put("cucumber_report", cucumberReportUrl);
