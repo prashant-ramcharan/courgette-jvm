@@ -19,6 +19,7 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -131,6 +132,20 @@ public class ReportPortalService {
         }
     }
 
+    public void outputLaunchLink() {
+        if (launchId != null) {
+            String id = call(get(apiEndpoint() + "/launch/" + launchId));
+
+            if (id != null) {
+                String out = "\n------------------------------------------------------------------------\n" +
+                        "Courgette published your results to Report Portal:\n" +
+                        String.format("%s/ui/#%s/launches/all/%s", rpServerUrl(), reportPortalProperties.getProject(), id) +
+                        "\n------------------------------------------------------------------------\n";
+                System.out.println(out);
+            }
+        }
+    }
+
     private String startTest(String featureName) {
         return call(post(apiEndpoint() + "/item/" + testSuiteId, TestRequest.create(featureName, launchId)));
     }
@@ -187,6 +202,12 @@ public class ReportPortalService {
         return put;
     }
 
+    private HttpGet get(final String uri) {
+        final HttpGet get = new HttpGet(uri);
+        get.addHeader(authHeader());
+        return get;
+    }
+
     private Header authHeader() {
         return new BasicHeader("Authorization", "bearer " + reportPortalProperties.getApiToken());
     }
@@ -230,4 +251,12 @@ public class ReportPortalService {
     }
 
     private final Predicate<Integer> isSuccessfulCall = (status) -> status == 200 || status == 201;
+
+    private String rpServerUrl() {
+        String server = reportPortalProperties.getEndpoint();
+        if (server.endsWith("/")) {
+            server = server.substring(0, server.lastIndexOf("/"));
+        }
+        return server;
+    }
 }

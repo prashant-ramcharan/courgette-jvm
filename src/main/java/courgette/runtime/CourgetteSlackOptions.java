@@ -8,11 +8,13 @@ public class CourgetteSlackOptions {
 
     private final String webhookUrl;
     private final List<String> channels;
+    private final String testId;
     private final List<CourgetteEvent> events;
 
-    public CourgetteSlackOptions(String webhookUrl, List<String> channels, List<CourgetteEvent> events) {
+    public CourgetteSlackOptions(String webhookUrl, List<String> channels, String testId, List<CourgetteEvent> events) {
         this.webhookUrl = webhookUrl;
         this.channels = channels;
+        this.testId = testId;
         this.events = events;
     }
 
@@ -22,6 +24,10 @@ public class CourgetteSlackOptions {
 
     public List<String> getChannels() {
         return channels;
+    }
+
+    public String getTestId() {
+        return testId;
     }
 
     public List<CourgetteEvent> getEvents() {

@@ -1,5 +1,13 @@
 CHANGES IN VERSION 6.3.0
 =================================
+* [NEW] Add Courgette option `slackTestId` to allow a custom identifier to be sent for each messaged published to Slack.
+* [NEW] Output the link to the Report Portal launch after each test run.
+* [FIX] Result filtering in Report Portal launches.
+* [ENHANCEMENT] Add support to override Courgette options of type String[] at runtime (_plugin, classPath, mobileDevice, slackChannel, excludeFeatureFromRerun_)
+* [MAINTENANCE] Upgrade to Cucumber version 7.2.3 
+
+CHANGES IN VERSION 6.3.0
+=================================
 * [NEW] Add `CourgetteRunInfo` to allow access to test statistics and additional run information from a Courgette runner class.
 * [NEW] Add `CourgetteEvent.TEST_RUN_SUMMARY` Slack event to allow Courgette to send a summary of the test results to Slack.
 * [NEW] Add Courgette option `persistParallelCucumberJsonReports` to support saving Cucumber json and ndjson reports for each parallel test.

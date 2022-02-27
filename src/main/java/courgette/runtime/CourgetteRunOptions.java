@@ -41,7 +41,7 @@ public class CourgetteRunOptions implements CourgetteOptions {
 
     @Override
     public String[] excludeFeatureFromRerun() {
-        return courgetteOptions.excludeFeatureFromRerun();
+        return SystemPropertyUtils.getStringArrayProperty(CourgetteSystemProperty.EXCLUDE_FEATURE_FROM_RERUN, courgetteOptions.excludeFeatureFromRerun());
     }
 
     @Override
@@ -71,7 +71,7 @@ public class CourgetteRunOptions implements CourgetteOptions {
 
     @Override
     public String[] plugin() {
-        return courgetteOptions.plugin();
+        return SystemPropertyUtils.getStringArrayProperty(CourgetteSystemProperty.PLUGIN, courgetteOptions.plugin());
     }
 
     @Override
@@ -91,7 +91,7 @@ public class CourgetteRunOptions implements CourgetteOptions {
 
     @Override
     public String[] classPath() {
-        return courgetteOptions.classPath();
+        return SystemPropertyUtils.getStringArrayProperty(CourgetteSystemProperty.CLASS_PATH, courgetteOptions.classPath());
     }
 
     @Override
@@ -101,7 +101,12 @@ public class CourgetteRunOptions implements CourgetteOptions {
 
     @Override
     public String[] slackChannel() {
-        return courgetteOptions.slackChannel();
+        return SystemPropertyUtils.getStringArrayProperty(CourgetteSystemProperty.SLACK_CHANNEL, courgetteOptions.slackChannel());
+    }
+
+    @Override
+    public String slackTestId() {
+        return SystemPropertyUtils.getNonEmptyStringProperty(CourgetteSystemProperty.SLACK_TEST_ID, courgetteOptions.slackTestId(), "");
     }
 
     @Override
@@ -111,7 +116,7 @@ public class CourgetteRunOptions implements CourgetteOptions {
 
     @Override
     public String[] mobileDevice() {
-        return courgetteOptions.mobileDevice();
+        return SystemPropertyUtils.getStringArrayProperty(CourgetteSystemProperty.MOBILE_DEVICE, courgetteOptions.mobileDevice());
     }
 
     @Override
@@ -136,7 +141,7 @@ public class CourgetteRunOptions implements CourgetteOptions {
     private void validateReportPortalPlugin() {
         final String reportPortalPropertiesFilename = "reportportal.properties";
 
-        if (Arrays.stream(courgetteOptions.plugin()).anyMatch(plugin -> plugin.equalsIgnoreCase(CourgettePlugin.REPORT_PORTAL))) {
+        if (Arrays.stream(plugin()).anyMatch(plugin -> plugin.equalsIgnoreCase(CourgettePlugin.REPORT_PORTAL))) {
             File reportPortalPropertiesFile = FileUtils.getClassPathFile(reportPortalPropertiesFilename);
 
             if (reportPortalPropertiesFile == null) {
@@ -147,9 +152,10 @@ public class CourgetteRunOptions implements CourgetteOptions {
     }
 
     private void validateMobileDeviceAllocatorPlugin() {
-        if (Arrays.stream(courgetteOptions.plugin()).anyMatch(plugin -> plugin.equalsIgnoreCase(CourgettePlugin.MOBILE_DEVICE_ALLOCATOR))) {
-            if (courgetteOptions.mobileDevice().length == 0 ||
-                    Arrays.stream(courgetteOptions.mobileDevice())
+        if (Arrays.stream(plugin()).anyMatch(plugin -> plugin.equalsIgnoreCase(CourgettePlugin.MOBILE_DEVICE_ALLOCATOR))) {
+            String[] mobileDevice = mobileDevice();
+            if (mobileDevice.length == 0 ||
+                    Arrays.stream(mobileDevice)
                             .map(device -> device.replace(":", ""))
                             .map(String::trim)
                             .collect(Collectors.toSet())
@@ -162,7 +168,7 @@ public class CourgetteRunOptions implements CourgetteOptions {
 
     private void validateSlackOptions() {
         final CourgetteSlackOptions slackOptions = new CourgetteSlackOptions(
-                slackWebhookUrl(), Arrays.asList(slackChannel()), Arrays.asList(slackEventSubscription()));
+                slackWebhookUrl(), Arrays.asList(slackChannel()), slackTestId(), Arrays.asList(slackEventSubscription()));
 
         if (slackOptions.shouldValidate() && !slackOptions.isValid()) {
             throw new CourgetteException("You must provide a Slack webhook URL and valid Slack channels");

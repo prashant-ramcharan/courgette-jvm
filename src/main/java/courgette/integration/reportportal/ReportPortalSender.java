@@ -29,6 +29,7 @@ public class ReportPortalSender implements EventSender {
             case TEST_RUN_FINISHED:
                 reportPortalService.finishTestSuite();
                 reportPortalService.finishLaunch();
+                reportPortalService.outputLaunchLink();
                 break;
         }
     }

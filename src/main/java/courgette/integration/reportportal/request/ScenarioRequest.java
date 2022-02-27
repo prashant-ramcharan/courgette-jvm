@@ -19,7 +19,7 @@ public class ScenarioRequest {
         body.addProperty("name", scenarioName);
         body.addProperty("launchUuid", launchId);
         body.addProperty("startTime", Instant.now().toString());
-        body.addProperty("type", "test");
+        body.addProperty("type", "step");
 
         addAttributes(body, scenarioTags);
 
