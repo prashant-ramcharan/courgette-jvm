@@ -36,21 +36,21 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>6.3.0</version>
+  <version>6.4.0</version>
 </dependency>
 ````
 
 #### Gradle
 ````gradle
-compile 'io.github.prashant-ramcharan:courgette-jvm:6.3.0'
+compile 'io.github.prashant-ramcharan:courgette-jvm:6.4.0'
 ````
 
 #### Included Cucumber Dependencies
-* cucumber-core 7.1.0
-* cucumber-java 7.1.0
-* cucumber-java8 7.1.0
-* cucumber-junit 7.1.0
-* cucumber-testng 7.1.0
+* cucumber-core 7.2.3
+* cucumber-java 7.2.3
+* cucumber-java8 7.2.3
+* cucumber-junit 7.2.3
+* cucumber-testng 7.2.3
 
 
 ## Usage
@@ -110,7 +110,7 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
 
 * **slackChannel**: The Slack channels that Courgette will post messages to.
 
-* **slackTestId**: A custom Slack identifier that will be sent for each message.
+* **slackTestId**: A custom Slack identifier that will be sent with each message.
 
 * **slackEventSubscription**: The Courgette events to subscribe to that gets posted to Slack. 
  
