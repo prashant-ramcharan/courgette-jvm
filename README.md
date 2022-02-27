@@ -114,7 +114,7 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
 
 * **slackEventSubscription**: The Courgette events to subscribe to that gets posted to Slack. 
  
-* **mobileDevices**: The devices that Courgette will use to track and allocate for parallel mobile tests.
+* **mobileDevice**: The devices that Courgette will use to track and allocate for parallel mobile tests.
   * This option is required when using the `CourgettePlugin.MOBILE_DEVICE_ALLOCATOR` plugin.
 
 * **cucumberOptions** : The standard cucumber options for specifying feature paths, glue, tags etc..
