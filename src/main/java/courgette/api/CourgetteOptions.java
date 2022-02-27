@@ -86,6 +86,11 @@ public @interface CourgetteOptions {
     String[] slackChannel() default {};
 
     /**
+     * @return the Slack test id
+     */
+    String slackTestId() default "";
+
+    /**
      * @return the Courgette events subscriptions
      */
     CourgetteEvent[] slackEventSubscription() default {};

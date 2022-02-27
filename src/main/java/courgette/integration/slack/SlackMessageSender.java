@@ -115,8 +115,17 @@ public class SlackMessageSender implements EventSender {
         data.put("description", eventHolder.getCourgetteEvent().getDescription());
         data.put("timestamp", Instant.now().toString());
         data.put("session_id", eventHolder.getCourgetteProperties().getSessionId());
+        addTestId(data, slackOptions.getTestId());
         addIcon(data, eventHolder.getCourgetteEvent());
         return data;
+    }
+
+    private void addTestId(Map<String, Object> data, String testId) {
+        if (!testId.trim().isEmpty()) {
+            HashMap<String, Object> testIdData = new HashMap<>();
+            testIdData.put("test_id", testId);
+            data.put("testId", testIdData);
+        }
     }
 
     private void addOptional(Map<String, Object> data, CourgetteEventHolder eventHolder) {

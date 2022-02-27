@@ -12,7 +12,13 @@ final class CourgetteSystemProperty {
     final static String REPORT_TARGET_DIR = "courgette.reportTargetDir";
     final static String ENVIRONMENT_INFO = "courgette.environmentInfo";
     final static String SLACK_WEBHOOK_URL = "courgette.slackWebhookUrl";
+    final static String SLACK_CHANNEL = "courgette.slackChannel";
+    final static String SLACK_TEST_ID = "courgette.slackTestId";
     final static String DEVICE_NAME_SYSTEM_PROPERTY = "courgette.mobile.device.name";
     final static String UDID_SYSTEM_PROPERTY = "courgette.mobile.device.udid";
     final static String PARALLEL_PORT_SYSTEM_PROPERTY = "courgette.mobile.device.parallel.port";
+    final static String MOBILE_DEVICE = "courgette.mobileDevice";
+    final static String CLASS_PATH = "courgette.classPath";
+    final static String PLUGIN = "courgette.plugin";
+    final static String EXCLUDE_FEATURE_FROM_RERUN = "courgette.excludeFeatureFromRerun";
 }

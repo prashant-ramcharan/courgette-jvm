@@ -53,6 +53,17 @@ public final class SystemPropertyUtils {
         return value;
     }
 
+    public static String[] getStringArrayProperty(String key, String[] defaultValue) {
+        String val = System.getProperty(key);
+        if (val == null || val.trim().isEmpty()) {
+            return defaultValue;
+        }
+
+        String[] splitValue = val.split(",");
+        Object[] value = Arrays.stream(splitValue).map(String::trim).distinct().toArray();
+        return Arrays.copyOf(value, value.length, String[].class);
+    }
+
     @SuppressWarnings("unchecked")
     public static <T> void splitAndAddPropertyToList(String key, List<T> list) {
         Object value = System.getProperty(key);

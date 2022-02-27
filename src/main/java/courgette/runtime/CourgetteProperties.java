@@ -86,6 +86,7 @@ public class CourgetteProperties {
     public CourgetteSlackOptions slackOptions() {
         return new CourgetteSlackOptions(courgetteOptions.slackWebhookUrl(),
                 Arrays.asList(courgetteOptions.slackChannel()),
+                courgetteOptions.slackTestId(),
                 Arrays.asList(courgetteOptions.slackEventSubscription()));
     }
 

@@ -110,6 +110,8 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
 
 * **slackChannel**: The Slack channels that Courgette will post messages to.
 
+* **slackTestId**: A custom Slack identifier that will be sent for each message.
+
 * **slackEventSubscription**: The Courgette events to subscribe to that gets posted to Slack. 
  
 * **mobileDevices**: The devices that Courgette will use to track and allocate for parallel mobile tests.
@@ -314,6 +316,7 @@ To enable this feature, add the following Courgette options to the Courgette run
       ...
       slackWebhookUrl = "https://hooks.slack.com/services/your-slack-url",
       slackChannel = {"channel1", "channel2"},
+      slackTestId = "Production test - Build 1.0.0",
       slackEventSubscription = {CourgetteEvent.ALL},
       cucumberOptions = @CucumberOptions(
       // cucumber options here
@@ -495,6 +498,13 @@ capabilities.setCapability("appium:deviceName", CourgetteMobileDeviceAllocator.D
 ````java
 DesiredCapabilities capabilities = new DesiredCapabilities();
 capabilities.setCapability("device", CourgetteMobileDeviceAllocator.DEVICE_NAME);
+
+````
+
+#### Pass Mobile Devices at Runtime
+
+````
+[mvn | gradle] test -Dcourgette.mobileDevice="iPhone X, iPhone 12, iPhone 13"
 ````
 
 #### Using Real Devices
