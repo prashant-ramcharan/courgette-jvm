@@ -5,6 +5,7 @@ import com.github.mustachejava.Mustache;
 import courgette.runtime.CourgetteEnvironmentInfo;
 import courgette.runtime.CourgetteProperties;
 import courgette.runtime.CourgetteRunResult;
+import courgette.runtime.report.model.Embedding;
 import courgette.runtime.report.model.Feature;
 import courgette.runtime.report.model.Hook;
 import courgette.runtime.report.model.Result;
@@ -24,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static courgette.runtime.CourgetteException.printExceptionStackTrace;
@@ -59,11 +61,17 @@ public class HtmlReportBuilder {
     private static final String DATATABLE = "datatable";
     private static final String STEP_EXCEPTION = "step_exception";
     private static final String EXCEPTION = "exception";
-    private static final String STEP_OUPUT = "step_output";
+    private static final String STEP_OUTPUT_BEFORE = "step_output_before";
+    private static final String STEP_OUTPUT = "step_output";
+    private static final String STEP_OUTPUT_AFTER = "step_output_after";
     private static final String OUTPUT = "output";
+    private static final String STEP_EMBEDDING_TEXT_BEFORE = "step_embedding_text_before";
     private static final String STEP_EMBEDDING_TEXT = "step_embedding_text";
+    private static final String STEP_EMBEDDING_TEXT_AFTER = "step_embedding_text_after";
     private static final String TEXT = "text";
+    private static final String STEP_EMBEDDING_IMAGE_BEFORE = "step_embedding_image_before";
     private static final String STEP_EMBEDDING_IMAGE = "step_embedding_image";
+    private static final String STEP_EMBEDDING_IMAGE_AFTER = "step_embedding_image_after";
     private static final String IMAGE_ID = "img_id";
     private static final String ROW_INFO = "row_info";
     private static final String TAG = "tag";
@@ -246,7 +254,7 @@ public class HtmlReportBuilder {
         }
 
         if (!hook.getOutput().isEmpty()) {
-            addNestedMap(hookData, STEP_OUPUT, OUTPUT, hook.getOutput());
+            addNestedMap(hookData, STEP_OUTPUT, OUTPUT, hook.getOutput());
         }
 
         hook.getEmbeddings().forEach(embedding -> {
@@ -264,7 +272,6 @@ public class HtmlReportBuilder {
     }
 
     private String createRowFromStep(Step step) {
-
         final LinkedHashMap<String, Object> stepData = new LinkedHashMap<>();
 
         String stepStatusBadge = statusBadge.apply(step.getResult());
@@ -285,21 +292,9 @@ public class HtmlReportBuilder {
             addNestedMap(stepData, STEP_EXCEPTION, EXCEPTION, step.getResult().getErrorMessage());
         }
 
-        if (!step.getOutput().isEmpty()) {
-            addNestedMap(stepData, STEP_OUPUT, OUTPUT, step.getOutput());
-        }
-
-        step.getEmbeddings().forEach(embedding -> {
-
-            if (embedding.getMimeType().equals("text/html")) {
-                String htmlData = new String(Base64.getDecoder().decode(embedding.getData()));
-
-                addNestedMap(stepData, STEP_EMBEDDING_TEXT, TEXT, htmlData);
-
-            } else if (embedding.getMimeType().startsWith("image")) {
-                addNestedMap(stepData, STEP_EMBEDDING_IMAGE, IMAGE_ID, embedding.getCourgetteEmbeddingId());
-            }
-        });
+        addStepOutput(stepData, step);
+        addStepImageEmbedding(stepData, step);
+        addStepTextHtmlEmbedding(stepData, step);
 
         return createFromTemplate(modalStepTemplate, stepData);
     }
@@ -344,11 +339,71 @@ public class HtmlReportBuilder {
 
     private static void addNestedMap(HashMap<String, Object> source, String sourceKey,
                                      String childKey, Object childValue) {
-
         HashMap<String, Object> map = new HashMap<>();
         map.put(childKey, childValue);
-
         source.put(sourceKey, map);
+    }
+
+    private void addStepOutput(HashMap<String, Object> source, Step step) {
+        List<String> beforeStep = step.getBefore().stream().flatMap(o -> o.getOutput().stream()).collect(Collectors.toList());
+        List<String> currentStep = step.getOutput();
+        List<String> afterStep = step.getAfter().stream().flatMap(o -> o.getOutput().stream()).collect(Collectors.toList());
+
+        addNonEmptyNestedMap(source, STEP_OUTPUT_BEFORE, OUTPUT, beforeStep);
+        addNonEmptyNestedMap(source, STEP_OUTPUT, OUTPUT, currentStep);
+        addNonEmptyNestedMap(source, STEP_OUTPUT_AFTER, OUTPUT, afterStep);
+    }
+
+    private void addStepImageEmbedding(HashMap<String, Object> source, Step step) {
+        List<String> beforeStep = step.getBefore().stream()
+                .flatMap(e -> e.getEmbeddings().stream())
+                .filter(imageFilter)
+                .map(Embedding::getCourgetteEmbeddingId)
+                .collect(Collectors.toList());
+
+        List<String> currentStep = step.getEmbeddings().stream()
+                .filter(imageFilter)
+                .map(Embedding::getCourgetteEmbeddingId)
+                .collect(Collectors.toList());
+
+        List<String> afterStep = step.getAfter().stream()
+                .flatMap(e -> e.getEmbeddings().stream())
+                .filter(imageFilter)
+                .map(Embedding::getCourgetteEmbeddingId)
+                .collect(Collectors.toList());
+
+        addNonEmptyNestedMap(source, STEP_EMBEDDING_IMAGE_BEFORE, IMAGE_ID, beforeStep);
+        addNonEmptyNestedMap(source, STEP_EMBEDDING_IMAGE, IMAGE_ID, currentStep);
+        addNonEmptyNestedMap(source, STEP_EMBEDDING_IMAGE_AFTER, IMAGE_ID, afterStep);
+    }
+
+    private void addStepTextHtmlEmbedding(HashMap<String, Object> source, Step step) {
+        List<String> beforeStep = step.getBefore().stream()
+                .flatMap(e -> e.getEmbeddings().stream())
+                .filter(textHtmlFilter)
+                .map(embedding -> new String(Base64.getDecoder().decode(embedding.getData())))
+                .collect(Collectors.toList());
+
+        List<String> currentStep = step.getEmbeddings().stream()
+                .filter(textHtmlFilter)
+                .map(embedding -> new String(Base64.getDecoder().decode(embedding.getData())))
+                .collect(Collectors.toList());
+
+        List<String> afterStep = step.getAfter().stream()
+                .flatMap(e -> e.getEmbeddings().stream())
+                .filter(textHtmlFilter)
+                .map(embedding -> new String(Base64.getDecoder().decode(embedding.getData())))
+                .collect(Collectors.toList());
+
+        addNonEmptyNestedMap(source, STEP_EMBEDDING_TEXT_BEFORE, TEXT, beforeStep);
+        addNonEmptyNestedMap(source, STEP_EMBEDDING_TEXT, TEXT, currentStep);
+        addNonEmptyNestedMap(source, STEP_EMBEDDING_TEXT_AFTER, TEXT, afterStep);
+    }
+
+    private void addNonEmptyNestedMap(HashMap<String, Object> source, String sourceKey, String childKey, List<String> data) {
+        if (!data.isEmpty()) {
+            addNestedMap(source, sourceKey, childKey, data);
+        }
     }
 
     private Mustache readTemplate(String template) {
@@ -368,4 +423,7 @@ public class HtmlReportBuilder {
 
         return new DefaultMustacheFactory().compile(new StringReader(templateContent.toString()), "");
     }
+
+    private final Predicate<Embedding> imageFilter = (e) -> e.getMimeType().startsWith("image");
+    private final Predicate<Embedding> textHtmlFilter = (e) -> e.getMimeType().equals("text/html");
 }

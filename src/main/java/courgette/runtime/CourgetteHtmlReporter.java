@@ -119,6 +119,20 @@ public class CourgetteHtmlReporter {
         reportFeatures.stream().map(Feature::getScenarios)
                 .flatMap(Collection::stream)
                 .flatMap(t -> t.getSteps().stream())
+                .flatMap(t -> t.getBefore().stream())
+                .flatMap(t -> t.getEmbeddings().stream())
+                .forEach(embeddings::add);
+
+        reportFeatures.stream().map(Feature::getScenarios)
+                .flatMap(Collection::stream)
+                .flatMap(t -> t.getSteps().stream())
+                .flatMap(t -> t.getEmbeddings().stream())
+                .forEach(embeddings::add);
+
+        reportFeatures.stream().map(Feature::getScenarios)
+                .flatMap(Collection::stream)
+                .flatMap(t -> t.getSteps().stream())
+                .flatMap(t -> t.getAfter().stream())
                 .flatMap(t -> t.getEmbeddings().stream())
                 .forEach(embeddings::add);
 

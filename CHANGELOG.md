@@ -1,4 +1,8 @@
-CHANGES IN VERSION 6.3.0
+CHANGES IN VERSION 6.4.1
+=================================
+* [FIX] Courgette html report to include missing image and text/html embeddings before and after Cucumber steps.
+
+CHANGES IN VERSION 6.4.0
 =================================
 * [NEW] Add Courgette option `slackTestId` to allow a custom identifier to be sent for each messaged published to Slack.
 * [NEW] Output the link to the Report Portal launch after each test run.
