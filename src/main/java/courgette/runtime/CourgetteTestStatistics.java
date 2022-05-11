@@ -2,6 +2,7 @@ package courgette.runtime;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -65,7 +66,7 @@ public class CourgetteTestStatistics {
     private void calculateTestStatistics(List<CourgetteRunResult> runResults, CourgetteProperties courgetteProperties) {
         total = (int) runResults.stream().filter(result -> !result.getStatus().equals(CourgetteRunResult.Status.RERUN)).count();
 
-        passed = calculateStatus(runResults, CourgetteRunResult.Status.PASSED);
+        passed = calculateStatus(runResults, CourgetteRunResult.Status.PASSED, CourgetteRunResult.Status.PASSED_AFTER_RERUN);
 
         failed = total - passed;
 
@@ -81,8 +82,8 @@ public class CourgetteTestStatistics {
                 TimeUnit.MILLISECONDS.toSeconds(elapsedMill) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(elapsedMill)));
     }
 
-    private int calculateStatus(List<CourgetteRunResult> runResults, CourgetteRunResult.Status status) {
-        return (int) runResults.stream().filter(result -> result.getStatus().equals(status)).count();
+    private int calculateStatus(List<CourgetteRunResult> runResults, CourgetteRunResult.Status ...status) {
+        return (int) runResults.stream().filter(result -> Arrays.asList(status).contains(result.getStatus())).count();
     }
 
     private int calculatePercentage(double value) {

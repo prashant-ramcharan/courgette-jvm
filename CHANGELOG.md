@@ -1,3 +1,7 @@
+CHANGES IN VERSION 6.4.2
+=================================
+* [FIX] Courgette html report showing an incorrect test counter for tests that passed after rerun.
+
 CHANGES IN VERSION 6.4.1
 =================================
 * [FIX] Courgette html report to include missing image and text/html embeddings before and after Cucumber steps.
