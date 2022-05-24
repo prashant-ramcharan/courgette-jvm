@@ -157,6 +157,7 @@ public class CourgetteRunner {
             printExceptionStackTrace(e);
         } finally {
             testStatistics.calculate(runResults, courgetteProperties);
+            testStatistics.printToConsole(courgetteProperties);
             runtimePublisher.publish(createEventHolder(CourgetteEvent.TEST_RUN_FINISHED));
             runtimePublisher.publish(createTestRunSummaryEventHolder());
             executor.shutdownNow();
@@ -247,6 +248,7 @@ public class CourgetteRunner {
 
         while (rerunAttempts-- > 0) {
             runtimePublisher.publish(createEventHolder(CourgetteEvent.TEST_RERUN, null, rerunResult));
+            args.put("retry", new ArrayList<>());
             if (runFeature(args)) {
                 return true;
             }

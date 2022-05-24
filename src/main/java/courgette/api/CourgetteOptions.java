@@ -36,9 +36,9 @@ public @interface CourgetteOptions {
     int rerunAttempts() default 1;
 
     /**
-     * @return true to show test output
+     * @return the test output for each test run
      */
-    boolean showTestOutput() default false;
+    CourgetteTestOutput testOutput() default CourgetteTestOutput.DISCARD;
 
     /**
      * @return the reportTitle for the Courgette Html report

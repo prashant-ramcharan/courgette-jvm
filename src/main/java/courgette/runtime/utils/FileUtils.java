@@ -72,6 +72,13 @@ public final class FileUtils {
         return new File(uri).getName();
     }
 
+    public static String formatFilePath(String path) {
+        if (!path.endsWith(File.separator)) {
+            path = path + File.separator;
+        }
+        return path;
+    }
+
     public static File zipFile(String filePath, boolean removeFileExtension) {
         try {
             File file = new File(filePath);

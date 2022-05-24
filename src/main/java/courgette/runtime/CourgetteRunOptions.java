@@ -3,6 +3,7 @@ package courgette.runtime;
 import courgette.api.CourgetteOptions;
 import courgette.api.CourgettePlugin;
 import courgette.api.CourgetteRunLevel;
+import courgette.api.CourgetteTestOutput;
 import courgette.api.CucumberOptions;
 import courgette.api.HtmlReport;
 import courgette.integration.reportportal.ReportPortalProperties;
@@ -50,8 +51,8 @@ public class CourgetteRunOptions implements CourgetteOptions {
     }
 
     @Override
-    public boolean showTestOutput() {
-        return SystemPropertyUtils.getBoolProperty(CourgetteSystemProperty.SHOW_TEST_OUTPUT, courgetteOptions.showTestOutput());
+    public CourgetteTestOutput testOutput() {
+        return courgetteOptions.testOutput();
     }
 
     @Override
