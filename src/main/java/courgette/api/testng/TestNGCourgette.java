@@ -9,9 +9,9 @@ import courgette.runtime.CourgetteRunnerInfo;
 import courgette.runtime.CourgetteSession;
 import courgette.runtime.CourgetteTestErrorException;
 import courgette.runtime.CourgetteTestFailureException;
+import courgette.runtime.CucumberPickleLocation;
 import courgette.runtime.RunStatus;
 import io.cucumber.core.gherkin.Feature;
-import io.cucumber.gherkin.Location;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -36,7 +36,7 @@ public abstract class TestNGCourgette {
         if (courgetteProperties.isFeatureRunLevel()) {
             features.forEach(feature -> runnerInfoList.add(new CourgetteRunnerInfo(courgetteProperties, feature, null)));
         } else {
-            final Map<Location, Feature> scenarios = courgetteFeatureLoader.getCucumberScenarios();
+            final Map<CucumberPickleLocation, Feature> scenarios = courgetteFeatureLoader.getCucumberScenarios();
             scenarios
                     .keySet()
                     .forEach(location -> runnerInfoList.add(new CourgetteRunnerInfo(courgetteProperties, scenarios.get(location), location.getLine())));
@@ -70,6 +70,7 @@ public abstract class TestNGCourgette {
                 }
             }
         } finally {
+            courgetteRunner.printCourgetteTestStatistics();
             courgetteRunner.cleanupCourgetteHtmlReportFiles();
         }
     }

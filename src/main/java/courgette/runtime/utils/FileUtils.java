@@ -79,6 +79,26 @@ public final class FileUtils {
         return path;
     }
 
+    public static boolean createDirectory(File file) {
+        if (file.exists() && file.isDirectory()) {
+            return true;
+        }
+        return file.mkdir();
+    }
+
+    public static boolean createFile(File file) {
+        if (file.exists()) {
+            return true;
+        }
+        try {
+            Files.createFile(file.toPath());
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public static File zipFile(String filePath, boolean removeFileExtension) {
         try {
             File file = new File(filePath);

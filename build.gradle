@@ -1,5 +1,5 @@
 group 'io.github.prashant-ramcharan'
-version '6.4.2'
+version '6.5.0'
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'
@@ -10,9 +10,9 @@ compileJava {
 }
 
 ext {
-    cucumberVersion = '7.2.3'
+    cucumberVersion = '7.3.4'
     testNGVersion = '7.1.0'
-    jacksonVersion = '2.11.3'
+    jacksonVersion = '2.13.3'
     httpcomponentsVersion = '4.5.13'
     extentreportVersion = '5.0.3'
     mustacheVersion = '0.9.6'
@@ -33,6 +33,8 @@ dependencies {
     }
     compile "org.testng:testng:$testNGVersion"
     compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
+    compile "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:$jacksonVersion"
+    compile "com.fasterxml.jackson.module:jackson-module-parameter-names:$jacksonVersion"
     compile "org.apache.httpcomponents:httpclient:$httpcomponentsVersion"
     compile "org.apache.httpcomponents:httpmime:$httpcomponentsVersion"
     compile "com.aventstack:extentreports:$extentreportVersion"

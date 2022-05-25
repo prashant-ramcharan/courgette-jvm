@@ -4,8 +4,6 @@ import courgette.runtime.utils.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -128,11 +126,8 @@ public class CourgetteFeatureRunner {
 
         private File getTestOutputFile(String prefix) {
             final File testOutputFile = new File(testOutputDirectory() + testOutputFilename(prefix));
-            try {
-                Files.createFile(testOutputFile.toPath());
+            if (FileUtils.createFile(testOutputFile)) {
                 return testOutputFile;
-            } catch (IOException e) {
-                printExceptionStackTrace(e);
             }
             return new File(FileUtils.formatFilePath(courgetteProperties.getCourgetteOptions().reportTargetDir()) + testOutputFilename(prefix));
         }
@@ -140,17 +135,17 @@ public class CourgetteFeatureRunner {
         private String testOutputDirectory() {
             final String target = courgetteProperties.getCourgetteOptions().reportTargetDir();
             final File testOutputDirectory = new File(FileUtils.formatFilePath(target) + "courgette-test-output");
-            if (!testOutputDirectory.exists()) {
-                testOutputDirectory.mkdir();
-            }
+            FileUtils.createDirectory(testOutputDirectory);
             return FileUtils.formatFilePath(testOutputDirectory.getPath());
         }
 
         private String testOutputFilename(String prefix) {
-            return prefix + Arrays.stream(runnerArgs.get(null).get(0)
-                            .split(File.separator))
-                    .reduce((x, y) -> y).get()
-                    .replace(".feature", "") + Instant.now().toEpochMilli() + ".log";
+            return prefix +
+                    Arrays.stream(runnerArgs.get(null).get(0).split(File.separator)).reduce((x, y) -> y)
+                            .get()
+                            .replace(".feature", "")
+                            .replace(":", "_line_")
+                    + "_" + courgetteProperties.getSessionId() + ".log";
         }
     }
 }

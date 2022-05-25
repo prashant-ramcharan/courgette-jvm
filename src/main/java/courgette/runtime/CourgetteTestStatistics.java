@@ -64,9 +64,9 @@ public class CourgetteTestStatistics {
     }
 
     protected void printToConsole(CourgetteProperties courgetteProperties) {
-        System.out.println("\n===================================================");
-        System.out.println("\u001B[33m" + "             Courgette Test Statistics          " + "\u001B[0m");
-        System.out.println("===================================================");
+        System.out.println("\n───────────────────────────────────────────────────");
+        System.out.println("\u001B[32m" + "             Courgette Test Statistics          " + "\u001B[0m");
+        System.out.println("───────────────────────────────────────────────────");
         System.out.println("Summary:\t" + passedPercentage() + "% passed" + (failed > 0 ? ", " + failedPercentage() + "% failed" : ""));
         System.out.println("Duration:\t" + duration);
         System.out.println("Run Level:\t" + (courgetteProperties.isFeatureRunLevel() ? "Feature" : "Scenario"));
@@ -76,7 +76,7 @@ public class CourgetteTestStatistics {
         if (courgetteProperties.getCourgetteOptions().rerunFailedScenarios()) {
             System.out.println("Rerun:\t\t" + rerun);
         }
-        System.out.println("===================================================\n");
+        System.out.println("───────────────────────────────────────────────────\n");
     }
 
     private void calculateTestStatistics(List<CourgetteRunResult> runResults, CourgetteProperties courgetteProperties) {

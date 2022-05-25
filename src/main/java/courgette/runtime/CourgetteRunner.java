@@ -157,7 +157,6 @@ public class CourgetteRunner {
             printExceptionStackTrace(e);
         } finally {
             testStatistics.calculate(runResults, courgetteProperties);
-            testStatistics.printToConsole(courgetteProperties);
             runtimePublisher.publish(createEventHolder(CourgetteEvent.TEST_RUN_FINISHED));
             runtimePublisher.publish(createTestRunSummaryEventHolder());
             executor.shutdownNow();
@@ -230,6 +229,10 @@ public class CourgetteRunner {
 
     public void cleanupCourgetteHtmlReportFiles() {
         FileUtils.deleteDirectorySilently(defaultRuntimeOptions.getCourgetteReportDataDirectory());
+    }
+
+    public void printCourgetteTestStatistics() {
+        testStatistics.printToConsole(courgetteProperties);
     }
 
     private boolean runFeature(Map<String, List<String>> args) {
