@@ -36,21 +36,21 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>6.4.2</version>
+  <version>6.5.0</version>
 </dependency>
 ````
 
 #### Gradle
 ````gradle
-compile 'io.github.prashant-ramcharan:courgette-jvm:6.4.2'
+compile 'io.github.prashant-ramcharan:courgette-jvm:6.5.0'
 ````
 
 #### Included Cucumber Dependencies
-* cucumber-core 7.2.3
-* cucumber-java 7.2.3
-* cucumber-java8 7.2.3
-* cucumber-junit 7.2.3
-* cucumber-testng 7.2.3
+* cucumber-core 7.3.4
+* cucumber-java 7.3.4
+* cucumber-java8 7.3.4
+* cucumber-junit 7.3.4
+* cucumber-testng 7.3.4
 
 
 ## Usage
@@ -85,7 +85,10 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
 
 * **rerunAttempts** : The number of re-run attempts for a failed scenario. (_rerunFailedScenarios must be set to true_)
 
-* **showTestOutput** : If set to true, the output for each feature will be redirected to the current I/O source or destination.
+* **testOutput** : Redirects the output for each parallel test run.
+   * _CourgetteTestOutput.CONSOLE: Redirects the test output to the console._
+   * _CourgetteTestOutput.FILE: Redirects the test output to a file and saves it to `${reportTargetDir}/courgette-test-ouput`_
+   * _CourgetteTestOutput.DISCARD: All test output will be discarded._
 
 * **reportTargetDir** : Target directory where courgette-report is generated. Set to target by default.
 
@@ -101,7 +104,7 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
 * **disableHtmlReport**: If set, the Courgette and Cucumber html reports will not be generated at the end of the test run.
     * _Options are `HtmlReport.COURGETTE_HTML`, `HtmlReport.CUCUMBER_HTML` and `HtmlReport.COURGETTE_AND_CUCUMBER_HTML`_
 
-* **persistParallelCucumberJsonReports**: If set to true, Courgette will save the Cucumber json and ndjson reports for each parallel test to `reportTargetDir/session-reports/{session}`
+* **persistParallelCucumberJsonReports**: If set to true, Courgette will save the Cucumber json and ndjson reports for each parallel test to `${reportTargetDir}/session-reports/{session}`
  
 * **classPath**: Allows a custom class path to be used when running tests.
     * _The class path should point to:_ `{ "path-to-project-jars", "path-to-test-classes" }`
@@ -140,7 +143,7 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
         runLevel = CourgetteRunLevel.SCENARIO,
         rerunFailedScenarios = true,
         rerunAttempts = 1,
-        showTestOutput = true,
+        testOutput = CourgetteTestOutput.CONSOLE,
         reportTitle = "Courgette-JVM Example",
         reportTargetDir = "build",
         environmentInfo = "browser=chrome; git_branch=master",
@@ -169,7 +172,7 @@ public class RegressionTestSuite {
         runLevel = CourgetteRunLevel.SCENARIO,
         rerunFailedScenarios = true,
         rerunAttempts = 1,
-        showTestOutput = true,
+        testOutput = CourgetteTestOutput.CONSOLE,
         reportTitle = "Courgette-JVM Example",
         reportTargetDir = "build",
         environmentInfo = "browser=chrome; git_branch=master",
@@ -211,11 +214,11 @@ task regressionSuite(type: Test) {
 
 ## Override Runner Options
 
-To override the hard-coded courgette options (_threads, runLevel, rerunFailedScenarios, showTestOutput, reportTargetDir, environmentInfo_) set in the runner class, you can provide system properties to the gradle or maven task.
+To override the hard-coded courgette options (_threads, runLevel, rerunFailedScenarios, reportTargetDir, environmentInfo_) set in the runner class, you can provide system properties to the gradle or maven task.
 
 ```java
 
-[gradle | mvn] test -Dcourgette.threads=2 -Dcourgette.runLevel=FEATURE -Dcourgette.rerunFailedScenarios=false -Dcourgette.showTestOutput=true -Dcourgette.reportTargetDir=build -Dcourgette.environmentInfo="git_branch=master; platform=ci"
+[gradle | mvn] test -Dcourgette.threads=2 -Dcourgette.runLevel=FEATURE -Dcourgette.rerunFailedScenarios=false -Dcourgette.reportTargetDir=build -Dcourgette.environmentInfo="git_branch=master; platform=ci"
 
 ```
 
