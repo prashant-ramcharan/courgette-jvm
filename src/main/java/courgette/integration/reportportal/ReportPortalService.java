@@ -137,10 +137,10 @@ public class ReportPortalService {
             String id = call(get(apiEndpoint() + "/launch/" + launchId));
 
             if (id != null) {
-                String out = "\n------------------------------------------------------------------------\n" +
+                String out = "\n─────────────────────────────────────────────────────────────────────────\n" +
                         "Courgette published your results to Report Portal:\n" +
                         String.format("%s/ui/#%s/launches/all/%s", rpServerUrl(), reportPortalProperties.getProject(), id) +
-                        "\n------------------------------------------------------------------------\n";
+                        "\n─────────────────────────────────────────────────────────────────────────\n";
                 System.out.println(out);
             }
         }

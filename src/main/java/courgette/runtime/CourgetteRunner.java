@@ -231,6 +231,10 @@ public class CourgetteRunner {
         FileUtils.deleteDirectorySilently(defaultRuntimeOptions.getCourgetteReportDataDirectory());
     }
 
+    public void printCourgetteTestStatistics() {
+        testStatistics.printToConsole(courgetteProperties);
+    }
+
     private boolean runFeature(Map<String, List<String>> args) {
         try {
             return 0 == new CourgetteFeatureRunner(args, courgetteProperties, courgettePluginService).run();
@@ -247,6 +251,7 @@ public class CourgetteRunner {
 
         while (rerunAttempts-- > 0) {
             runtimePublisher.publish(createEventHolder(CourgetteEvent.TEST_RERUN, null, rerunResult));
+            args.put("retry", new ArrayList<>());
             if (runFeature(args)) {
                 return true;
             }

@@ -10,10 +10,10 @@ import courgette.runtime.CourgetteRunner;
 import courgette.runtime.CourgetteRunnerInfo;
 import courgette.runtime.CourgetteSession;
 import courgette.runtime.CourgetteTestErrorException;
+import courgette.runtime.CucumberPickleLocation;
 import courgette.runtime.RunStatus;
 import courgette.runtime.junit.CourgetteJUnitRunner;
 import io.cucumber.core.gherkin.Feature;
-import io.cucumber.gherkin.Location;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
 
@@ -39,7 +39,7 @@ public class Courgette extends CourgetteJUnitRunner {
         if (courgetteProperties.isFeatureRunLevel()) {
             features.forEach(feature -> runnerInfoList.add(new CourgetteRunnerInfo(courgetteProperties, feature, null)));
         } else {
-            final Map<Location, Feature> scenarios = courgetteLoader.getCucumberScenarios();
+            final Map<CucumberPickleLocation, Feature> scenarios = courgetteLoader.getCucumberScenarios();
             scenarios
                     .keySet()
                     .forEach(location -> runnerInfoList.add(new CourgetteRunnerInfo(courgetteProperties, scenarios.get(location), location.getLine())));
@@ -79,8 +79,8 @@ public class Courgette extends CourgetteJUnitRunner {
                 }
             }
         } finally {
+            courgetteRunner.printCourgetteTestStatistics();
             courgetteRunner.cleanupCourgetteHtmlReportFiles();
-
             callbacks.afterAll();
             notifyTestStarted(notifier);
             notifyTestFailure(notifier, failures, runStatus);

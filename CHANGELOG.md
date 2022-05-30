@@ -1,3 +1,10 @@
+CHANGES IN VERSION 6.5.0
+=================================
+* [NEW] Add Courgette option `testOutput` to allow redirecting the test output to the console or saving the test output to a file.
+* [NEW] Print Courgette test statistics to the console at the end of the test run to provide a snapshot of the test results (_duration, passed, failed, retry etc_)
+* [BREAKING CHANGE] Removed Courgette option `showTestOutput` in favour of the new Courgette option `testOutput`
+* [MAINTENANCE] Upgrade to Cucumber version 7.3.4
+
 CHANGES IN VERSION 6.4.2
 =================================
 * [FIX] Courgette html report showing an incorrect test counter for tests that passed after rerun.

@@ -4,6 +4,7 @@ import io.cucumber.core.gherkin.Feature;
 import io.cucumber.messages.NdjsonToMessageIterable;
 import io.cucumber.messages.types.Envelope;
 import io.cucumber.messages.types.FeatureChild;
+import io.cucumber.messages.types.GherkinDocument;
 import io.cucumber.messages.types.Pickle;
 import io.cucumber.messages.types.Scenario;
 import io.cucumber.messages.types.TestCase;
@@ -12,6 +13,7 @@ import io.cucumber.messages.types.TestRunStarted;
 import io.cucumber.messages.types.Timestamp;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,6 +26,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static courgette.runtime.CourgetteException.printExceptionStackTrace;
+import static courgette.runtime.utils.JacksonUtils.CUCUMBER_OBJECT_MAPPER;
 import static java.util.Comparator.comparingLong;
 
 public class CourgetteNdJsonCreator {
@@ -39,18 +42,16 @@ public class CourgetteNdJsonCreator {
 
         final List<Envelope> messages = new ArrayList<>(messageList.size());
 
-        messageList.forEach(m -> {
+        messageList.forEach(message -> {
             try {
-                ByteArrayInputStream in = new ByteArrayInputStream(m.getBytes(StandardCharsets.UTF_8));
-
-                for (Envelope message : new NdjsonToMessageIterable(in)) {
-                    messages.add(message);
+                ByteArrayInputStream in = new ByteArrayInputStream(message.getBytes(StandardCharsets.UTF_8));
+                for (Envelope envelope : new NdjsonToMessageIterable(in, new NdJsonMessageDeserializer())) {
+                    messages.add(envelope);
                 }
             } catch (Exception e) {
                 printExceptionStackTrace(e);
             }
         });
-
         return messages;
     }
 
@@ -106,7 +107,6 @@ public class CourgetteNdJsonCreator {
             envelopes.add(testRunFinished);
             return envelopes;
         }
-
         return null;
     }
 
@@ -119,20 +119,22 @@ public class CourgetteNdJsonCreator {
 
         envelopes.forEach(envelope -> {
             if (pickle.isPresent()) {
-                if (envelope.getGherkinDocument() != null) {
-                    final Optional<Scenario> scenario = envelope.getGherkinDocument().getFeature().getChildren()
+                if (envelope.getGherkinDocument().isPresent() &&
+                        envelope.getGherkinDocument().get().getFeature().isPresent()) {
+                    final Optional<Scenario> scenario = envelope.getGherkinDocument().get().getFeature().get().getChildren()
                             .stream()
                             .map(FeatureChild::getScenario)
                             .filter(Objects::nonNull)
-                            .filter(t -> t.getId().equals(pickle.get().getAstNodeIds().get(0)))
-                            .findFirst();
+                            .filter(s -> s.isPresent() && s.get().getId().equals(pickle.get().getAstNodeIds().get(0)))
+                            .findFirst()
+                            .orElse(Optional.empty());
 
                     scenario.ifPresent(scenarios::add);
 
                     envelopeList.add(envelope);
 
-                } else if (envelope.getPickle() != null) {
-                    if (envelope.getPickle() == pickle.get()) {
+                } else if (envelope.getPickle().isPresent()) {
+                    if (envelope.getPickle().get() == pickle.get()) {
                         envelopeList.add(envelope);
                     }
                 } else {
@@ -151,21 +153,26 @@ public class CourgetteNdJsonCreator {
                 .get();
     }
 
-    private Envelope createNewGherkinDocument(Envelope gherkinDocument, List<Scenario> scenarios) {
+    private Envelope createNewGherkinDocument(Envelope envelope, List<Scenario> scenarios) {
         final List<FeatureChild> children = new ArrayList<>();
+        scenarios.forEach(scenario -> children.add(FeatureChild.of(scenario)));
 
-        scenarios.forEach(scenario -> {
-            FeatureChild featureChild = new FeatureChild();
-            featureChild.setScenario((scenario));
-            children.add(featureChild);
-        });
+        final io.cucumber.messages.types.Feature currentFeature = envelope.getGherkinDocument().flatMap(GherkinDocument::getFeature).get();
 
-        final io.cucumber.messages.types.Feature feature = gherkinDocument.getGherkinDocument().getFeature();
-        feature.setChildren(children);
+        final io.cucumber.messages.types.Feature newFeature = new io.cucumber.messages.types.Feature(
+                currentFeature.getLocation(),
+                currentFeature.getTags(),
+                currentFeature.getLanguage(),
+                currentFeature.getKeyword(),
+                currentFeature.getName(),
+                currentFeature.getDescription(),
+                children
+        );
 
-        gherkinDocument.getGherkinDocument().setFeature(feature);
+        GherkinDocument currentGherkinDoc = envelope.getGherkinDocument().get();
+        GherkinDocument newGherkinDoc = new GherkinDocument(currentGherkinDoc.getUri().get(), newFeature, currentGherkinDoc.getComments());
 
-        return gherkinDocument;
+        return Envelope.of(newGherkinDoc);
     }
 
     private Optional<TestCase> extractTestCase(List<Envelope> envelopes) {
@@ -173,7 +180,8 @@ public class CourgetteNdJsonCreator {
                 .map(Envelope::getTestCase)
                 .filter(Objects::nonNull)
                 .filter(testCase)
-                .findFirst();
+                .findFirst()
+                .get();
     }
 
     private Optional<Pickle> extractPickle(List<Envelope> envelopes, Optional<TestCase> testCase) {
@@ -181,57 +189,45 @@ public class CourgetteNdJsonCreator {
             return envelopes.stream()
                     .map(Envelope::getPickle)
                     .filter(Objects::nonNull)
-                    .filter(pickle -> pickle.getId().equals(testCase.get().getPickleId()))
-                    .findFirst();
+                    .filter(pickle -> pickle.isPresent() && pickle.get().getId().equals(testCase.get().getPickleId()))
+                    .findFirst()
+                    .orElse(Optional.empty());
         }
         return Optional.empty();
     }
 
     private Envelope createTestRunStarted(List<Envelope> envelopes) {
-        long seconds = envelopes.stream()
-                .map(Envelope::getTestRunStarted)
-                .filter(Objects::nonNull)
-                .map(TestRunStarted::getTimestamp)
+        Timestamp timestamp = envelopes.stream()
+                .filter(envelope -> envelope.getTestRunStarted().isPresent())
+                .map(envelope -> envelope.getTestRunStarted().get().getTimestamp())
                 .min(comparingLong(Timestamp::getSeconds))
-                .get().getSeconds();
+                .get();
 
-        Timestamp timestamp = new Timestamp();
-        timestamp.setSeconds(seconds);
-
-        TestRunStarted testRunStarted = new TestRunStarted();
-        testRunStarted.setTimestamp(timestamp);
-
-        Envelope testRunStartedEnvelope = new Envelope();
-        testRunStartedEnvelope.setTestRunStarted(testRunStarted);
-
-        return testRunStartedEnvelope;
+        return Envelope.of(new TestRunStarted(timestamp));
     }
 
     private Envelope createTestRunFinished(List<Envelope> envelopes) {
-        long seconds = envelopes.stream()
-                .map(Envelope::getTestRunFinished)
-                .filter(Objects::nonNull)
-                .map(TestRunFinished::getTimestamp)
-                .max(comparingLong(Timestamp::getSeconds))
-                .get().getSeconds();
+        Timestamp timestamp = envelopes.stream()
+                .filter(envelope -> envelope.getTestRunFinished().isPresent())
+                .map(envelope -> envelope.getTestRunFinished().get().getTimestamp())
+                .min(comparingLong(Timestamp::getSeconds))
+                .get();
 
-        Timestamp timestamp = new Timestamp();
-        timestamp.setSeconds(seconds);
-
-        TestRunFinished testRunFinished = new TestRunFinished();
-        testRunFinished.setTimestamp(timestamp);
-
-        Envelope testRunFinishedEnvelope = new Envelope();
-        testRunFinishedEnvelope.setTestRunFinished(testRunFinished);
-
-        return testRunFinishedEnvelope;
+        return Envelope.of(new TestRunFinished(null, true, timestamp));
     }
 
-    private final Predicate<Envelope> gherkinEnvelope = (envelope) -> envelope.getGherkinDocument() != null;
+    private final Predicate<Envelope> gherkinEnvelope = (envelope) -> envelope.getGherkinDocument().isPresent();
 
-    private final Predicate<Envelope> metaEnvelope = (envelope) -> envelope.getMeta() != null;
+    private final Predicate<Envelope> metaEnvelope = (envelope) -> envelope.getMeta().isPresent();
 
-    private final Predicate<Envelope> testRunStartedOrFinishedEnvelope = (envelope) -> envelope.getTestRunStarted() != null || envelope.getTestRunFinished() != null;
+    private final Predicate<Envelope> testRunStartedOrFinishedEnvelope = (envelope) -> envelope.getTestRunStarted().isPresent() || envelope.getTestRunFinished().isPresent();
 
-    private final Predicate<TestCase> testCase = (testCase) -> !testCase.getPickleId().equals("");
+    private final Predicate<Optional<TestCase>> testCase = (testCase) -> testCase.isPresent() && !testCase.get().getPickleId().equals("");
+
+    private static class NdJsonMessageDeserializer implements NdjsonToMessageIterable.Deserializer {
+        @Override
+        public Envelope readValue(String json) throws IOException {
+            return CUCUMBER_OBJECT_MAPPER.readValue(json, Envelope.class);
+        }
+    }
 }

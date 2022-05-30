@@ -5,6 +5,7 @@ import courgette.runtime.utils.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -54,14 +55,14 @@ public class CourgetteFeatureRunner {
 
             environmentVariablesToRemove().forEach(builder.environment()::remove);
 
-            if (courgetteProperties.getCourgetteOptions().showTestOutput()) {
-                builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-            } else {
-                final File tempFile = FileUtils.getTempFile();
-
-                if (tempFile != null) {
-                    builder.redirectOutput(tempFile);
-                }
+            switch (courgetteProperties.getCourgetteOptions().testOutput()) {
+                case CONSOLE:
+                    builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+                    break;
+                case FILE:
+                    String filePrefix = (runnerArgs.get("retry") != null ? "retry_" : "");
+                    builder.redirectOutput(getTestOutputFile(filePrefix));
+                    break;
             }
 
             builder.redirectErrorStream(true);
@@ -121,6 +122,30 @@ public class CourgetteFeatureRunner {
                 commands.add("-cp");
                 commands.add(String.join(File.pathSeparator, courgetteProperties.getCourgetteOptions().classPath()));
             }
+        }
+
+        private File getTestOutputFile(String prefix) {
+            final File testOutputFile = new File(testOutputDirectory() + testOutputFilename(prefix));
+            if (FileUtils.createFile(testOutputFile)) {
+                return testOutputFile;
+            }
+            return new File(FileUtils.formatFilePath(courgetteProperties.getCourgetteOptions().reportTargetDir()) + testOutputFilename(prefix));
+        }
+
+        private String testOutputDirectory() {
+            final String target = courgetteProperties.getCourgetteOptions().reportTargetDir();
+            final File testOutputDirectory = new File(FileUtils.formatFilePath(target) + "courgette-test-output");
+            FileUtils.createDirectory(testOutputDirectory);
+            return FileUtils.formatFilePath(testOutputDirectory.getPath());
+        }
+
+        private String testOutputFilename(String prefix) {
+            return prefix +
+                    Arrays.stream(runnerArgs.get(null).get(0).split(File.separator)).reduce((x, y) -> y)
+                            .get()
+                            .replace(".feature", "")
+                            .replace(":", "_line_")
+                    + "_" + courgetteProperties.getSessionId() + ".log";
         }
     }
 }

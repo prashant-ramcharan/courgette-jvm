@@ -8,7 +8,6 @@ import io.cucumber.core.options.RuntimeOptions;
 import io.cucumber.core.resource.ClassLoaders;
 import io.cucumber.core.runtime.FeaturePathFeatureSupplier;
 import io.cucumber.core.runtime.TimeServiceEventBus;
-import io.cucumber.gherkin.Location;
 
 import java.time.Clock;
 import java.util.ArrayList;
@@ -41,7 +40,7 @@ public class CourgetteLoader {
         return filterFeatures();
     }
 
-    public Map<Location, Feature> getCucumberScenarios() {
+    public Map<CucumberPickleLocation, Feature> getCucumberScenarios() {
         return filterCucumberScenarios(features);
     }
 
@@ -62,15 +61,15 @@ public class CourgetteLoader {
         return matchedFeatures;
     }
 
-    private Map<Location, Feature> filterCucumberScenarios(List<Feature> features) {
-        final Map<Location, Feature> scenarios = new HashMap<>();
+    private Map<CucumberPickleLocation, Feature> filterCucumberScenarios(List<Feature> features) {
+        final Map<CucumberPickleLocation, Feature> scenarios = new HashMap<>();
 
         if (features != null) {
             features.forEach(feature ->
                     feature.getPickles().forEach(pickle -> {
                         CourgettePickleMatcher pickleMatcher = new CourgettePickleMatcher(feature, filters);
 
-                        Location pickleLocation = pickleMatcher.matchLocation(pickle.getLocation().getLine());
+                        CucumberPickleLocation pickleLocation = pickleMatcher.matchLocation(pickle.getLocation().getLine());
                         if (pickleLocation != null) {
                             scenarios.put(pickleLocation, feature);
                         }

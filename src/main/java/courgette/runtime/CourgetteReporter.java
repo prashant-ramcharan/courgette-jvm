@@ -87,11 +87,11 @@ class CourgetteReporter {
                 StringBuilder out = new StringBuilder();
 
                 if (reportUrl.isPresent()) {
-                    out.append("\n------------------------------------------------------------------------\n");
+                    out.append("\n─────────────────────────────────────────────────────────────────────────\n");
                     out.append("Report published at: ").append(Instant.now()).append("\n");
                     out.append("\nCourgette published your Cucumber Report to:\n");
                     out.append(reportUrl.get());
-                    out.append("\n------------------------------------------------------------------------\n");
+                    out.append("\n─────────────────────────────────────────────────────────────────────────\n");
                     System.out.println(out);
 
                     String reportLinkFilename = courgetteProperties.getCourgetteOptions().reportTargetDir() + File.separator + "cucumber-report-link.txt";
