@@ -29,6 +29,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static courgette.runtime.CourgetteException.printExceptionStackTrace;
@@ -46,20 +47,16 @@ public class CourgetteRunner {
     private final List<CourgetteRunResult> runResults = new ArrayList<>();
     private final CourgetteRuntimePublisher runtimePublisher;
     private final CourgettePluginService courgettePluginService;
-    private final boolean rerunFailedScenarios;
     private final boolean canRunFeatures;
-
+    private final AtomicReference<RunStatus> runStatus = new AtomicReference<>(RunStatus.OK);
     private List<Feature> reportFeatures = new ArrayList<>();
-
     private final Map<io.cucumber.core.gherkin.Feature, List<List<Envelope>>> reportMessages = new HashMap<>();
-
     private String cucumberReportUrl = "#";
 
     public CourgetteRunner(List<CourgetteRunnerInfo> runnerInfoList, CourgetteProperties courgetteProperties) {
         this.runnerInfoList = runnerInfoList;
         this.canRunFeatures = runnerInfoList.size() > 0;
         this.courgetteProperties = courgetteProperties;
-        this.rerunFailedScenarios = courgetteProperties.getCourgetteOptions().rerunFailedScenarios();
         this.testStatistics = CourgetteTestStatistics.current();
         this.defaultRuntimeOptions = new CourgetteRuntimeOptions(courgetteProperties);
         this.runtimePublisher = createRuntimePublisher(courgetteProperties, extractRunnerInfoFeatures());
@@ -91,7 +88,7 @@ public class CourgetteRunner {
 
                     String rerun = readFile(rerunFile, false);
 
-                    if (rerunFailedScenarios && rerun != null && courgetteProperties.allowFeatureRerun(rerun)) {
+                    if (runnerInfo.allowRerun() && rerun != null) {
 
                         if (courgetteProperties.isFeatureRunLevel()) {
 
@@ -128,7 +125,6 @@ public class CourgetteRunner {
                 } finally {
                     runnerInfo.getReportFiles().forEach(reportFile -> {
                         if (shouldProcessReport(reportFile)) {
-
                             boolean isJson = reportFile.endsWith(".json");
 
                             String report = isJson
@@ -155,6 +151,7 @@ public class CourgetteRunner {
             executor.invokeAll(runners);
         } catch (InterruptedException e) {
             printExceptionStackTrace(e);
+            runStatus.set(RunStatus.ERROR);
         } finally {
             testStatistics.calculate(runResults, courgetteProperties);
             runtimePublisher.publish(createEventHolder(CourgetteEvent.TEST_RUN_FINISHED));
@@ -162,9 +159,12 @@ public class CourgetteRunner {
             executor.shutdownNow();
         }
 
-        boolean hasErrors = reportMessages.values().stream().anyMatch(List::isEmpty);
+        boolean reportErrors = !reportMessages.isEmpty() && reportMessages.values().stream().anyMatch(List::isEmpty);
+        if (reportErrors) {
+            runStatus.set(RunStatus.REPORT_PROCESSING_ERROR);
+        }
 
-        return hasErrors ? RunStatus.ERROR : RunStatus.OK;
+        return runStatus.get();
     }
 
     public void createCucumberReport() {
@@ -182,10 +182,9 @@ public class CourgetteRunner {
     }
 
     public void createRerunFile() {
-        final List<String> rerun = new ArrayList<>();
-
         reruns.sort(String::compareTo);
-        rerun.addAll(reruns);
+        final List<String> rerun = new ArrayList<>(reruns);
+        rerun.removeIf(r -> r.length() == 0);
 
         final String rerunFile = defaultRuntimeOptions.getCucumberRerunFile();
 
@@ -195,25 +194,25 @@ public class CourgetteRunner {
     }
 
     public void createCourgetteReport() {
-        try {
-            if (courgetteProperties.isCourgetteHtmlReportEnabled()) {
+        if (courgetteProperties.isCourgetteHtmlReportEnabled()) {
+            try {
                 final CourgetteHtmlReporter courgetteReport = new CourgetteHtmlReporter(courgetteProperties, runResults, getReportFeatures(), cucumberReportUrl);
                 courgetteReport.create(testStatistics);
+            } catch (Exception e) {
+                printExceptionStackTrace(e);
             }
-        } catch (Exception e) {
-            printExceptionStackTrace(e);
         }
     }
 
-    public void createCourgetteExtentReports() {
-        try {
-            final ExtentReportsProperties extentReportsProperties = new ExtentReportsProperties(courgetteProperties);
-
-            final ExtentReportsBuilder extentReportsBuilder = ExtentReportsBuilder.create(extentReportsProperties, getReportFeatures());
-
-            extentReportsBuilder.buildReport();
-        } catch (Exception e) {
-            printExceptionStackTrace(e);
+    public void createCourgettePluginReports() {
+        if (courgetteProperties.isExtentReportsPluginEnabled()) {
+            try {
+                final ExtentReportsProperties extentReportsProperties = new ExtentReportsProperties(courgetteProperties);
+                final ExtentReportsBuilder extentReportsBuilder = ExtentReportsBuilder.create(extentReportsProperties, getReportFeatures());
+                extentReportsBuilder.buildReport();
+            } catch (Exception e) {
+                printExceptionStackTrace(e);
+            }
         }
     }
 
@@ -233,6 +232,10 @@ public class CourgetteRunner {
 
     public void printCourgetteTestStatistics() {
         testStatistics.printToConsole(courgetteProperties);
+    }
+
+    public void printCourgetteTestFailures() {
+        CourgetteTestFailure.printTestFailures(getFailures(), courgetteProperties.isFeatureRunLevel());
     }
 
     private boolean runFeature(Map<String, List<String>> args) {

@@ -54,7 +54,7 @@ final class CucumberXmlReporter {
 
                     failures = failures + Integer.parseInt(node.getAttribute("failures"));
                     skipped = skipped + Integer.parseInt(node.getAttribute("skipped"));
-                    tests = tests + Integer.parseInt(node.getAttribute("tests"));
+                    tests = tests + parseTests(node);
                     time = time + parseTime(node.getAttribute("time"));
 
                     NodeList testCases = document.getElementsByTagName("testcase");
@@ -116,5 +116,10 @@ final class CucumberXmlReporter {
             timeValue = Double.parseDouble(time.replaceAll(",", ""));
         }
         return timeValue.doubleValue();
+    }
+
+    private static int parseTests(Element node) {
+        String tests = node.getAttribute("tests");
+        return tests.equals("") ? 0 : Integer.parseInt(tests);
     }
 }

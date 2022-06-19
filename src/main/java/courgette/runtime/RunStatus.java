@@ -2,5 +2,6 @@ package courgette.runtime;
 
 public enum RunStatus {
     OK,
-    ERROR
+    ERROR,
+    REPORT_PROCESSING_ERROR
 }

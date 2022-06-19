@@ -26,9 +26,14 @@ public @interface CourgetteOptions {
     boolean rerunFailedScenarios() default false;
 
     /**
-     * @return the features to exclude from re-running when it fails
+     * @return the features to exclude from re-running when tests fail
      */
     String[] excludeFeatureFromRerun() default {};
+
+    /**
+     * @return the tags to exclude from re-running when tests fail
+     */
+    String[] excludeTagFromRerun() default {};
 
     /**
      * @return the number of re-run attempts

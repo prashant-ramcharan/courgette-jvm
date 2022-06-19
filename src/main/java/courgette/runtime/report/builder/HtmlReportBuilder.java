@@ -114,7 +114,7 @@ public class HtmlReportBuilder {
 
     public List<String> getHtmlTableFeatureRows() {
         final List<String> featureRows = new ArrayList<>(featureList.size());
-        featureList.forEach(feature -> featureRows.add(createFeatureRow(feature, courgetteRunResults)));
+        featureList.forEach(feature -> featureRows.add(createFeatureRow(feature)));
         return featureRows;
     }
 
@@ -134,11 +134,7 @@ public class HtmlReportBuilder {
         return modals;
     }
 
-    private String createFeatureRow(Feature feature, List<CourgetteRunResult> courgetteRunResults) {
-
-        boolean hasReruns = courgetteProperties.allowFeatureRerun(feature.getUri()) &&
-                courgetteRunResults.stream().anyMatch(result -> result.getStatus() == CourgetteRunResult.Status.RERUN);
-
+    private String createFeatureRow(Feature feature) {
         final LinkedHashMap<String, Object> featureData = new LinkedHashMap<>();
 
         String featureId = feature.getCourgetteFeatureId();
@@ -147,7 +143,7 @@ public class HtmlReportBuilder {
         String featureResult = featureBadge.equals(SUCCESS) ? PASSED : FAILED;
 
         LinkedList<String> scenarioRows = new LinkedList<>();
-        createScenarios(feature, scenarioRows, hasReruns);
+        createScenarios(feature, scenarioRows);
 
         featureData.put(DATA_TARGET, featureId);
         featureData.put(FEATURE_NAME, featureName);
@@ -158,10 +154,10 @@ public class HtmlReportBuilder {
         return createFromTemplate(featureTemplate, featureData);
     }
 
-    private void createScenarios(Feature feature, LinkedList<String> scenarioRows, boolean hasReruns) {
+    private void createScenarios(Feature feature, LinkedList<String> scenarioRows) {
         feature.getScenarios().forEach(scenario -> {
             if (!scenario.getKeyword().equalsIgnoreCase("Background")) {
-                scenarioRows.add(createScenarioRow(feature.getCourgetteFeatureId(), scenario, hasReruns));
+                scenarioRows.add(createScenarioRow(feature.getCourgetteFeatureId(), scenario));
             }
         });
     }
@@ -179,7 +175,7 @@ public class HtmlReportBuilder {
         return scenarioTags;
     }
 
-    private String createScenarioRow(String featureId, Scenario scenario, boolean hasReruns) {
+    private String createScenarioRow(String featureId, Scenario scenario) {
 
         final LinkedHashMap<String, Object> scenarioData = new LinkedHashMap<>();
 
@@ -188,20 +184,26 @@ public class HtmlReportBuilder {
         String scenarioBadge = scenario.passed() ? SUCCESS : DANGER;
         String scenarioResult = scenarioBadge.equals(SUCCESS) ? PASSED : FAILED;
 
+        List<CourgetteRunResult> scenarioRunResult = courgetteRunResults
+                .stream()
+                .filter(result -> {
+                    String featureUri = courgetteProperties.isFeatureRunLevel() ?
+                            scenario.getFeatureUri() :
+                            (scenario.getFeatureUri() + ":" + scenario.getLine());
+                    return result.getFeatureUri().endsWith(featureUri.split("file:")[1]);
+                })
+                .collect(Collectors.toList());
+
         switch (scenarioBadge) {
             case DANGER:
-                if (hasReruns) {
+                if (scenarioRunResult.stream().anyMatch(result -> result.getStatus() == CourgetteRunResult.Status.FAILED_AFTER_RERUN)) {
                     scenarioResult = FAILED_AFTER_RERUN;
                 }
                 break;
 
             case SUCCESS:
-                if (hasReruns) {
-                    List<CourgetteRunResult> scenarioRunResults = courgetteRunResults.stream().filter(result -> result.getFeatureUri().equalsIgnoreCase(scenario.getFeatureUri() + ":" + scenario.getLine())).collect(Collectors.toList());
-
-                    if (scenarioRunResults.stream().anyMatch(result -> result.getStatus() == CourgetteRunResult.Status.PASSED_AFTER_RERUN)) {
-                        scenarioResult = PASSED_AFTER_RERUN;
-                    }
+                if (scenarioRunResult.stream().anyMatch(result -> result.getStatus() == CourgetteRunResult.Status.PASSED_AFTER_RERUN)) {
+                    scenarioResult = PASSED_AFTER_RERUN;
                 }
                 break;
         }
