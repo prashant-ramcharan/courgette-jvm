@@ -10,7 +10,6 @@ import courgette.runtime.CourgetteSession;
 import courgette.runtime.CourgetteTestErrorException;
 import courgette.runtime.CourgetteTestFailureException;
 import courgette.runtime.CucumberPickleLocation;
-import courgette.runtime.RunStatus;
 import io.cucumber.core.gherkin.Feature;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -18,6 +17,8 @@ import org.testng.annotations.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static courgette.runtime.CourgetteException.printError;
 
 public abstract class TestNGCourgette {
     private CourgetteProperties courgetteProperties;
@@ -49,28 +50,27 @@ public abstract class TestNGCourgette {
 
         try {
             if (courgetteRunner.canRunFeatures()) {
+                switch (courgetteRunner.run()) {
+                    case OK:
+                        courgetteRunner.createCucumberReport();
+                        courgetteRunner.createCourgetteReport();
+                        courgetteRunner.createCourgettePluginReports();
+                        break;
+                    case REPORT_PROCESSING_ERROR:
+                        printError("[Courgette Runner] There was an unexpected error processing the individual Cucumber report files and Courgette was unable to create any reports for this test run.");
+                        break;
+                    case ERROR:
+                        CourgetteTestErrorException.throwTestErrorException();
+                }
 
-                final RunStatus runStatus = courgetteRunner.run();
-
-                if (RunStatus.OK.equals(runStatus)) {
-
-                    courgetteRunner.createCucumberReport();
-                    courgetteRunner.createCourgetteReport();
-
-                    if (courgetteProperties.isExtentReportsPluginEnabled()) {
-                        courgetteRunner.createCourgetteExtentReports();
-                    }
-
-                    if (!courgetteRunner.getFailures().isEmpty()) {
-                        courgetteRunner.createRerunFile();
-                        throw new CourgetteTestFailureException("There were failing tests. Refer to the Courgette html report for more details.");
-                    }
-                } else {
-                    CourgetteTestErrorException.throwTestErrorException();
+                if (!courgetteRunner.getFailures().isEmpty()) {
+                    courgetteRunner.createRerunFile();
+                    throw new CourgetteTestFailureException("There were failing tests.");
                 }
             }
         } finally {
             courgetteRunner.printCourgetteTestStatistics();
+            courgetteRunner.printCourgetteTestFailures();
             courgetteRunner.cleanupCourgetteHtmlReportFiles();
         }
     }

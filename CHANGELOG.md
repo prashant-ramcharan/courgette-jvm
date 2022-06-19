@@ -1,3 +1,10 @@
+CHANGES IN VERSION 6.5.1
+=================================
+* [NEW] Add Courgette option `excludeTagFromRerun` to support excluding tests with matching Cucumber tags from re-running on failure.
+* [IMPROVEMENT] Print all failures at the end of the test run for improved visibility. 
+* [IMPROVEMENT] Improve handling of Cucumber report processing errors.
+* [IMPROVEMENT] Prevent builds from failing when there are report processing errors.
+
 CHANGES IN VERSION 6.5.0
 =================================
 * [NEW] Add Courgette option `testOutput` to allow redirecting the test output to the console or saving the test output to a file.

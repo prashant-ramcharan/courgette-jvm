@@ -46,6 +46,11 @@ public class CourgetteRunOptions implements CourgetteOptions {
     }
 
     @Override
+    public String[] excludeTagFromRerun() {
+        return SystemPropertyUtils.getStringArrayProperty(CourgetteSystemProperty.EXCLUDE_TAG_FROM_RERUN, courgetteOptions.excludeTagFromRerun());
+    }
+
+    @Override
     public int rerunAttempts() {
         return SystemPropertyUtils.getIntProperty(CourgetteSystemProperty.RERUN_ATTEMPTS, courgetteOptions.rerunAttempts());
     }

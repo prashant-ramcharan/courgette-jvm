@@ -36,13 +36,13 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>6.5.0</version>
+  <version>6.5.1</version>
 </dependency>
 ````
 
 #### Gradle
 ````gradle
-compile 'io.github.prashant-ramcharan:courgette-jvm:6.5.0'
+compile 'io.github.prashant-ramcharan:courgette-jvm:6.5.1'
 ````
 
 #### Included Cucumber Dependencies
@@ -82,6 +82,9 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
 
 * **excludeFeatureFromRerun** : If set, Courgette will prevent features from re-running when it fails.
     * _Example: If `excludeFeatureFromRerun = {Feature1.feature}` and `Feature1.feature` and `Feature2.feature` both fail, Courgette will not re-run `Feature1.feature` but will re-run `Feature2.feature`. This is useful when you need to prevent a specific feature or scenario from re-running._
+
+* **excludeTagFromRerun** : If set, Courgette will prevent features and scenarios from re-running on failure when it finds a matching Cucumber tag.
+    * _Example: If `excludeTagFromRerun = {@stable}` and a test tagged with `@stable` fails, Courgette will not re-run that specific test but will continue to re-run other failing tests._
 
 * **rerunAttempts** : The number of re-run attempts for a failed scenario. (_rerunFailedScenarios must be set to true_)
 

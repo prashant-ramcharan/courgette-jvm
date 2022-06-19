@@ -94,12 +94,6 @@ public class CourgetteProperties {
         return slackOptions().isValid();
     }
 
-    public boolean allowFeatureRerun(final String feature) {
-        return Arrays.stream(getCourgetteOptions().excludeFeatureFromRerun())
-                .map(String::toLowerCase)
-                .noneMatch(featureName -> feature.toLowerCase().contains(featureName));
-    }
-
     private final Predicate<HtmlReport> checkIfReportIsEnabled = (report) ->
             Arrays.stream(getCourgetteOptions().disableHtmlReport()).noneMatch(r -> r.equals(HtmlReport.COURGETTE_AND_CUCUMBER_HTML) || r.equals(report));
 }

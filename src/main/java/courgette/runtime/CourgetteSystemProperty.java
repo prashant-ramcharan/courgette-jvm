@@ -21,4 +21,5 @@ final class CourgetteSystemProperty {
     final static String CLASS_PATH = "courgette.classPath";
     final static String PLUGIN = "courgette.plugin";
     final static String EXCLUDE_FEATURE_FROM_RERUN = "courgette.excludeFeatureFromRerun";
+    final static String EXCLUDE_TAG_FROM_RERUN = "courgette.excludeTagFromRerun";
 }
