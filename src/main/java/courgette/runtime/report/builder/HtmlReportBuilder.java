@@ -259,16 +259,7 @@ public class HtmlReportBuilder {
             addNestedMap(hookData, STEP_OUTPUT, OUTPUT, hook.getOutput());
         }
 
-        hook.getEmbeddings().forEach(embedding -> {
-
-            if (embedding.getMimeType().equals("text/html")) {
-                String htmlData = new String(Base64.getDecoder().decode(embedding.getData()));
-                addNestedMap(hookData, STEP_EMBEDDING_TEXT, TEXT, htmlData);
-
-            } else if (embedding.getMimeType().startsWith("image")) {
-                addNestedMap(hookData, STEP_EMBEDDING_IMAGE, IMAGE_ID, embedding.getCourgetteEmbeddingId());
-            }
-        });
+        hook.getEmbeddings().forEach(embedding -> addHookEmbedding(hookData, embedding));
 
         return createFromTemplate(modalStepTemplate, hookData);
     }
@@ -296,7 +287,7 @@ public class HtmlReportBuilder {
 
         addStepOutput(stepData, step);
         addStepImageEmbedding(stepData, step);
-        addStepTextHtmlEmbedding(stepData, step);
+        addStepTextEmbedding(stepData, step);
 
         return createFromTemplate(modalStepTemplate, stepData);
     }
@@ -339,10 +330,22 @@ public class HtmlReportBuilder {
         return writer.toString();
     }
 
-    private static void addNestedMap(HashMap<String, Object> source, String sourceKey,
-                                     String childKey, Object childValue) {
+    private static void addNestedMap(HashMap<String, Object> source, String sourceKey, String childKey, Object childValue) {
         HashMap<String, Object> map = new HashMap<>();
-        map.put(childKey, childValue);
+        if (source.containsKey(sourceKey)) {
+            List<Object> newChildValue = new ArrayList<>();
+            Object currentChildValue = ((HashMap<String, Object>) source.get(sourceKey)).get(childKey);
+            if (currentChildValue instanceof List) {
+                newChildValue.addAll((List<Object>) currentChildValue);
+            } else {
+                newChildValue.add(currentChildValue);
+            }
+            newChildValue.add(childValue);
+            map.put(childKey, newChildValue);
+        } else {
+            map.put(childKey, childValue);
+        }
+
         source.put(sourceKey, map);
     }
 
@@ -379,22 +382,22 @@ public class HtmlReportBuilder {
         addNonEmptyNestedMap(source, STEP_EMBEDDING_IMAGE_AFTER, IMAGE_ID, afterStep);
     }
 
-    private void addStepTextHtmlEmbedding(HashMap<String, Object> source, Step step) {
+    private void addStepTextEmbedding(HashMap<String, Object> source, Step step) {
         List<String> beforeStep = step.getBefore().stream()
                 .flatMap(e -> e.getEmbeddings().stream())
-                .filter(textHtmlFilter)
-                .map(embedding -> new String(Base64.getDecoder().decode(embedding.getData())))
+                .filter(textFilter)
+                .map(HtmlReportBuilder::decodeTextEmbedding)
                 .collect(Collectors.toList());
 
         List<String> currentStep = step.getEmbeddings().stream()
-                .filter(textHtmlFilter)
-                .map(embedding -> new String(Base64.getDecoder().decode(embedding.getData())))
+                .filter(textFilter)
+                .map(HtmlReportBuilder::decodeTextEmbedding)
                 .collect(Collectors.toList());
 
         List<String> afterStep = step.getAfter().stream()
                 .flatMap(e -> e.getEmbeddings().stream())
-                .filter(textHtmlFilter)
-                .map(embedding -> new String(Base64.getDecoder().decode(embedding.getData())))
+                .filter(textFilter)
+                .map(HtmlReportBuilder::decodeTextEmbedding)
                 .collect(Collectors.toList());
 
         addNonEmptyNestedMap(source, STEP_EMBEDDING_TEXT_BEFORE, TEXT, beforeStep);
@@ -402,10 +405,32 @@ public class HtmlReportBuilder {
         addNonEmptyNestedMap(source, STEP_EMBEDDING_TEXT_AFTER, TEXT, afterStep);
     }
 
+    private void addHookEmbedding(HashMap<String, Object> hookData, Embedding embedding) {
+        String mimeType = embedding.getMimeType();
+
+        if (mimeType.startsWith("text")) {
+            addNestedMap(hookData, STEP_EMBEDDING_TEXT, TEXT, decodeTextEmbedding(embedding));
+        } else if (mimeType.startsWith("image")) {
+            addNestedMap(hookData, STEP_EMBEDDING_IMAGE, IMAGE_ID, embedding.getCourgetteEmbeddingId());
+        }
+    }
+
     private void addNonEmptyNestedMap(HashMap<String, Object> source, String sourceKey, String childKey, List<String> data) {
         if (!data.isEmpty()) {
             addNestedMap(source, sourceKey, childKey, data);
         }
+    }
+
+    private static String decodeTextEmbedding(Embedding embedding) {
+        if (embedding.getMimeType().equals("text/xml")) {
+            return formatXml(new String(Base64.getDecoder().decode(String.valueOf(embedding.getData()))));
+        } else {
+            return new String(Base64.getDecoder().decode(String.valueOf(embedding.getData())));
+        }
+    }
+
+    private static String formatXml(Object xml) {
+        return xml.toString().replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\n", "</br>");
     }
 
     private Mustache readTemplate(String template) {
@@ -427,5 +452,5 @@ public class HtmlReportBuilder {
     }
 
     private final Predicate<Embedding> imageFilter = (e) -> e.getMimeType().startsWith("image");
-    private final Predicate<Embedding> textHtmlFilter = (e) -> e.getMimeType().equals("text/html");
+    private final Predicate<Embedding> textFilter = (e) -> e.getMimeType().startsWith("text");
 }
