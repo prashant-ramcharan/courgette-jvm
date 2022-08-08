@@ -1,3 +1,8 @@
+CHANGES IN VERSION 6.6.0
+=================================
+* [ENHANCEMENT] Include all Cucumber `text` attachments in the Courgette html report.
+* [MAINTENANCE] Upgrade to Cucumber version 7.6.0
+
 CHANGES IN VERSION 6.5.1
 =================================
 * [NEW] Add Courgette option `excludeTagFromRerun` to support excluding tests with matching Cucumber tags from re-running on failure.
