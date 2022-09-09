@@ -1,5 +1,5 @@
 group 'io.github.prashant-ramcharan'
-version '6.6.0'
+version '6.6.1'
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'
@@ -20,7 +20,6 @@ ext {
 
 repositories {
     mavenCentral()
-    mavenLocal()
 }
 
 dependencies {
