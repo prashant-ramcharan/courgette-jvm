@@ -1,3 +1,7 @@
+CHANGES IN VERSION 6.6.1
+=================================
+* [NEW] Allow access to Courgette thread id and name using system properties `courgette.threadId` and `courgette.threadName`
+
 CHANGES IN VERSION 6.6.0
 =================================
 * [ENHANCEMENT] Include all Cucumber `text` attachments in the Courgette html report.

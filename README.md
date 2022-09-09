@@ -310,6 +310,12 @@ public class RegressionTestSuite extends TestNGCourgette {
 }
 ````
 
+Retrieve the Courgette Thread ID and Name
+````java
+System.getProperty("courgette.threadId")
+        
+System.getProperty("courgette.threadName")
+````
 
 ## Slack Integration
 
