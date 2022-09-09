@@ -86,6 +86,7 @@ public class CourgetteFeatureRunner {
             System.getProperties().keySet().forEach(property -> systemPropertyList.add(String.format("-D%s=%s", property, System.getProperty(property.toString()))));
             systemPropertyList.removeIf(cucumberSystemPropertiesRequiresRemoval());
             addCucumberSystemProperties(systemPropertyList);
+            addCourgetteSystemProperties(systemPropertyList);
             addCourgetteMobileDeviceAllocatorProperties(systemPropertyList);
             return systemPropertyList;
         }
@@ -104,6 +105,12 @@ public class CourgetteFeatureRunner {
                     systemPropertyList.add(String.format("-D%s=%s", CourgetteSystemProperty.UDID_SYSTEM_PROPERTY, device.getUdid()));
                 }
             }
+        }
+
+        private void addCourgetteSystemProperties(final List<String> systemPropertyList) {
+            final Thread thread = Thread.currentThread();
+            systemPropertyList.add(String.format("-D%s=%s", CourgetteSystemProperty.THREAD_ID, thread.getId()));
+            systemPropertyList.add(String.format("-D%s=%s", CourgetteSystemProperty.THREAD_NAME, thread.getName()));
         }
 
         private Predicate<String> cucumberSystemPropertiesRequiresRemoval() {
