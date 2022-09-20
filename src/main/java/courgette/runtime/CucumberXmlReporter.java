@@ -22,6 +22,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.HashMap;
 import java.util.List;
 
 import static courgette.runtime.CourgetteException.printExceptionStackTrace;
@@ -41,6 +42,8 @@ final class CucumberXmlReporter {
 
         xmlBuilder.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n");
         xmlBuilder.append("<testsuite failures=\"id:failures\" name=\"id:testSuite\" skipped=\"id:skipped\" tests=\"id:tests\" time=\"id:time\">\n\n");
+
+        final HashMap<String, Integer> testcaseIteration = new HashMap<>();
 
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -62,13 +65,18 @@ final class CucumberXmlReporter {
                     if (testCases != null) {
                         for (int i = 0; i < testCases.getLength(); i++) {
                             Node testcase = testCases.item(i);
+                            Node testClassName = testcase.getAttributes().getNamedItem("classname");
+                            Node testName = testcase.getAttributes().getNamedItem("name");
+
+                            String key = testClassName.getNodeValue() + "-" + testName.getNodeValue();
+                            testcaseIteration.merge(key, 1, Integer::sum);
+
+                            if (testcaseIteration.get(key) > 1) {
+                                testName.setNodeValue(testName.getNodeValue() + " " + testcaseIteration.get(key));
+                            }
 
                             if (mergeTestCaseName) {
-                                Node testClassName = testcase.getAttributes().getNamedItem("classname");
-                                Node testName = testcase.getAttributes().getNamedItem("name");
-                                String classNameValue = testClassName.getNodeValue();
-                                String testNameValue = testName.getNodeValue();
-                                testName.setNodeValue(classNameValue + ": " + testNameValue);
+                                testName.setNodeValue(testClassName.getNodeValue() + ": " + testName.getNodeValue());
                             }
 
                             StringWriter sw = new StringWriter();

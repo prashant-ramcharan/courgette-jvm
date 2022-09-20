@@ -1,3 +1,8 @@
+CHANGES IN VERSION 6.7.0
+=================================
+* [IMPROVEMENT] Include the iteration number in the Cucumber `xml` report for each Cucumber scenario outline. 
+* [MAINTENANCE] Upgrade to Cucumber version 7.8.0
+
 CHANGES IN VERSION 6.6.1
 =================================
 * [NEW] Allow access to Courgette thread id and name using system properties `courgette.threadId` and `courgette.threadName`
