@@ -8,6 +8,7 @@ import courgette.runtime.utils.SystemPropertyUtils;
 
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Random;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -92,6 +93,15 @@ public class CourgetteProperties {
 
     public boolean publishEventsToSlack() {
         return slackOptions().isValid();
+    }
+
+    public int threadDelay() {
+        if (courgetteOptions.fixedThreadDelay() > 0) {
+            return courgetteOptions.fixedThreadDelay();
+        } else if (courgetteOptions.randomThreadDelay() > 0) {
+            return new Random().nextInt(courgetteOptions.randomThreadDelay());
+        }
+        return 0;
     }
 
     private final Predicate<HtmlReport> checkIfReportIsEnabled = (report) ->

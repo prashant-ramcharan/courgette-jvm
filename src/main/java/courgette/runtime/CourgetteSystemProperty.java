@@ -23,4 +23,6 @@ final class CourgetteSystemProperty {
     final static String EXCLUDE_TAG_FROM_RERUN = "courgette.excludeTagFromRerun";
     final static String THREAD_ID = "courgette.threadId";
     final static String THREAD_NAME = "courgette.threadName";
+    final static String FIXED_THREAD_DELAY = "courgette.fixedThreadDelay";
+    final static String RANDOM_THREAD_DELAY = "courgette.randomThreadDelay";
 }

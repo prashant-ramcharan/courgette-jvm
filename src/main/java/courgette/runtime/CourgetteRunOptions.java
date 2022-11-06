@@ -126,6 +126,16 @@ public class CourgetteRunOptions implements CourgetteOptions {
     }
 
     @Override
+    public int fixedThreadDelay() {
+        return SystemPropertyUtils.getIntProperty(CourgetteSystemProperty.FIXED_THREAD_DELAY, courgetteOptions.fixedThreadDelay());
+    }
+
+    @Override
+    public int randomThreadDelay() {
+        return SystemPropertyUtils.getIntProperty(CourgetteSystemProperty.RANDOM_THREAD_DELAY, courgetteOptions.randomThreadDelay());
+    }
+
+    @Override
     public Class<? extends Annotation> annotationType() {
         return null;
     }

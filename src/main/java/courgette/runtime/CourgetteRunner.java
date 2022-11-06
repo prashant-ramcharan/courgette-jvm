@@ -240,6 +240,7 @@ public class CourgetteRunner {
 
     private boolean runFeature(Map<String, List<String>> args) {
         try {
+            processFeatureStart();
             return 0 == new CourgetteFeatureRunner(args, courgetteProperties, courgettePluginService).run();
         } catch (Throwable throwable) {
             throwable.printStackTrace();
@@ -355,5 +356,15 @@ public class CourgetteRunner {
 
     private boolean shouldProcessReport(String reportFile) {
         return !reportFile.contains("/session-reports/") && reportFile.contains(courgetteProperties.getSessionId());
+    }
+
+    private void processFeatureStart() {
+        try {
+            int threadDelay = courgetteProperties.threadDelay();
+            if (threadDelay > 0) {
+                Thread.sleep(threadDelay);
+            }
+        } catch (InterruptedException ignored) {
+        }
     }
 }
