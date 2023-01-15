@@ -36,21 +36,21 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>6.7.0</version>
+  <version>6.8.0</version>
 </dependency>
 ````
 
 #### Gradle
 ````gradle
-compile 'io.github.prashant-ramcharan:courgette-jvm:6.7.0'
+compile 'io.github.prashant-ramcharan:courgette-jvm:6.8.0'
 ````
 
 #### Included Cucumber Dependencies
-* cucumber-core 7.8.0
-* cucumber-java 7.8.0
-* cucumber-java8 7.8.0
-* cucumber-junit 7.8.0
-* cucumber-testng 7.8.0
+* cucumber-core 7.9.0
+* cucumber-java 7.9.0
+* cucumber-java8 7.9.0
+* cucumber-junit 7.9.0
+* cucumber-testng 7.9.0
 
 
 ## Usage
@@ -122,6 +122,10 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
  
 * **mobileDevice**: The devices that Courgette will use to track and allocate for parallel mobile tests.
   * This option is required when using the `CourgettePlugin.MOBILE_DEVICE_ALLOCATOR` plugin.
+
+* **fixedThreadDelay**: A fixed time in milliseconds that Courgette will pause before the start of each feature or scenario.
+
+* **randomThreadDelay**: A random time in milliseconds that Courgette will pause before the start of each feature or scenario. Courgette will automatically set a random time between 0 and this value.
 
 * **cucumberOptions** : The standard cucumber options for specifying feature paths, glue, tags etc..
     * The `publish` cucumber option (_supported from version 5.1.0_) will publish a single cucumber report after parallel execution. 

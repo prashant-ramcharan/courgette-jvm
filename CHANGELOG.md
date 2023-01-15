@@ -1,3 +1,8 @@
+CHANGES IN VERSION 6.8.0
+=================================
+* [NEW] Add 2 new Courgette options `fixedThreadDelay` and `randomThreadDelay` to support adding a delay before the start of each feature or scenario.
+* [MAINTENANCE] Upgrade to Cucumber version 7.9.0
+
 CHANGES IN VERSION 6.7.0
 =================================
 * [IMPROVEMENT] Include the iteration number in the Cucumber `xml` report for each Cucumber scenario outline. 

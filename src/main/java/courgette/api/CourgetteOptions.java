@@ -106,6 +106,16 @@ public @interface CourgetteOptions {
     String[] mobileDevice() default {};
 
     /**
+     * @return the time in milliseconds for the fixed thread delay
+     */
+    int fixedThreadDelay() default 0;
+
+    /**
+     * @return the time in milliseconds for the random thread delay
+     */
+    int randomThreadDelay() default 0;
+
+    /**
      * @return the Cucumber options
      */
     CucumberOptions cucumberOptions();
