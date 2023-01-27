@@ -88,31 +88,18 @@ public class CourgetteRunner {
 
                     String rerun = readFile(rerunFile, false);
 
-                    if (runnerInfo.allowRerun() && rerun != null) {
+                    if (runnerInfo.allowRerun()) {
+                        final String rerunFeatureUri = evaluateRerunFeatureUri(rerun, featureUri);
 
-                        if (courgetteProperties.isFeatureRunLevel()) {
+                        final Map<String, List<String>> rerunCucumberArgs = runnerInfo.getRerunRuntimeOptions(rerunFeatureUri);
 
-                            CourgetteRunResult rerunResult = new CourgetteRunResult(feature, lineId, featureUri, CourgetteRunResult.Status.RERUN);
-                            runResults.add(rerunResult);
+                        CourgetteRunResult rerunResult = new CourgetteRunResult(feature, lineId, rerunFeatureUri, CourgetteRunResult.Status.RERUN);
+                        runResults.add(rerunResult);
 
-                            if (rerunFeature(cucumberArgs, rerunResult)) {
-                                addResultAndPublish(runnerInfo, new CourgetteRunResult(feature, lineId, featureUri, CourgetteRunResult.Status.PASSED_AFTER_RERUN));
-                                return true;
-                            } else {
-                                addResultAndPublish(runnerInfo, new CourgetteRunResult(feature, lineId, featureUri, CourgetteRunResult.Status.FAILED_AFTER_RERUN));
-                            }
+                        if (rerunFeature(rerunCucumberArgs, rerunResult)) {
+                            addResultAndPublish(runnerInfo, new CourgetteRunResult(feature, lineId, rerunFeatureUri, CourgetteRunResult.Status.PASSED_AFTER_RERUN));
+                            return true;
                         } else {
-                            final Map<String, List<String>> rerunCucumberArgs = runnerInfo.getRerunRuntimeOptions(rerun);
-
-                            final String rerunFeatureUri = rerunCucumberArgs.get(null).get(0);
-
-                            CourgetteRunResult rerunResult = new CourgetteRunResult(feature, lineId, rerunFeatureUri, CourgetteRunResult.Status.RERUN);
-                            runResults.add(rerunResult);
-
-                            if (rerunFeature(rerunCucumberArgs, rerunResult)) {
-                                addResultAndPublish(runnerInfo, new CourgetteRunResult(feature, lineId, rerunFeatureUri, CourgetteRunResult.Status.PASSED_AFTER_RERUN));
-                                return true;
-                            }
                             addResultAndPublish(runnerInfo, new CourgetteRunResult(feature, lineId, rerunFeatureUri, CourgetteRunResult.Status.FAILED_AFTER_RERUN));
                         }
                     } else {
@@ -366,5 +353,9 @@ public class CourgetteRunner {
             }
         } catch (InterruptedException ignored) {
         }
+    }
+
+    private String evaluateRerunFeatureUri(String rerun, String featureUri) {
+        return courgetteProperties.isFeatureRunLevel() ? featureUri : (rerun != null && rerun.trim().length() > 0) ? rerun : featureUri;
     }
 }
