@@ -36,13 +36,13 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>6.9.0</version>
+  <version>6.9.1</version>
 </dependency>
 ````
 
 #### Gradle
 ````gradle
-compile 'io.github.prashant-ramcharan:courgette-jvm:6.9.0'
+compile 'io.github.prashant-ramcharan:courgette-jvm:6.9.1'
 ````
 
 #### Included Cucumber Dependencies

@@ -5,6 +5,7 @@ import com.github.mustachejava.Mustache;
 import courgette.runtime.report.builder.HtmlReportBuilder;
 import courgette.runtime.report.model.Embedding;
 import courgette.runtime.report.model.Feature;
+import courgette.runtime.utils.FileUtils;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -20,17 +21,19 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class CourgetteHtmlReporter {
     private final String targetDir;
     private final String reportDir;
     private final String reportTitle;
-
     private final CourgetteProperties courgetteProperties;
     private final List<CourgetteRunResult> courgetteRunResults;
     private final List<Feature> reportFeatures;
     private final String cucumberReportUrl;
+    private final Set<String> cssContent;
+    private final Set<String> jsScripts;
 
     CourgetteHtmlReporter(CourgetteProperties courgetteProperties,
                           List<CourgetteRunResult> courgetteRunResults,
@@ -44,6 +47,8 @@ public class CourgetteHtmlReporter {
         this.courgetteRunResults = courgetteRunResults;
         this.reportFeatures = reportFeatures;
         this.cucumberReportUrl = cucumberReportUrl;
+        this.cssContent = loadCssFiles();
+        this.jsScripts = loadJsFiles();
     }
 
     public void create(CourgetteTestStatistics testStatistics) throws IOException {
@@ -51,9 +56,29 @@ public class CourgetteHtmlReporter {
         generateHtmlReport(testStatistics);
     }
 
-    private void generateHtmlReport(CourgetteTestStatistics testStatistics) throws IOException {
-        String featureScenarioLabel = courgetteProperties.isFeatureRunLevel() ? "Features" : "Scenarios";
+    public Set<String> loadCssFiles() {
+        final String cssFiles = "/report/css/chartjs.min.css,/report/css/dataTables.bootstrap4.min.css,/report/css/report.min.css";
 
+        return Arrays.stream(cssFiles.split(","))
+                .map(cssFile -> {
+                    InputStream resource = getClass().getResourceAsStream(cssFile);
+                    return FileUtils.readFile(resource);
+                })
+                .collect(Collectors.toSet());
+    }
+
+    public Set<String> loadJsFiles() {
+        final String jsFiles = "/report/js/jquery-3.5.1.slim.min.js,/report/js/bootstrap.bundle.min.js,/report/js/jquery.dataTables.min.js,/report/js/dataTables.bootstrap4.min.js,/report/js/chart.min.js";
+
+        return Arrays.stream(jsFiles.split(","))
+                .map(jsFile -> {
+                    InputStream resource = getClass().getResourceAsStream(jsFile);
+                    return FileUtils.readFile(resource);
+                })
+                .collect(Collectors.toSet());
+    }
+
+    private void generateHtmlReport(CourgetteTestStatistics testStatistics) throws IOException {
         String cucumberTags = System.getProperty("cucumber.tags", "Not provided");
         if (cucumberTags.equals("Not provided")) {
             String[] tags = courgetteProperties.getCourgetteOptions().cucumberOptions().tags();
@@ -73,11 +98,11 @@ public class CourgetteHtmlReporter {
 
         final HashMap<String, Object> reportData = new HashMap<>();
         reportData.put("reportTitle", reportTitle);
-        reportData.put("label", featureScenarioLabel);
-        reportData.put("total", testStatistics.total());
-        reportData.put("passed", testStatistics.passed());
-        reportData.put("failed", testStatistics.failed());
-        reportData.put("rerun", testStatistics.rerun());
+        reportData.put("total_features", reportFeatures.size());
+        reportData.put("total_scenarios", reportFeatures.stream().mapToInt(feature -> feature.getScenarios().size()).sum());
+        reportData.put("passed", htmlReportBuilder.getPassed());
+        reportData.put("failed", htmlReportBuilder.getFailed());
+        reportData.put("rerun", htmlReportBuilder.getRerun());
         reportData.put("timestamp", Instant.now().toString());
         reportData.put("duration", testStatistics.duration());
         reportData.put("threads", courgetteProperties.getMaxThreads());
@@ -90,6 +115,8 @@ public class CourgetteHtmlReporter {
         reportData.put("features", cucumberFeatures);
         reportData.put("results", results);
         reportData.put("modals", modals);
+        reportData.put("styles", cssContent);
+        reportData.put("scripts", jsScripts);
 
         File thisFile = new File(reportDir + "/index.html");
 

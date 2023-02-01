@@ -9,6 +9,8 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
@@ -27,6 +29,13 @@ public final class FileUtils {
 
     public static String readFile(String file, Boolean deleteOnExit) {
         return fileReader.apply(file, deleteOnExit);
+    }
+
+    public static String readFile(InputStream inputStream) {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        StringBuilder lines = new StringBuilder();
+        reader.lines().forEach(line -> lines.append(line).append("\n"));
+        return lines.toString();
     }
 
     public static void writeFile(String file, Collection<?> contents) {
@@ -64,6 +73,15 @@ public final class FileUtils {
 
         if (classPathResource != null) {
             return new File(classPathResource.getFile());
+        }
+        return null;
+    }
+
+    public static File[] getClassPathFiles(String path) {
+        URL classPathResource = Thread.currentThread().getContextClassLoader().getResource(path);
+
+        if (classPathResource != null) {
+            return new File(classPathResource.getFile()).listFiles();
         }
         return null;
     }
