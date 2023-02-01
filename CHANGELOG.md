@@ -1,3 +1,8 @@
+CHANGES IN VERSION 6.9.0
+=================================
+* [IMPROVEMENT] Improve handling of reruns by using the feature URI when the rerun file is empty / blank.
+* [MAINTENANCE] Upgrade to Cucumber version 7.11.0
+
 CHANGES IN VERSION 6.8.0
 =================================
 * [NEW] Add 2 new Courgette options `fixedThreadDelay` and `randomThreadDelay` to support adding a delay before the start of each feature or scenario.

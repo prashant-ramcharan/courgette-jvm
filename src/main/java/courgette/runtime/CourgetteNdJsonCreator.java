@@ -213,7 +213,7 @@ public class CourgetteNdJsonCreator {
                 .min(comparingLong(Timestamp::getSeconds))
                 .get();
 
-        return Envelope.of(new TestRunFinished(null, true, timestamp));
+        return Envelope.of(new TestRunFinished(null, true, timestamp, null));
     }
 
     private final Predicate<Envelope> gherkinEnvelope = (envelope) -> envelope.getGherkinDocument().isPresent();
