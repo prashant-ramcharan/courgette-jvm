@@ -1,3 +1,7 @@
+CHANGES IN VERSION 6.10.0
+=================================
+* [MAINTENANCE] Upgrade to Cucumber version 7.12.1
+
 CHANGES IN VERSION 6.9.1
 =================================
 * [ENHANCEMENT] Add scenario badge to Courgette html report.
