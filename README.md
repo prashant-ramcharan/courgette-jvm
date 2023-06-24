@@ -1,5 +1,4 @@
 
-[![Build Status](https://travis-ci.org/prashant-ramcharan/courgette-jvm.svg?branch=master)](https://travis-ci.org/prashant-ramcharan/courgette-jvm)
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.prashant-ramcharan/courgette-jvm.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22io.github.prashant-ramcharan%22%20AND%20a:%22courgette-jvm%22)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -36,13 +35,13 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>6.9.0</version>
+  <version>6.9.1</version>
 </dependency>
 ````
 
 #### Gradle
 ````gradle
-compile 'io.github.prashant-ramcharan:courgette-jvm:6.9.0'
+compile 'io.github.prashant-ramcharan:courgette-jvm:6.9.1'
 ````
 
 #### Included Cucumber Dependencies

@@ -88,6 +88,10 @@ public class HtmlReportBuilder {
     private Mustache scenarioTemplate;
     private Mustache scenarioTagTemplate;
 
+    private int passed;
+    private int failed;
+    private int rerun;
+
     private HtmlReportBuilder(List<Feature> featureList,
                               List<CourgetteRunResult> courgetteRunResults,
                               CourgetteProperties courgetteProperties) {
@@ -132,6 +136,18 @@ public class HtmlReportBuilder {
                 });
 
         return modals;
+    }
+
+    public int getPassed() {
+        return passed;
+    }
+
+    public int getFailed() {
+        return failed;
+    }
+
+    public int getRerun() {
+        return rerun;
     }
 
     private String createFeatureRow(Feature feature) {
@@ -198,13 +214,17 @@ public class HtmlReportBuilder {
             case DANGER:
                 if (scenarioRunResult.stream().anyMatch(result -> result.getStatus() == CourgetteRunResult.Status.FAILED_AFTER_RERUN)) {
                     scenarioResult = FAILED_AFTER_RERUN;
+                    rerun += 1;
                 }
+                failed += 1;
                 break;
 
             case SUCCESS:
                 if (scenarioRunResult.stream().anyMatch(result -> result.getStatus() == CourgetteRunResult.Status.PASSED_AFTER_RERUN)) {
                     scenarioResult = PASSED_AFTER_RERUN;
+                    rerun += 1;
                 }
+                passed += 1;
                 break;
         }
 

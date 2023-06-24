@@ -1,3 +1,10 @@
+CHANGES IN VERSION 6.9.1
+=================================
+* [ENHANCEMENT] Add scenario badge to Courgette html report.
+* [ENHANCEMENT] Update Courgette html report to always count the number of passed, failed and rerun scenarios irrespective of the run level.
+* [ENHANCEMENT] Embed css and js scripts in the Courgette html report to support offline viewing and distribution.
+* [FIX] Cucumber tag filtering due to a recent upgrade which resulted in features / scenarios always been run irrespective of the tags defined in the runner.
+
 CHANGES IN VERSION 6.9.0
 =================================
 * [IMPROVEMENT] Improve handling of reruns by using the feature URI when the rerun file is empty / blank.
