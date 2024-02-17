@@ -6,6 +6,7 @@ import courgette.api.CourgetteRunLevel;
 import courgette.api.CourgetteTestOutput;
 import courgette.api.CucumberOptions;
 import courgette.api.HtmlReport;
+import courgette.api.MobileDeviceType;
 import courgette.integration.reportportal.ReportPortalProperties;
 import courgette.runtime.event.CourgetteEvent;
 import courgette.runtime.utils.FileUtils;
@@ -14,6 +15,7 @@ import courgette.runtime.utils.SystemPropertyUtils;
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 
 public class CourgetteRunOptions implements CourgetteOptions {
@@ -121,8 +123,18 @@ public class CourgetteRunOptions implements CourgetteOptions {
     }
 
     @Override
+    public MobileDeviceType mobileDeviceType() {
+        return courgetteOptions.mobileDeviceType();
+    }
+
+    @Override
     public String[] mobileDevice() {
         return SystemPropertyUtils.getStringArrayProperty(CourgetteSystemProperty.MOBILE_DEVICE, courgetteOptions.mobileDevice());
+    }
+
+    @Override
+    public String[] realMobileDeviceTag() {
+        return SystemPropertyUtils.getStringArrayProperty(CourgetteSystemProperty.REAL_MOBILE_DEVICE_TAG, courgetteOptions.realMobileDeviceTag());
     }
 
     @Override
@@ -169,15 +181,31 @@ public class CourgetteRunOptions implements CourgetteOptions {
 
     private void validateMobileDeviceAllocatorPlugin() {
         if (Arrays.stream(plugin()).anyMatch(plugin -> plugin.equalsIgnoreCase(CourgettePlugin.MOBILE_DEVICE_ALLOCATOR))) {
-            String[] mobileDevice = mobileDevice();
-            if (mobileDevice.length == 0 ||
-                    Arrays.stream(mobileDevice)
-                            .map(device -> device.replace(":", ""))
-                            .map(String::trim)
-                            .collect(Collectors.toSet())
-                            .stream()
-                            .allMatch(device -> device.equals(""))) {
+            HashSet<String> mobileDevices = Arrays.stream(mobileDevice())
+                    .map(String::trim).collect(Collectors.toCollection(HashSet::new));
+
+            if (mobileDevices.isEmpty() || mobileDevices.stream().allMatch(String::isEmpty)) {
                 throw new CourgetteException("Mobile device is required when using the Courgette Mobile Device Allocator plugin");
+            }
+
+            if (mobileDeviceType().equals(MobileDeviceType.SIMULATOR)
+                    && !mobileDevices.stream().allMatch(device -> device.split(":").length == 1)) {
+                throw new CourgetteException("You must only provide simulator device names (without udid) in the mobileDevice list when using mobile device type: SIMULATOR");
+            }
+
+            if (mobileDeviceType().equals(MobileDeviceType.REAL_DEVICE)
+                    && !mobileDevices.stream().allMatch(device -> device.split(":").length == 2)) {
+                throw new CourgetteException("You must only provide real mobile devices (device:udid) in the mobileDevice list when using mobile device type: REAL_DEVICE");
+            }
+
+            boolean noRealDevices = mobileDeviceType().equals(MobileDeviceType.SIMULATOR) || mobileDevices.stream().noneMatch(device -> device.split(":").length == 2);
+
+            if (mobileDeviceType().equals(MobileDeviceType.SIMULATOR_AND_REAL_DEVICE) && noRealDevices) {
+                throw new CourgetteException("You must provide a real mobile device (device:udid) in the mobileDevice list when using mobile device type: SIMULATOR_AND_REAL_DEVICE");
+            }
+
+            if (realMobileDeviceTag().length > 0 && noRealDevices) {
+                throw new CourgetteException("You must provide a real mobile device (device:udid) in the mobileDevice list when using the realMobileDeviceTag option");
             }
         }
     }

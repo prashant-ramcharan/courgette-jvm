@@ -35,21 +35,21 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>6.10.0</version>
+  <version>6.11.0</version>
 </dependency>
 ````
 
 #### Gradle
 ````gradle
-implementation group: 'io.github.prashant-ramcharan', name: 'courgette-jvm', version: '6.10.0'
+implementation group: 'io.github.prashant-ramcharan', name: 'courgette-jvm', version: '6.11.0'
 ````
 
 #### Included Cucumber Dependencies
-* cucumber-core 7.12.1
-* cucumber-java 7.12.1
-* cucumber-java8 7.12.1
-* cucumber-junit 7.12.1
-* cucumber-testng 7.12.1
+* cucumber-core 7.15.0
+* cucumber-java 7.15.0
+* cucumber-java8 7.15.0
+* cucumber-junit 7.15.0
+* cucumber-testng 7.15.0
 
 
 ## Usage
@@ -121,6 +121,13 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
  
 * **mobileDevice**: The devices that Courgette will use to track and allocate for parallel mobile tests.
   * This option is required when using the `CourgettePlugin.MOBILE_DEVICE_ALLOCATOR` plugin.
+
+* **mobileDeviceType**: The mobile device types used for device allocation. This can be one of:
+  * _MobileDeviceType.SIMULATOR: Only simulator device names._
+  * _MobileDeviceType.REAL_DEVICE: Only real devices names, must match format `deviceName:deviceUUID`_
+  * _MobileDeviceType.SIMULATOR_AND_REAL_DEVICE: Mixture of simulator and real device names._
+
+* **realMobileDeviceTag**: If set, Courgette will allocate a real mobile device for tests matching any one of the provided tags. To use this option, you must also specify mobileDevice as `MobileDeviceType.REAL_DEVICE` or `MobileDeviceType.SIMULATOR_AND_REAL_DEVICE`
 
 * **fixedThreadDelay**: A fixed time in milliseconds that Courgette will pause before the start of each feature or scenario.
 
@@ -453,6 +460,7 @@ Courgette provides a mobile device allocator to allocate and keep track of devic
 @CourgetteOptions(
         ...
         plugin = { CourgettePlugin.MOBILE_DEVICE_ALLOCATOR },
+        mobileDeviceType = MobileDeviceType.SIMULATOR,
         mobileDevice = {
                 "iPhone 8",
                 "iPhone 12",
@@ -468,6 +476,7 @@ The Courgette mobile device allocator plugin will:
 * Create a pool of devices based on `mobileDevice` and will automatically allocate a randomly selected available device for each parallel test.
 * Determine the optimal parallel threads based on the sum of devices defined in `mobileDevice`. The sum of `mobileDevice` will take precedence over `threads` defined in the Courgette runner.
 * Expose the device name, parallel port and uuid (_if provided_) during the runtime of each parallel test.
+* If mobileDeviceType is `SIMULATOR_AND_REAL_DEVICE` then Courgette will allocate a real device for tests tagged with any matching tag defined in Courgette option `realMobileDeviceTag` and allocate a simulator for all other tests.
 
 Notes:
 

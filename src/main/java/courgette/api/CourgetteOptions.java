@@ -101,9 +101,19 @@ public @interface CourgetteOptions {
     CourgetteEvent[] slackEventSubscription() default {};
 
     /**
+     * @return the mobile device type
+     */
+    MobileDeviceType mobileDeviceType() default MobileDeviceType.SIMULATOR;
+
+    /**
      * @return the mobile devices for device allocation
      */
     String[] mobileDevice() default {};
+
+    /**
+     * @return the matching Cucumber tags for real mobile device allocation
+     */
+    String[] realMobileDeviceTag() default {};
 
     /**
      * @return the time in milliseconds for the fixed thread delay

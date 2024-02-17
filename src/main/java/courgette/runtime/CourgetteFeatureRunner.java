@@ -15,11 +15,16 @@ import static courgette.runtime.CourgetteException.printExceptionStackTrace;
 import static courgette.runtime.utils.SystemPropertyUtils.splitAndAddPropertyToList;
 
 public class CourgetteFeatureRunner {
+    private final CourgetteRunnerInfo runnerInfo;
     private final Map<String, List<String>> runnerArgs;
     private final CourgetteProperties courgetteProperties;
     private final CourgettePluginService courgettePluginService;
 
-    CourgetteFeatureRunner(Map<String, List<String>> runnerArgs, CourgetteProperties courgetteProperties, CourgettePluginService courgettePluginService) {
+    CourgetteFeatureRunner(CourgetteRunnerInfo runnerInfo,
+                           Map<String, List<String>> runnerArgs,
+                           CourgetteProperties courgetteProperties,
+                           CourgettePluginService courgettePluginService) {
+        this.runnerInfo = runnerInfo;
         this.runnerArgs = runnerArgs;
         this.courgetteProperties = courgetteProperties;
         this.courgettePluginService = courgettePluginService;
@@ -98,10 +103,10 @@ public class CourgetteFeatureRunner {
 
         private void addCourgetteMobileDeviceAllocatorProperties(final List<String> systemPropertyList) {
             if (courgetteProperties.isMobileDeviceAllocationPluginEnabled()) {
-                device = courgettePluginService.getCourgetteMobileDeviceAllocatorService().allocateDevice();
+                device = courgettePluginService.getCourgetteMobileDeviceAllocatorService().allocateDevice(runnerInfo.getDeviceType());
                 systemPropertyList.add(String.format("-D%s=%s", CourgetteSystemProperty.DEVICE_NAME_SYSTEM_PROPERTY, device.getDeviceName()));
                 systemPropertyList.add(String.format("-D%s=%s", CourgetteSystemProperty.PARALLEL_PORT_SYSTEM_PROPERTY, device.getParallelPort()));
-                if (device.getUdid() != null) {
+                if (runnerInfo.getDeviceType().equals(DeviceType.REAL_DEVICE)) {
                     systemPropertyList.add(String.format("-D%s=%s", CourgetteSystemProperty.UDID_SYSTEM_PROPERTY, device.getUdid()));
                 }
             }

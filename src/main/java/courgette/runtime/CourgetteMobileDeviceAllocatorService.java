@@ -22,9 +22,10 @@ public class CourgetteMobileDeviceAllocatorService {
         availableDevices.addAll(createCourgetteMobileDevices(devices));
     }
 
-    public synchronized CourgetteMobileDevice allocateDevice() {
-        final List<CourgetteMobileDevice> devices = availableDevices
+    public synchronized CourgetteMobileDevice allocateDevice(final DeviceType deviceType) {
+        List<CourgetteMobileDevice> devices = availableDevices
                 .stream()
+                .filter(device -> device.getDeviceType().equals(deviceType))
                 .filter(device -> !unavailableDevices.contains(device))
                 .collect(Collectors.toList());
 
@@ -47,9 +48,9 @@ public class CourgetteMobileDeviceAllocatorService {
             String deviceName = deviceIdentifier.get(0);
 
             if (deviceIdentifier.size() > 1) {
-                courgetteMobileDevices.add(new CourgetteMobileDevice(deviceName, deviceIdentifier.get(1), getParallelPort()));
+                courgetteMobileDevices.add(new CourgetteMobileDevice(deviceName, DeviceType.REAL_DEVICE, deviceIdentifier.get(1), getParallelPort()));
             } else {
-                courgetteMobileDevices.add(new CourgetteMobileDevice(deviceName, null, getParallelPort()));
+                courgetteMobileDevices.add(new CourgetteMobileDevice(deviceName, DeviceType.SIMULATOR, null, getParallelPort()));
             }
         });
         return courgetteMobileDevices;

@@ -17,6 +17,7 @@ final class CourgetteSystemProperty {
     final static String UDID_SYSTEM_PROPERTY = "courgette.mobile.device.udid";
     final static String PARALLEL_PORT_SYSTEM_PROPERTY = "courgette.mobile.device.parallel.port";
     final static String MOBILE_DEVICE = "courgette.mobileDevice";
+    final static String REAL_MOBILE_DEVICE_TAG = "courgette.realMobileDeviceTag";
     final static String CLASS_PATH = "courgette.classPath";
     final static String PLUGIN = "courgette.plugin";
     final static String EXCLUDE_FEATURE_FROM_RERUN = "courgette.excludeFeatureFromRerun";
