@@ -127,7 +127,7 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
   * _MobileDeviceType.REAL_DEVICE: Only real devices names, must match format `deviceName:deviceUUID`_
   * _MobileDeviceType.SIMULATOR_AND_REAL_DEVICE: Mixture of simulator and real device names._
 
-* **realMobileDeviceTag**: If set, Courgette will allocate a real mobile device for tests matching any one of the provided tags. To use this option, you must also specify mobileDevice as `MobileDeviceType.REAL_DEVICE` or `MobileDeviceType.SIMULATOR_AND_REAL_DEVICE`
+* **realMobileDeviceTag**: If set, Courgette will allocate a real mobile device for tests matching any one of the provided tags. To use this option, you must also specify mobileDeviceType as `MobileDeviceType.REAL_DEVICE` or `MobileDeviceType.SIMULATOR_AND_REAL_DEVICE`
 
 * **fixedThreadDelay**: A fixed time in milliseconds that Courgette will pause before the start of each feature or scenario.
 
