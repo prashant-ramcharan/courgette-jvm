@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -54,8 +55,8 @@ public class CourgetteRunner {
     private String cucumberReportUrl = "#";
 
     public CourgetteRunner(List<CourgetteRunnerInfo> runnerInfoList, CourgetteProperties courgetteProperties) {
-        this.runnerInfoList = runnerInfoList;
-        this.canRunFeatures = runnerInfoList.size() > 0;
+        this.runnerInfoList = conditionallySort(runnerInfoList, courgetteProperties);
+        this.canRunFeatures = !runnerInfoList.isEmpty();
         this.courgetteProperties = courgetteProperties;
         this.testStatistics = CourgetteTestStatistics.current();
         this.defaultRuntimeOptions = new CourgetteRuntimeOptions(courgetteProperties);
@@ -79,7 +80,7 @@ public class CourgetteRunner {
 
             this.runners.add(() -> {
                 try {
-                    if (runFeature(cucumberArgs)) {
+                    if (runFeature(runnerInfo, cucumberArgs)) {
                         addResultAndPublish(runnerInfo, new CourgetteRunResult(feature, lineId, featureUri, CourgetteRunResult.Status.PASSED));
                         return true;
                     }
@@ -96,7 +97,7 @@ public class CourgetteRunner {
                         CourgetteRunResult rerunResult = new CourgetteRunResult(feature, lineId, rerunFeatureUri, CourgetteRunResult.Status.RERUN);
                         runResults.add(rerunResult);
 
-                        if (rerunFeature(rerunCucumberArgs, rerunResult)) {
+                        if (rerunFeature(runnerInfo, rerunCucumberArgs, rerunResult)) {
                             addResultAndPublish(runnerInfo, new CourgetteRunResult(feature, lineId, rerunFeatureUri, CourgetteRunResult.Status.PASSED_AFTER_RERUN));
                             return true;
                         } else {
@@ -171,7 +172,7 @@ public class CourgetteRunner {
     public void createRerunFile() {
         reruns.sort(String::compareTo);
         final List<String> rerun = new ArrayList<>(reruns);
-        rerun.removeIf(r -> r.length() == 0);
+        rerun.removeIf(String::isEmpty);
 
         final String rerunFile = defaultRuntimeOptions.getCucumberRerunFile();
 
@@ -225,17 +226,17 @@ public class CourgetteRunner {
         CourgetteTestFailure.printTestFailures(getFailures(), courgetteProperties.isFeatureRunLevel());
     }
 
-    private boolean runFeature(Map<String, List<String>> args) {
+    private boolean runFeature(CourgetteRunnerInfo runnerInfo, Map<String, List<String>> args) {
         try {
             processFeatureStart();
-            return 0 == new CourgetteFeatureRunner(args, courgetteProperties, courgettePluginService).run();
+            return 0 == new CourgetteFeatureRunner(runnerInfo, args, courgetteProperties, courgettePluginService).run();
         } catch (Throwable throwable) {
             throwable.printStackTrace();
             return false;
         }
     }
 
-    private boolean rerunFeature(Map<String, List<String>> args, CourgetteRunResult rerunResult) {
+    private boolean rerunFeature(CourgetteRunnerInfo runnerInfo, Map<String, List<String>> args, CourgetteRunResult rerunResult) {
         int rerunAttempts = courgetteProperties.getCourgetteOptions().rerunAttempts();
 
         rerunAttempts = Math.max(rerunAttempts, 1);
@@ -243,7 +244,7 @@ public class CourgetteRunner {
         while (rerunAttempts-- > 0) {
             runtimePublisher.publish(createEventHolder(CourgetteEvent.TEST_RERUN, null, rerunResult));
             args.put("retry", new ArrayList<>());
-            if (runFeature(args)) {
+            if (runFeature(runnerInfo, args)) {
                 return true;
             }
         }
@@ -282,7 +283,7 @@ public class CourgetteRunner {
 
     private int requiredThreadCount() {
         if (courgetteProperties.isMobileDeviceAllocationPluginEnabled()) {
-            int mobileDeviceThreads = courgetteProperties.getMaxThreadsFromMobileDevices();
+            int mobileDeviceThreads = courgetteProperties.getMaxThreadsFromMobileDevices(runnerInfoList.get(0).getDeviceType());
             return mobileDeviceThreads > courgetteProperties.getMaxThreads()
                     ? courgetteProperties.getMaxThreads() : mobileDeviceThreads;
         } else {
@@ -357,5 +358,21 @@ public class CourgetteRunner {
 
     private String evaluateRerunFeatureUri(String rerun, String featureUri) {
         return courgetteProperties.isFeatureRunLevel() ? featureUri : (rerun != null && rerun.trim().length() > 0) ? rerun : featureUri;
+    }
+
+    private List<CourgetteRunnerInfo> conditionallySort(List<CourgetteRunnerInfo> runnerInfoList, CourgetteProperties courgetteProperties) {
+        if (courgetteProperties.isMobileDeviceAllocationPluginEnabled()
+                && courgetteProperties.isMultipleMobileDeviceTypes()) {
+
+            long simulatorRuns = runnerInfoList.stream().filter(run -> run.getDeviceType().equals(DeviceType.SIMULATOR)).count();
+            long realDeviceRuns = runnerInfoList.stream().filter(run -> run.getDeviceType().equals(DeviceType.REAL_DEVICE)).count();
+
+            if (simulatorRuns >= realDeviceRuns) {
+                runnerInfoList.sort(Comparator.comparing(devices -> devices.getDeviceType().equals(DeviceType.REAL_DEVICE)));
+            } else {
+                runnerInfoList.sort(Comparator.comparing(devices -> devices.getDeviceType().equals(DeviceType.SIMULATOR)));
+            }
+        }
+        return runnerInfoList;
     }
 }

@@ -4,6 +4,7 @@ import courgette.api.CourgetteOptions;
 import courgette.api.CourgettePlugin;
 import courgette.api.CourgetteRunLevel;
 import courgette.api.HtmlReport;
+import courgette.api.MobileDeviceType;
 import courgette.runtime.utils.SystemPropertyUtils;
 
 import java.time.Instant;
@@ -41,10 +42,26 @@ public class CourgetteProperties {
         return maxThreads;
     }
 
-    public int getMaxThreadsFromMobileDevices() {
+    public int getMaxThreadsFromMobileDevices(final DeviceType deviceType) {
+        if (deviceType.equals(DeviceType.SIMULATOR)) {
+            return getSimulatorDeviceCount();
+        }
+        return getRealDeviceCount();
+    }
+
+    public int getSimulatorDeviceCount() {
         return Arrays.stream(courgetteOptions.mobileDevice())
                 .distinct()
                 .map(device -> device.toLowerCase().trim())
+                .filter(device -> device.split(":").length == 1)
+                .collect(Collectors.toSet()).size();
+    }
+
+    public int getRealDeviceCount() {
+        return Arrays.stream(courgetteOptions.mobileDevice())
+                .distinct()
+                .map(device -> device.toLowerCase().trim())
+                .filter(device -> device.split(":").length == 2)
                 .collect(Collectors.toSet()).size();
     }
 
@@ -82,6 +99,10 @@ public class CourgetteProperties {
 
     public boolean useCustomClasspath() {
         return courgetteOptions.classPath().length > 0;
+    }
+
+    public boolean isMultipleMobileDeviceTypes() {
+        return courgetteOptions.mobileDeviceType().equals(MobileDeviceType.SIMULATOR_AND_REAL_DEVICE);
     }
 
     public CourgetteSlackOptions slackOptions() {
