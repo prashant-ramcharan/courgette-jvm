@@ -1,3 +1,7 @@
+CHANGES IN VERSION 6.12.0
+=================================
+* [NEW] Add new Courgette option `generateCourgetteRunLog` to support in debugging parallel runs.
+
 CHANGES IN VERSION 6.11.0
 =================================
 * [NEW] Add new Courgette option `mobileDeviceType` to support running tests that requires simulators and real devices in the same run.

@@ -4,6 +4,8 @@ import courgette.runtime.utils.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -30,21 +32,40 @@ public class CourgetteFeatureRunner {
         this.courgettePluginService = courgettePluginService;
     }
 
-    public int run() {
+    public CourgetteRun run() {
+        Timestamp startTimestamp = Timestamp.from(Instant.now());
         Process process = null;
         Builder thisBuilder = new Builder();
+        String error = null;
+        CourgetteMobileDevice mobileDevice = null;
+
         try {
             final ProcessBuilder builder = thisBuilder.buildProcess();
             process = builder.start();
             process.waitFor();
         } catch (IOException | InterruptedException e) {
+            error = e.getMessage();
             printExceptionStackTrace(e);
         } finally {
             if (thisBuilder.getDevice().isPresent()) {
-                courgettePluginService.getCourgetteMobileDeviceAllocatorService().deallocateDevice(thisBuilder.getDevice().get());
+                mobileDevice = thisBuilder.getDevice().get();
+                courgettePluginService.getCourgetteMobileDeviceAllocatorService().deallocateDevice(mobileDevice);
             }
         }
-        return process != null ? process.exitValue() : -1;
+
+        String featureUri = runnerArgs.get(null).get(0);
+        int exitCode = process != null ? process.exitValue() : -1;
+        boolean isRerun = runnerArgs.get("retry") != null;
+
+        return new CourgetteRun(featureUri,
+                Thread.currentThread().getId(),
+                startTimestamp,
+                Timestamp.from(Instant.now()),
+                isRerun,
+                exitCode,
+                error,
+                mobileDevice
+        );
     }
 
     class Builder {

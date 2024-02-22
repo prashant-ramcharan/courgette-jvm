@@ -116,6 +116,10 @@ class CourgetteRuntimeOptions {
         return String.format("%s/%s.xml", getCourgetteReportDataDirectory(), reportPortalProperties.getLaunchName());
     }
 
+    public String getCourgetteRunLogJson() {
+        return String.format("%s/courgette-run-%s.json", reportTargetDir, courgetteProperties.getSessionId());
+    }
+
     private Map<String, List<String>> createRuntimeOptions(CucumberOptions cucumberOptions, String path) {
         final Map<String, List<String>> runtimeOptions = new HashMap<>();
 

@@ -26,4 +26,5 @@ final class CourgetteSystemProperty {
     final static String THREAD_NAME = "courgette.threadName";
     final static String FIXED_THREAD_DELAY = "courgette.fixedThreadDelay";
     final static String RANDOM_THREAD_DELAY = "courgette.randomThreadDelay";
+    final static String GENERATE_COURGETTE_RUN_LOG = "courgette.generateCourgetteRunLog";
 }

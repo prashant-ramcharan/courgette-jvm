@@ -148,6 +148,11 @@ public class CourgetteRunOptions implements CourgetteOptions {
     }
 
     @Override
+    public boolean generateCourgetteRunLog() {
+        return SystemPropertyUtils.getBoolProperty(CourgetteSystemProperty.GENERATE_COURGETTE_RUN_LOG, courgetteOptions.generateCourgetteRunLog());
+    }
+
+    @Override
     public Class<? extends Annotation> annotationType() {
         return null;
     }

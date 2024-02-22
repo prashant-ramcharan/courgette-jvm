@@ -62,6 +62,7 @@ public class Courgette extends CourgetteJUnitRunner {
                         courgetteRunner.createCucumberReport();
                         courgetteRunner.createCourgetteReport();
                         courgetteRunner.createCourgettePluginReports();
+                        courgetteRunner.createCourgetteRunLogFile();
                         break;
                     case REPORT_PROCESSING_ERROR:
                         printError("[Courgette Runner] There was an unexpected error processing the individual Cucumber report files and Courgette was unable to create any reports for this test run.");
