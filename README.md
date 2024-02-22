@@ -35,13 +35,13 @@ Courgette-JVM is an extension of Cucumber-JVM with added capabilities to **run c
 <dependency>
   <groupId>io.github.prashant-ramcharan</groupId>
   <artifactId>courgette-jvm</artifactId>
-  <version>6.11.0</version>
+  <version>6.12.0</version>
 </dependency>
 ````
 
 #### Gradle
 ````gradle
-implementation group: 'io.github.prashant-ramcharan', name: 'courgette-jvm', version: '6.11.0'
+implementation group: 'io.github.prashant-ramcharan', name: 'courgette-jvm', version: '6.12.0'
 ````
 
 #### Included Cucumber Dependencies
@@ -93,6 +93,8 @@ Courgette-JVM supports JUnit and TestNG to run cucumber features and scenarios i
    * _CourgetteTestOutput.DISCARD: All test output will be discarded._
 
 * **reportTargetDir** : Target directory where courgette-report is generated. Set to target by default.
+
+* **generateCourgetteRunLog** : If set to true, Courgette will generate a run log and save it to `${reportTargetDir}/courgette-run-{courgette_session_id}.json` at the end of the test run.
 
 * **plugin** : Courgette supported plugins
     

@@ -126,6 +126,11 @@ public @interface CourgetteOptions {
     int randomThreadDelay() default 0;
 
     /**
+     * @return true to generate a Courgette run log file
+     */
+    boolean generateCourgetteRunLog() default false;
+
+    /**
      * @return the Cucumber options
      */
     CucumberOptions cucumberOptions();

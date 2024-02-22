@@ -1,5 +1,6 @@
 package courgette.runtime;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import courgette.api.CourgetteRunLevel;
 import courgette.integration.extentreports.ExtentReportsBuilder;
@@ -45,6 +46,7 @@ public class CourgetteRunner {
     private final CourgetteProperties courgetteProperties;
     private final CourgetteRuntimeOptions defaultRuntimeOptions;
     private final CourgetteTestStatistics testStatistics;
+    private final List<CourgetteRun> runs = new ArrayList<>();
     private final List<CourgetteRunResult> runResults = new ArrayList<>();
     private final CourgetteRuntimePublisher runtimePublisher;
     private final CourgettePluginService courgettePluginService;
@@ -204,6 +206,19 @@ public class CourgetteRunner {
         }
     }
 
+    public void createCourgetteRunLogFile() {
+        if (courgetteProperties.getCourgetteOptions().generateCourgetteRunLog()) {
+            final ObjectMapper mapper = new ObjectMapper();
+            try {
+                FileUtils.writeFile(defaultRuntimeOptions.getCourgetteRunLogJson(), mapper
+                        .writerWithDefaultPrettyPrinter()
+                        .writeValueAsString(runs));
+            } catch (JsonProcessingException e) {
+                printExceptionStackTrace(e);
+            }
+        }
+    }
+
     public List<CourgetteRunResult> getFailures() {
         return runResults.stream()
                 .filter(t -> t.getStatus().equals(CourgetteRunResult.Status.FAILED) || t.getStatus().equals(CourgetteRunResult.Status.FAILED_AFTER_RERUN))
@@ -229,7 +244,9 @@ public class CourgetteRunner {
     private boolean runFeature(CourgetteRunnerInfo runnerInfo, Map<String, List<String>> args) {
         try {
             processFeatureStart();
-            return 0 == new CourgetteFeatureRunner(runnerInfo, args, courgetteProperties, courgettePluginService).run();
+            CourgetteRun run = new CourgetteFeatureRunner(runnerInfo, args, courgetteProperties, courgettePluginService).run();
+            runs.add(run);
+            return run.isSuccessful();
         } catch (Throwable throwable) {
             throwable.printStackTrace();
             return false;
