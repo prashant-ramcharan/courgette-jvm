@@ -1,7 +1,7 @@
 package courgette.runtime;
 
+import courgette.runtime.utils.FileUtils;
 import io.cucumber.messages.types.Envelope;
-import org.testng.reporters.Files;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,7 +35,7 @@ final class CucumberNdJsonReporter {
         try {
             InputStream sourceNdJsonFile = new FileInputStream(ndJsonReportFile);
 
-            Files.copyFile(sourceNdJsonFile, new File(destinationNdJsonFile));
+            FileUtils.copyInputStreamToFile(sourceNdJsonFile, new File(destinationNdJsonFile));
 
         } catch (Exception e) {
             printExceptionStackTrace(e);
