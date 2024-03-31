@@ -4,7 +4,6 @@ CHANGES IN VERSION 6.13.0
 * [MAINTENANCE] Upgrade to Jackson version 2.17.0
 * [MAINTENANCE] Upgrade to TestNG version 7.9.0
 
-
 CHANGES IN VERSION 6.12.0
 =================================
 * [NEW] Add new Courgette option `generateCourgetteRunLog` to support in debugging parallel runs.
