@@ -46,6 +46,16 @@ public final class FileUtils {
         fileStringWriter.accept(file, contents);
     }
 
+    public static void copyInputStreamToFile(InputStream inputStream, File file) throws IOException {
+        try (FileOutputStream outputStream = new FileOutputStream(file, false)) {
+            int read;
+            byte[] bytes = new byte[8192];
+            while ((read = inputStream.read(bytes)) != -1) {
+                outputStream.write(bytes, 0, read);
+            }
+        }
+    }
+
     public static List<File> getParentFiles(String path) {
         return Arrays.asList(new File(path).getParentFile().listFiles());
     }
