@@ -1,3 +1,9 @@
+CHANGES IN VERSION 6.14.0
+=================================
+* [ENHANCEMENT] Add support for running tests inside a FAT jar that uses a classpath to locate feature files (bundled in JAR)
+* [ENHANCEMENT] Load Courgette and Cucumber run options from environment variables first followed by system properties.
+* [MAINTENANCE] Upgrade to Cucumber version 7.18.0
+
 CHANGES IN VERSION 6.13.0
 =================================
 * [MAINTENANCE] Upgrade to Cucumber version 7.16.1

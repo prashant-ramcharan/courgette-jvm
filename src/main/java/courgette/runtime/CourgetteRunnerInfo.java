@@ -135,7 +135,7 @@ public class CourgetteRunnerInfo {
         return Arrays.stream(excludedRerunFeatures)
                 .map(String::trim)
                 .map(String::toLowerCase)
-                .noneMatch(featureName -> feature.getUri().getPath().toLowerCase().contains(featureName))
+                .noneMatch(featureName -> feature.getUri().toString().toLowerCase().contains(featureName))
                 &&
                 Arrays.stream(excludedRerunTags)
                         .map(String::trim)
