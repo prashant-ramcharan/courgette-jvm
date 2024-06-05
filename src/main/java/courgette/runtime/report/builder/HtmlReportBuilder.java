@@ -19,7 +19,6 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -207,7 +206,7 @@ public class HtmlReportBuilder {
                     String featureUri = courgetteProperties.isFeatureRunLevel() ?
                             scenario.getFeatureUri() :
                             (scenario.getFeatureUri() + ":" + scenario.getLine());
-                    return Arrays.stream(featureUri.split(":")).anyMatch(t -> t.contains(result.getFeatureUri()));
+                    return result.getFeatureUri().contains(featureUri);
                 })
                 .collect(Collectors.toList());
 
