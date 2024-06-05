@@ -2,6 +2,7 @@ package courgette.runtime;
 
 import courgette.api.CucumberOptions;
 import courgette.integration.reportportal.ReportPortalProperties;
+import courgette.runtime.utils.SystemPropertyUtils;
 import io.cucumber.core.gherkin.Feature;
 import io.cucumber.core.options.CommandlineOptionsParser;
 import io.cucumber.core.options.RuntimeOptions;
@@ -39,7 +40,7 @@ class CourgetteRuntimeOptions {
         this.courgetteProperties = courgetteProperties;
         this.feature = feature;
         this.cucumberOptions = courgetteProperties.getCourgetteOptions().cucumberOptions();
-        this.cucumberResourcePath = feature.getUri().getSchemeSpecificPart();
+        this.cucumberResourcePath = determineResourcePath(feature);
         this.reportTargetDir = courgetteProperties.getCourgetteOptions().reportTargetDir();
 
         createRuntimeOptions(cucumberOptions, cucumberResourcePath).forEach((key, value) -> runtimeOptions.addAll(value));
@@ -142,8 +143,8 @@ class CourgetteRuntimeOptions {
         return runtimeOptions;
     }
 
-    private final BiFunction<String, String[], String[]> envCucumberOptionParser = (systemPropertyName, cucumberOptions) -> {
-        String cucumberOption = System.getProperty("cucumber." + systemPropertyName);
+    private final BiFunction<String, String[], String[]> envCucumberOptionParser = (propertyName, cucumberOptions) -> {
+        String cucumberOption = SystemPropertyUtils.fromSystemEnvOrProperty("cucumber." + propertyName);
 
         if (cucumberOption != null && cucumberOption.trim().length() > 0) {
             final List<String> options = new ArrayList<>();
@@ -323,5 +324,11 @@ class CourgetteRuntimeOptions {
             return tmpDir + fileSeparator;
         }
         return tmpDir;
+    }
+
+    private String determineResourcePath(Feature feature) {
+        return String.format("%s:%s",
+                feature.getUri().getScheme(),
+                feature.getUri().getSchemeSpecificPart().replace("//", "/"));
     }
 }

@@ -206,7 +206,7 @@ public class HtmlReportBuilder {
                     String featureUri = courgetteProperties.isFeatureRunLevel() ?
                             scenario.getFeatureUri() :
                             (scenario.getFeatureUri() + ":" + scenario.getLine());
-                    return result.getFeatureUri().endsWith(featureUri.split("file:")[1]);
+                    return result.getFeatureUri().contains(featureUri);
                 })
                 .collect(Collectors.toList());
 

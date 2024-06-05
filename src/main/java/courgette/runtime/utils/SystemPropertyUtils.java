@@ -7,7 +7,7 @@ import java.util.function.Predicate;
 public final class SystemPropertyUtils {
 
     public static int getIntProperty(String key, int defaultValue) {
-        Object value = System.getProperty(key);
+        Object value = fromSystemEnvOrProperty(key);
         if (value == null) {
             return defaultValue;
         }
@@ -19,7 +19,7 @@ public final class SystemPropertyUtils {
     }
 
     public static boolean getBoolProperty(String key, boolean defaultValue) {
-        Object value = System.getProperty(key);
+        Object value = fromSystemEnvOrProperty(key);
         if (value == null) {
             return defaultValue;
         }
@@ -27,7 +27,7 @@ public final class SystemPropertyUtils {
     }
 
     public static <T extends Enum<T>> T getEnumProperty(String key, Class<T> enumType, T defaultValue) {
-        Object value = System.getProperty(key);
+        Object value = fromSystemEnvOrProperty(key);
         if (value == null) {
             return defaultValue;
         }
@@ -41,7 +41,7 @@ public final class SystemPropertyUtils {
     public static String getNonEmptyStringProperty(String key, String providedValue, String defaultValue) {
         final Predicate<String> isEmptyString = (string) -> string == null || string.trim().isEmpty();
 
-        String value = System.getProperty(key);
+        String value = fromSystemEnvOrProperty(key);
 
         if (isEmptyString.test(value)) {
             if (!isEmptyString.test(providedValue)) {
@@ -54,7 +54,7 @@ public final class SystemPropertyUtils {
     }
 
     public static String[] getStringArrayProperty(String key, String[] defaultValue) {
-        String val = System.getProperty(key);
+        String val = fromSystemEnvOrProperty(key);
         if (val == null || val.trim().isEmpty()) {
             return defaultValue;
         }
@@ -66,7 +66,7 @@ public final class SystemPropertyUtils {
 
     @SuppressWarnings("unchecked")
     public static <T> void splitAndAddPropertyToList(String key, List<T> list) {
-        Object value = System.getProperty(key);
+        Object value = fromSystemEnvOrProperty(key);
         if (value != null) {
             String valueAsString = value.toString().replaceAll("\\s{2,}", " ").trim();
 
@@ -74,5 +74,10 @@ public final class SystemPropertyUtils {
                 Arrays.asList(valueAsString.split(" ")).forEach(t -> list.add((T) t));
             }
         }
+    }
+
+    public static String fromSystemEnvOrProperty(String key) {
+        String value = System.getenv(key);
+        return value != null ? value : System.getProperty(key);
     }
 }
