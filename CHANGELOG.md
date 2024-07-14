@@ -1,3 +1,10 @@
+CHANGES IN VERSION 6.15.0
+=================================
+* [IMPROVEMENT] Re-implement reporting processing to improve performance and reduce memory usage.
+* [IMPROVEMENT] Various code changes and improvements to the core runtime.
+* [NEW] Create a `courgette-report-processing-errors.txt` file if there are any report processing errors.
+
+
 CHANGES IN VERSION 6.14.0
 =================================
 * [ENHANCEMENT] Add support for running tests inside a FAT jar that uses a classpath to locate feature files (bundled in JAR)

@@ -2,29 +2,21 @@ package courgette.runtime;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import courgette.api.CourgetteRunLevel;
 import courgette.integration.extentreports.ExtentReportsBuilder;
 import courgette.integration.extentreports.ExtentReportsProperties;
 import courgette.integration.reportportal.ReportPortalPublisher;
 import courgette.integration.slack.SlackPublisher;
 import courgette.runtime.event.CourgetteEvent;
 import courgette.runtime.event.CourgetteEventHolder;
-import courgette.runtime.report.JsonReportParser;
 import courgette.runtime.report.model.Feature;
 import courgette.runtime.utils.FileUtils;
-import io.cucumber.messages.types.Envelope;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -41,19 +33,17 @@ import static courgette.runtime.utils.FileUtils.writeFile;
 public class CourgetteRunner {
     private final List<Callable<Boolean>> runners = new ArrayList<>();
     private final CopyOnWriteArrayList<String> reruns = new CopyOnWriteArrayList<>();
-    private final Map<String, CopyOnWriteArrayList<String>> reports = new HashMap<>();
     private final List<CourgetteRunnerInfo> runnerInfoList;
     private final CourgetteProperties courgetteProperties;
     private final CourgetteRuntimeOptions defaultRuntimeOptions;
     private final CourgetteTestStatistics testStatistics;
     private final List<CourgetteRun> runs = new ArrayList<>();
     private final List<CourgetteRunResult> runResults = new ArrayList<>();
+    private final CourgetteReporter courgetteReporter;
     private final CourgetteRuntimePublisher runtimePublisher;
     private final CourgettePluginService courgettePluginService;
     private final boolean canRunFeatures;
     private final AtomicReference<RunStatus> runStatus = new AtomicReference<>(RunStatus.OK);
-    private List<Feature> reportFeatures = new ArrayList<>();
-    private final Map<io.cucumber.core.gherkin.Feature, List<List<Envelope>>> reportMessages = new HashMap<>();
     private String cucumberReportUrl = "#";
 
     public CourgetteRunner(List<CourgetteRunnerInfo> runnerInfoList, CourgetteProperties courgetteProperties) {
@@ -64,6 +54,7 @@ public class CourgetteRunner {
         this.defaultRuntimeOptions = new CourgetteRuntimeOptions(courgetteProperties);
         this.runtimePublisher = createRuntimePublisher(courgetteProperties, extractRunnerInfoFeatures());
         this.courgettePluginService = createCourgettePluginService();
+        this.courgetteReporter = createCourgetteReporter();
     }
 
     public RunStatus run() {
@@ -81,56 +72,33 @@ public class CourgetteRunner {
             final String featureUri = cucumberArgs.get(null).get(0);
 
             this.runners.add(() -> {
-                try {
-                    if (runFeature(runnerInfo, cucumberArgs)) {
-                        addResultAndPublish(runnerInfo, new CourgetteRunResult(feature, lineId, featureUri, CourgetteRunResult.Status.PASSED));
-                        return true;
-                    }
+                if (runFeature(runnerInfo, cucumberArgs)) {
+                    addResultAndPublish(runnerInfo, new CourgetteRunResult(feature, lineId, featureUri, CourgetteRunResult.Status.PASSED));
+                    return true;
+                }
 
+                if (runnerInfo.allowRerun()) {
                     String rerunFile = runnerInfo.getRerunFile();
-
                     String rerun = readFile(rerunFile, false);
+                    final String rerunFeatureUri = evaluateRerunFeatureUri(rerun, featureUri);
 
-                    if (runnerInfo.allowRerun()) {
-                        final String rerunFeatureUri = evaluateRerunFeatureUri(rerun, featureUri);
+                    final Map<String, List<String>> rerunCucumberArgs = runnerInfo.getRerunRuntimeOptions(rerunFeatureUri);
 
-                        final Map<String, List<String>> rerunCucumberArgs = runnerInfo.getRerunRuntimeOptions(rerunFeatureUri);
+                    CourgetteRunResult rerunResult = new CourgetteRunResult(feature, lineId, rerunFeatureUri, CourgetteRunResult.Status.RERUN);
+                    runResults.add(rerunResult);
 
-                        CourgetteRunResult rerunResult = new CourgetteRunResult(feature, lineId, rerunFeatureUri, CourgetteRunResult.Status.RERUN);
-                        runResults.add(rerunResult);
-
-                        if (rerunFeature(runnerInfo, rerunCucumberArgs, rerunResult)) {
-                            addResultAndPublish(runnerInfo, new CourgetteRunResult(feature, lineId, rerunFeatureUri, CourgetteRunResult.Status.PASSED_AFTER_RERUN));
-                            return true;
-                        } else {
-                            addResultAndPublish(runnerInfo, new CourgetteRunResult(feature, lineId, rerunFeatureUri, CourgetteRunResult.Status.FAILED_AFTER_RERUN));
-                        }
+                    if (rerunFeature(runnerInfo, rerunCucumberArgs, rerunResult)) {
+                        addResultAndPublish(runnerInfo, new CourgetteRunResult(feature, lineId, rerunFeatureUri, CourgetteRunResult.Status.PASSED_AFTER_RERUN));
+                        return true;
                     } else {
-                        addResultAndPublish(runnerInfo, new CourgetteRunResult(feature, lineId, featureUri, CourgetteRunResult.Status.FAILED));
+                        addResultAndPublish(runnerInfo, new CourgetteRunResult(feature, lineId, rerunFeatureUri, CourgetteRunResult.Status.FAILED_AFTER_RERUN));
                     }
 
                     if (rerun != null) {
                         reruns.add(rerun);
                     }
-                } finally {
-                    runnerInfo.getReportFiles().forEach(reportFile -> {
-                        if (shouldProcessReport(reportFile)) {
-                            boolean isJson = reportFile.endsWith(".json");
-
-                            String report = isJson
-                                    ? prettyJson(readFile(reportFile, true))
-                                    : readFile(reportFile, true);
-
-                            boolean isNdJson = reportFile.endsWith(".ndjson");
-
-                            if (isNdJson && shouldProcessCucumberMessages()) {
-                                reportMessages.computeIfAbsent(feature, r -> new ArrayList<>())
-                                        .addAll(Collections.singleton(CourgetteNdJsonCreator.createMessages(report)));
-                            } else {
-                                reports.computeIfAbsent(reportFile, r -> new CopyOnWriteArrayList<>()).add(report);
-                            }
-                        }
-                    });
+                } else {
+                    addResultAndPublish(runnerInfo, new CourgetteRunResult(feature, lineId, featureUri, CourgetteRunResult.Status.FAILED));
                 }
                 return false;
             });
@@ -149,26 +117,15 @@ public class CourgetteRunner {
             executor.shutdownNow();
         }
 
-        boolean reportErrors = !reportMessages.isEmpty() && reportMessages.values().stream().anyMatch(List::isEmpty);
-        if (reportErrors) {
-            runStatus.set(RunStatus.REPORT_PROCESSING_ERROR);
-        }
-
         return runStatus.get();
     }
 
     public void createCucumberReport() {
         final List<String> reportFiles = defaultRuntimeOptions.getReportFiles();
-
-        final CourgetteReporter courgetteReporter = new CourgetteReporter(reports, reportMessages, defaultRuntimeOptions, courgetteProperties);
-
-        reportFiles.forEach(reportFile -> {
-            boolean mergeTestCaseName = courgetteProperties.isReportPortalPluginEnabled() && reportFile.equalsIgnoreCase(defaultRuntimeOptions.getCourgetteReportXmlForReportPortal());
-            courgetteReporter.createCucumberReport(reportFile, mergeTestCaseName);
-        });
-
-        final Optional<String> publishedReport = courgetteReporter.publishCucumberReport();
-        publishedReport.ifPresent(reportUrl -> cucumberReportUrl = reportUrl);
+        final boolean publishReport = courgetteProperties.isCucumberReportPublisherEnabled();
+        courgetteReporter.createCucumberReports(reportFiles, publishReport).ifPresent(reportUrl -> cucumberReportUrl = reportUrl);
+        courgetteReporter.jsonReportParser().createFeatures();
+        courgetteReporter.deleteTemporaryReports();
     }
 
     public void createRerunFile() {
@@ -186,7 +143,8 @@ public class CourgetteRunner {
     public void createCourgetteReport() {
         if (courgetteProperties.isCourgetteHtmlReportEnabled()) {
             try {
-                final CourgetteHtmlReporter courgetteReport = new CourgetteHtmlReporter(courgetteProperties, runResults, getReportFeatures(), cucumberReportUrl);
+                final List<Feature> features = courgetteReporter.jsonReportParser().getFeatures();
+                final CourgetteHtmlReporter courgetteReport = new CourgetteHtmlReporter(courgetteProperties, runResults, features, cucumberReportUrl);
                 courgetteReport.create(testStatistics);
             } catch (Exception e) {
                 printExceptionStackTrace(e);
@@ -194,11 +152,18 @@ public class CourgetteRunner {
         }
     }
 
+    public void createErrorReport() {
+        if (courgetteReporter.hasErrors()) {
+            courgetteReporter.createErrorReport();
+        }
+    }
+
     public void createCourgettePluginReports() {
         if (courgetteProperties.isExtentReportsPluginEnabled()) {
             try {
+                final List<Feature> features = courgetteReporter.jsonReportParser().getFeatures();
                 final ExtentReportsProperties extentReportsProperties = new ExtentReportsProperties(courgetteProperties);
-                final ExtentReportsBuilder extentReportsBuilder = ExtentReportsBuilder.create(extentReportsProperties, getReportFeatures());
+                final ExtentReportsBuilder extentReportsBuilder = ExtentReportsBuilder.create(extentReportsProperties, features);
                 extentReportsBuilder.buildReport();
             } catch (Exception e) {
                 printExceptionStackTrace(e);
@@ -210,9 +175,7 @@ public class CourgetteRunner {
         if (courgetteProperties.getCourgetteOptions().generateCourgetteRunLog()) {
             final ObjectMapper mapper = new ObjectMapper();
             try {
-                FileUtils.writeFile(defaultRuntimeOptions.getCourgetteRunLogJson(), mapper
-                        .writerWithDefaultPrettyPrinter()
-                        .writeValueAsString(runs));
+                FileUtils.writeFile(defaultRuntimeOptions.getCourgetteRunLogJson(), mapper.writerWithDefaultPrettyPrinter().writeValueAsString(runs));
             } catch (JsonProcessingException e) {
                 printExceptionStackTrace(e);
             }
@@ -227,10 +190,6 @@ public class CourgetteRunner {
 
     public boolean canRunFeatures() {
         return canRunFeatures;
-    }
-
-    public void cleanupCourgetteHtmlReportFiles() {
-        FileUtils.deleteDirectorySilently(defaultRuntimeOptions.getCourgetteReportDataDirectory());
     }
 
     public void printCourgetteTestStatistics() {
@@ -248,7 +207,7 @@ public class CourgetteRunner {
             runs.add(run);
             return run.isSuccessful();
         } catch (Throwable throwable) {
-            throwable.printStackTrace();
+            printExceptionStackTrace(throwable);
             return false;
         }
     }
@@ -266,30 +225,6 @@ public class CourgetteRunner {
             }
         }
         return false;
-    }
-
-    private String prettyJson(String json) {
-        final ObjectMapper mapper = new ObjectMapper();
-
-        try {
-            final Object jsonObject = mapper.readValue(json, Object.class);
-            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject);
-        } catch (IOException e) {
-            return json;
-        }
-    }
-
-    private List<Feature> getReportFeatures() {
-        if (reportFeatures.isEmpty()) {
-            final File reportJson = new File(defaultRuntimeOptions.getCourgetteReportJson());
-
-            final CourgetteRunLevel runLevel = courgetteProperties.getCourgetteOptions().runLevel();
-
-            if (reportJson.exists()) {
-                reportFeatures = JsonReportParser.create(reportJson, runLevel).getReportFeatures();
-            }
-        }
-        return reportFeatures;
     }
 
     private int optimizedThreadCount() {
@@ -326,7 +261,8 @@ public class CourgetteRunner {
         return new CourgettePluginService(mobileDeviceAllocatorService);
     }
 
-    private synchronized void addResultAndPublish(CourgetteRunnerInfo courgetteRunnerInfo, CourgetteRunResult courgetteRunResult) {
+    private synchronized void addResultAndPublish(CourgetteRunnerInfo courgetteRunnerInfo, CourgetteRunResult
+            courgetteRunResult) {
         runResults.add(courgetteRunResult);
 
         switch (courgetteRunResult.getStatus()) {
@@ -355,12 +291,8 @@ public class CourgetteRunner {
         return new CourgetteEventHolder(CourgetteEvent.TEST_RUN_SUMMARY, courgetteProperties, testStatistics);
     }
 
-    private boolean shouldProcessCucumberMessages() {
-        return courgetteProperties.isCucumberHtmlReportEnabled();
-    }
-
-    private boolean shouldProcessReport(String reportFile) {
-        return !reportFile.contains("/session-reports/") && reportFile.contains(courgetteProperties.getSessionId());
+    private CourgetteReporter createCourgetteReporter() {
+        return new CourgetteReporter(runnerInfoList.stream().map(CourgetteRunnerInfo::getCourgetteReportOptions).collect(Collectors.toList()), courgetteProperties);
     }
 
     private void processFeatureStart() {
@@ -374,7 +306,7 @@ public class CourgetteRunner {
     }
 
     private String evaluateRerunFeatureUri(String rerun, String featureUri) {
-        return courgetteProperties.isFeatureRunLevel() ? featureUri : (rerun != null && rerun.trim().length() > 0) ? rerun : featureUri;
+        return courgetteProperties.isFeatureRunLevel() ? featureUri : (rerun != null && !rerun.trim().isEmpty()) ? rerun : featureUri;
     }
 
     private List<CourgetteRunnerInfo> conditionallySort(List<CourgetteRunnerInfo> runnerInfoList, CourgetteProperties courgetteProperties) {

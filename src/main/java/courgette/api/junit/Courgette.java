@@ -20,8 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static courgette.runtime.CourgetteException.printError;
-
 public class Courgette extends CourgetteJUnitRunner {
 
     public Courgette(Class clazz) throws InitializationError {
@@ -61,11 +59,9 @@ public class Courgette extends CourgetteJUnitRunner {
                     case OK:
                         courgetteRunner.createCucumberReport();
                         courgetteRunner.createCourgetteReport();
+                        courgetteRunner.createErrorReport();
                         courgetteRunner.createCourgettePluginReports();
                         courgetteRunner.createCourgetteRunLogFile();
-                        break;
-                    case REPORT_PROCESSING_ERROR:
-                        printError("[Courgette Runner] There was an unexpected error processing the individual Cucumber report files and Courgette was unable to create any reports for this test run.");
                         break;
                     case ERROR:
                         CourgetteTestErrorException.throwTestErrorException();
@@ -79,7 +75,6 @@ public class Courgette extends CourgetteJUnitRunner {
         } finally {
             courgetteRunner.printCourgetteTestStatistics();
             courgetteRunner.printCourgetteTestFailures();
-            courgetteRunner.cleanupCourgetteHtmlReportFiles();
             callbacks.afterAll();
             notifyTestStarted(notifier);
             notifyTestFailure(notifier, failures);

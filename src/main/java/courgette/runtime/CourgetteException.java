@@ -18,6 +18,10 @@ public class CourgetteException extends RuntimeException {
         e.printStackTrace();
     }
 
+    public static void printExceptionStackTrace(Throwable e) {
+        e.printStackTrace();
+    }
+
     public static void printError(String error) {
         System.err.println(error);
     }

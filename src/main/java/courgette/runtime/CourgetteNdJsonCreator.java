@@ -1,6 +1,5 @@
 package courgette.runtime;
 
-import io.cucumber.core.gherkin.Feature;
 import io.cucumber.messages.NdjsonToMessageIterable;
 import io.cucumber.messages.types.Envelope;
 import io.cucumber.messages.types.FeatureChild;
@@ -25,15 +24,13 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static courgette.runtime.CourgetteException.printExceptionStackTrace;
 import static courgette.runtime.utils.JacksonUtils.CUCUMBER_OBJECT_MAPPER;
 import static java.util.Comparator.comparingLong;
 
 public class CourgetteNdJsonCreator {
+    private final Map<String, List<List<Envelope>>> messages;
 
-    private final Map<Feature, List<List<Envelope>>> messages;
-
-    public CourgetteNdJsonCreator(Map<Feature, List<List<Envelope>>> messages) {
+    public CourgetteNdJsonCreator(Map<String, List<List<Envelope>>> messages) {
         this.messages = messages;
     }
 
@@ -43,13 +40,9 @@ public class CourgetteNdJsonCreator {
         final List<Envelope> messages = new ArrayList<>(messageList.size());
 
         messageList.forEach(message -> {
-            try {
-                ByteArrayInputStream in = new ByteArrayInputStream(message.getBytes(StandardCharsets.UTF_8));
-                for (Envelope envelope : new NdjsonToMessageIterable(in, new NdJsonMessageDeserializer())) {
-                    messages.add(envelope);
-                }
-            } catch (Exception e) {
-                printExceptionStackTrace(e);
+            ByteArrayInputStream in = new ByteArrayInputStream(message.getBytes(StandardCharsets.UTF_8));
+            for (Envelope envelope : new NdjsonToMessageIterable(in, new NdJsonMessageDeserializer())) {
+                messages.add(envelope);
             }
         });
         return messages;

@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 public class CourgetteRunnerInfo {
     private final CourgetteRuntimeOptions courgetteRuntimeOptions;
+    private final CourgetteReportOptions courgetteReportOptions;
     private final CourgetteProperties courgetteProperties;
     private final Integer lineId;
     private final CourgetteRunLevel courgetteRunLevel;
@@ -25,8 +26,9 @@ public class CourgetteRunnerInfo {
     public CourgetteRunnerInfo(CourgetteProperties courgetteProperties, Feature feature, Integer lineId) {
         this.courgetteProperties = courgetteProperties;
         this.feature = feature;
-        this.courgetteRuntimeOptions = new CourgetteRuntimeOptions(courgetteProperties, feature);
         this.lineId = lineId;
+        this.courgetteReportOptions = new CourgetteReportOptions(feature, lineId, courgetteProperties);
+        this.courgetteRuntimeOptions = new CourgetteRuntimeOptions(courgetteProperties, courgetteReportOptions, feature);
         this.courgetteRunLevel = courgetteProperties.getCourgetteOptions().runLevel();
         this.rerun = courgetteProperties.getCourgetteOptions().rerunFailedScenarios() &&
                 checkRerunCondition(feature,
@@ -73,12 +75,8 @@ public class CourgetteRunnerInfo {
         return courgetteRuntimeOptions.getRerunFile();
     }
 
-    public List<String> getReportFiles() {
-        return courgetteRuntimeOptions.getReportFiles();
-    }
-
     public File getJsonReportFile() {
-        final String jsonReport = courgetteRuntimeOptions.getJsonReportFile();
+        final String jsonReport = courgetteReportOptions.getJsonFile();
 
         if (jsonReport != null) {
             return new File(jsonReport);
@@ -92,6 +90,10 @@ public class CourgetteRunnerInfo {
 
     public DeviceType getDeviceType() {
         return deviceType;
+    }
+
+    public CourgetteReportOptions getCourgetteReportOptions() {
+        return courgetteReportOptions;
     }
 
     private Optional<DeviceType> determineDeviceType() {

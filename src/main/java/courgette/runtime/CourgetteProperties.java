@@ -93,6 +93,10 @@ public class CourgetteProperties {
         return checkIfReportIsEnabled.test(HtmlReport.CUCUMBER_HTML);
     }
 
+    public boolean isCucumberXmlReportPluginEnabled() {
+        return Arrays.stream(courgetteOptions.cucumberOptions().plugin()).anyMatch(plugin -> plugin.startsWith("junit"));
+    }
+
     public boolean shouldPersistCucumberJsonReports() {
         return courgetteOptions.persistParallelCucumberJsonReports();
     }
