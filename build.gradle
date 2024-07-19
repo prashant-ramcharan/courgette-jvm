@@ -3,6 +3,8 @@ version '6.15.0'
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'
+apply plugin: 'maven'
+apply plugin: 'signing'
 
 compileJava {
     sourceCompatibility = 1.8
@@ -46,8 +48,18 @@ task buildJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
 }
 
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
 artifacts {
-    archives buildJar
+    archives buildJar, javadocJar, sourcesJar
 }
 
 jar {
@@ -61,6 +73,52 @@ publishing {
         mavenJava(MavenPublication) {
             from components.java
             artifact buildJar
+        }
+    }
+}
+
+signing {
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            pom.project {
+                name 'Courgette JVM'
+                packaging 'jar'
+                description 'Multi-threaded | Parallel Cucumber-JVM | Parallelize your Java Cucumber tests on a feature level or on a scenario level.'
+                url 'https://github.com/prashant-ramcharan/courgette-jvm'
+
+                scm {
+                    url 'https://github.com/prashant-ramcharan/courgette-jvm'
+                }
+
+                licenses {
+                    license {
+                        name 'MIT License'
+                        url 'https://opensource.org/licenses/MIT'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'prashant-ramcharan'
+                        name 'Prashant Ramcharan'
+                        email 'info@prashant-ramcharan.co.uk'
+                    }
+                }
+            }
         }
     }
 }
