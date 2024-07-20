@@ -1,6 +1,7 @@
 package courgette.runtime;
 
 import courgette.integration.reportportal.ReportPortalProperties;
+import courgette.runtime.utils.FileUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -23,25 +24,34 @@ import java.io.StringWriter;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import static courgette.runtime.CourgetteException.printExceptionStackTrace;
 import static courgette.runtime.utils.FileUtils.writeFile;
 
 final class CucumberXmlReporter {
 
-    static void createReport(String reportFile, List<String> reports,
-                             boolean mergeTestCaseName, boolean isReportPortalEnabled) {
-        int failures = 0;
-        int skipped = 0;
-        int tests = 0;
-        double time = 0.0;
-        String testSuite = "Test Suite";
+    private final String reportFile;
+    private final StringBuilder xmlBuilder = new StringBuilder();
+    private int reportSize;
+    private int failures = 0;
+    private int skipped = 0;
+    private int tests = 0;
+    private double time = 0.0;
+    private String testSuite = "Test Suite";
+    private final Map<String, String> errors = new HashMap<>();
 
-        final StringBuilder xmlBuilder = new StringBuilder();
+    public CucumberXmlReporter(String reportFile, int reportSize) {
+        this.reportFile = reportFile;
+        this.reportSize = reportSize;
 
-        xmlBuilder.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n");
-        xmlBuilder.append("<testsuite failures=\"id:failures\" name=\"id:testSuite\" skipped=\"id:skipped\" tests=\"id:tests\" time=\"id:time\">\n\n");
+        this.xmlBuilder.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n");
+        this.xmlBuilder.append("<testsuite failures=\"id:failures\" name=\"id:testSuite\" skipped=\"id:skipped\" tests=\"id:tests\" time=\"id:time\">\n\n");
+    }
+
+    public void readAndWriteReport(String fileName,
+                                   boolean mergeTestCaseName, boolean isReportPortalEnabled) {
 
         final HashMap<String, Integer> testcaseIteration = new HashMap<>();
 
@@ -49,70 +59,87 @@ final class CucumberXmlReporter {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
 
-            for (String report : reports) {
-                Document document = builder.parse(new InputSource(new StringReader(report)));
+            String report = FileUtils.readFile(fileName, false);
+            if (report == null) {
+                throw new IOException(String.format("%s does not exist in the file system", fileName));
+            }
 
-                if (document != null) {
-                    Element node = document.getDocumentElement();
+            Document document = builder.parse(new InputSource(new StringReader(report)));
 
-                    failures = failures + Integer.parseInt(node.getAttribute("failures"));
-                    skipped = skipped + Integer.parseInt(node.getAttribute("skipped"));
-                    tests = tests + parseTests(node);
-                    time = time + parseTime(node.getAttribute("time"));
+            if (document != null) {
+                Element node = document.getDocumentElement();
 
-                    NodeList testCases = document.getElementsByTagName("testcase");
+                failures = failures + Integer.parseInt(node.getAttribute("failures"));
+                skipped = skipped + Integer.parseInt(node.getAttribute("skipped"));
+                tests = tests + parseTests(node);
+                time = time + parseTime(node.getAttribute("time"));
 
-                    if (testCases != null) {
-                        for (int i = 0; i < testCases.getLength(); i++) {
-                            Node testcase = testCases.item(i);
-                            Node testClassName = testcase.getAttributes().getNamedItem("classname");
-                            Node testName = testcase.getAttributes().getNamedItem("name");
+                NodeList testCases = document.getElementsByTagName("testcase");
 
-                            String key = testClassName.getNodeValue() + "-" + testName.getNodeValue();
-                            testcaseIteration.merge(key, 1, Integer::sum);
+                if (testCases != null) {
+                    for (int i = 0; i < testCases.getLength(); i++) {
+                        Node testcase = testCases.item(i);
+                        Node testClassName = testcase.getAttributes().getNamedItem("classname");
+                        Node testName = testcase.getAttributes().getNamedItem("name");
 
-                            if (testcaseIteration.get(key) > 1) {
-                                testName.setNodeValue(testName.getNodeValue() + " " + testcaseIteration.get(key));
-                            }
+                        String key = testClassName.getNodeValue() + "-" + testName.getNodeValue();
+                        testcaseIteration.merge(key, 1, Integer::sum);
 
-                            if (mergeTestCaseName) {
-                                testName.setNodeValue(testClassName.getNodeValue() + ": " + testName.getNodeValue());
-                            }
+                        if (testcaseIteration.get(key) > 1) {
+                            testName.setNodeValue(testName.getNodeValue() + " " + testcaseIteration.get(key));
+                        }
 
-                            StringWriter sw = new StringWriter();
-                            try {
-                                Transformer t = TransformerFactory.newInstance().newTransformer();
-                                t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-                                t.setOutputProperty(OutputKeys.INDENT, "yes");
-                                t.transform(new DOMSource(testcase), new StreamResult(sw));
+                        if (mergeTestCaseName) {
+                            testName.setNodeValue(testClassName.getNodeValue() + ": " + testName.getNodeValue());
+                        }
 
-                                xmlBuilder.append(sw.toString()).append("\n");
+                        StringWriter sw = new StringWriter();
+                        try {
+                            Transformer t = TransformerFactory.newInstance().newTransformer();
+                            t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+                            t.setOutputProperty(OutputKeys.INDENT, "yes");
+                            t.transform(new DOMSource(testcase), new StreamResult(sw));
 
-                            } catch (TransformerException te) {
-                                printExceptionStackTrace(te);
-                            }
+                            xmlBuilder.append(sw).append("\n");
+
+                        } catch (TransformerException te) {
+                            errors.put(UUID.randomUUID().toString(), te.getMessage());
+                            printExceptionStackTrace(te);
                         }
                     }
                 }
             }
         } catch (SAXException | IOException | ParserConfigurationException e) {
+            errors.put(UUID.randomUUID().toString(), e.getMessage());
             printExceptionStackTrace(e);
         }
 
-        xmlBuilder.append("</testsuite>");
+        reportSize--;
 
-        if (isReportPortalEnabled) {
-            testSuite = ReportPortalProperties.getInstance().getTestSuite();
+        if (reportSize == 0) {
+            xmlBuilder.append("</testsuite>");
+
+            if (isReportPortalEnabled) {
+                testSuite = ReportPortalProperties.getInstance().getTestSuite();
+            }
+
+            final String xmlReport = xmlBuilder.toString()
+                    .replace("id:failures", String.valueOf(failures))
+                    .replace("id:skipped", String.valueOf(skipped))
+                    .replace("id:tests", String.valueOf(tests))
+                    .replace("id:time", String.valueOf(time))
+                    .replace("id:testSuite", testSuite);
+
+            writeFile(reportFile, xmlReport);
         }
+    }
 
-        final String xmlReport = xmlBuilder.toString()
-                .replace("id:failures", String.valueOf(failures))
-                .replace("id:skipped", String.valueOf(skipped))
-                .replace("id:tests", String.valueOf(tests))
-                .replace("id:time", String.valueOf(time))
-                .replace("id:testSuite", testSuite);
+    public Map<String, String> getErrors() {
+        return errors;
+    }
 
-        writeFile(reportFile, xmlReport);
+    public boolean hasErrors() {
+        return !errors.isEmpty();
     }
 
     private static double parseTime(String time) {

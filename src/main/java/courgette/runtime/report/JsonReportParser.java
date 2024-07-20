@@ -5,7 +5,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import courgette.api.CourgetteRunLevel;
 import courgette.runtime.CourgetteException;
 import courgette.runtime.report.model.Embedding;
 import courgette.runtime.report.model.Feature;
@@ -15,7 +14,6 @@ import courgette.runtime.report.model.Scenario;
 import courgette.runtime.report.model.Step;
 import courgette.runtime.report.model.Tag;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
@@ -27,10 +25,9 @@ import java.util.List;
 import java.util.Map;
 
 public class JsonReportParser {
-    private File jsonFile;
-    private List<Feature> features;
-    private CourgetteRunLevel runLevel;
-
+    private final String jsonFile;
+    private final Boolean isFeatureRunLevel;
+    private final List<Feature> features = new ArrayList<>();
     private final static String START_TIMESTAMP_ATTRIBUTE = "start_timestamp";
     private final static String NAME_ATTRIBUTE = "name";
     private final static String URI_ATTRIBUTE = "uri";
@@ -54,26 +51,31 @@ public class JsonReportParser {
     private final static String CELLS_ATTRIBUTE = "cells";
     private final static String TAGS_ATTRIBUTE = "tags";
 
-    private JsonReportParser(File jsonFile, CourgetteRunLevel runLevel) {
+    public JsonReportParser(String jsonFile, boolean isFeatureRunLevel) {
         this.jsonFile = jsonFile;
-        this.runLevel = runLevel;
-        this.features = new ArrayList<>();
+        this.isFeatureRunLevel = isFeatureRunLevel;
     }
 
-    public static JsonReportParser create(File jsonFile, CourgetteRunLevel runLevel) {
-        return new JsonReportParser(jsonFile, runLevel);
+    public void createFeatures() {
+        createFeatures(jsonFile, isFeatureRunLevel);
     }
 
-    public List<Feature> getReportFeatures() {
+    public List<Feature> getFeatures() {
+        return features;
+    }
+
+    private void createFeatures(String jsonFile, boolean isFeatureRunLevel) {
         try {
-            parseJsonReport();
+            parseJsonReport(jsonFile);
         } catch (FileNotFoundException | IllegalStateException e) {
             throw new CourgetteException(e);
         }
-        return runLevel.equals(CourgetteRunLevel.FEATURE) ? features : convertToFeatureList(features);
+        if (!isFeatureRunLevel) {
+            convertToFeatureList(features);
+        }
     }
 
-    private List<Feature> convertToFeatureList(List<Feature> features) {
+    private void convertToFeatureList(List<Feature> features) {
         Map<String, List<Scenario>> scenarioMap = new HashMap<>();
 
         features.forEach(feature -> {
@@ -95,10 +97,12 @@ public class JsonReportParser {
             Feature feature = features.stream().filter(f -> f.getUri().equals(key)).findFirst().get();
             featureList.add(new Feature(feature.getName(), feature.getUri(), value));
         });
-        return featureList;
+
+        features.clear();
+        features.addAll(featureList);
     }
 
-    private void parseJsonReport() throws FileNotFoundException {
+    private void parseJsonReport(String jsonFile) throws FileNotFoundException {
         JsonParser jsonParser = new JsonParser();
         Object json = jsonParser.parse(new FileReader(jsonFile));
 

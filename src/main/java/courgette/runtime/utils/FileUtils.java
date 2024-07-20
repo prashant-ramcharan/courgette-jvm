@@ -60,9 +60,9 @@ public final class FileUtils {
         return Arrays.asList(new File(path).getParentFile().listFiles());
     }
 
-    public static File getTempFile() {
+    public static File createTempFile(String extension) {
         try {
-            return Files.createTempFile(UUID.randomUUID().toString(), ".tmp").toFile();
+            return Files.createTempFile(UUID.randomUUID().toString(), "." + extension).toFile();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -119,12 +119,29 @@ public final class FileUtils {
             return true;
         }
         try {
-            Files.createFile(file.toPath());
+            file.getParentFile().mkdir();
+            file.createNewFile();
             return true;
         } catch (IOException e) {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public static boolean createFile(String file) {
+        return createFile(new File(file));
+    }
+
+    public static boolean fileExists(String file) {
+        return Files.exists(new File(file).toPath());
+    }
+
+    public static FileWriter createFileWriter(String file) {
+        try {
+            return new FileWriter(file, false);
+        } catch (IOException e) {
+            throw new CourgetteException("Unable to create file writer: " + e.getMessage());
+        }
     }
 
     public static File zipFile(String filePath, boolean removeFileExtension) {
@@ -172,21 +189,42 @@ public final class FileUtils {
         }
     }
 
+    public static void deleteFileSilently(String file) {
+        try {
+            File thisFile = new File(file);
+            if (thisFile.exists()) {
+                thisFile.delete();
+            }
+        } catch (Exception ignored) {
+            // no action is needed
+        }
+    }
+
+    public static String tempDirectory() {
+        final String fileSeparator = File.separator;
+        final String tmpDir = System.getProperty("java.io.tmpdir");
+
+        if (!tmpDir.endsWith(fileSeparator)) {
+            return tmpDir + fileSeparator;
+        }
+        return tmpDir;
+    }
+
     private static BiFunction<String, Boolean, String> fileReader = (file, deleteOnExit) -> {
         if (file == null) {
             return null;
         }
 
-        File rerunFile = new File(file);
+        File thisFile = new File(file);
 
         if (deleteOnExit) {
-            rerunFile.deleteOnExit();
+            thisFile.deleteOnExit();
         }
 
         FileReader fileReader = null;
         BufferedReader bufferedReader = null;
         try {
-            fileReader = new FileReader(rerunFile);
+            fileReader = new FileReader(thisFile);
             bufferedReader = new BufferedReader(fileReader);
             return bufferedReader.lines().collect(Collectors.joining("\n"));
         } catch (Exception ignored) {

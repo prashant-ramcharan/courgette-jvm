@@ -94,9 +94,10 @@ public class ReportPortalService {
                 return;
             }
 
-            final List<courgette.runtime.report.model.Feature> features = JsonReportParser
-                    .create(reportFile, courgetteProperties.getCourgetteOptions().runLevel())
-                    .getReportFeatures();
+            final JsonReportParser jsonReportParser = new JsonReportParser(reportFile.getPath(), courgetteProperties.isFeatureRunLevel());
+            jsonReportParser.createFeatures();
+
+            final List<courgette.runtime.report.model.Feature> features = jsonReportParser.getFeatures();
 
             List<Scenario> scenarios = features.stream()
                     .flatMap(feature -> feature.getScenarios().stream())

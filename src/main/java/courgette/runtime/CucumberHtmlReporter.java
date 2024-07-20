@@ -5,27 +5,52 @@ import io.cucumber.messages.types.Envelope;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import static courgette.runtime.CourgetteException.printExceptionStackTrace;
 import static courgette.runtime.utils.JacksonUtils.CUCUMBER_OBJECT_MAPPER;
 
 public final class CucumberHtmlReporter {
+    private MessagesToHtmlWriter htmlWriter;
+    private int reportSize;
+    private final Map<String, String> errors = new HashMap<>();
 
-    static void createReport(String fileName, List<Envelope> messages) {
+    public CucumberHtmlReporter(String fileName, int reportSize) {
         try {
-            final FileOutputStream outputStream = new FileOutputStream(fileName, false);
+            FileOutputStream outputStream = new FileOutputStream(fileName, false);
+            htmlWriter = new MessagesToHtmlWriter(outputStream, CUCUMBER_OBJECT_MAPPER::writeValue);
+            this.reportSize = reportSize;
+        } catch (IOException e) {
+            errors.put(UUID.randomUUID().toString(), e.getMessage());
+            printExceptionStackTrace(e);
+        }
+    }
 
-            final MessagesToHtmlWriter htmlWriter = new MessagesToHtmlWriter(outputStream, CUCUMBER_OBJECT_MAPPER::writeValue);
-
+    public void writeReport(List<Envelope> messages) {
+        try {
             for (Envelope message : messages) {
                 htmlWriter.write(message);
             }
 
-            htmlWriter.close();
+            reportSize--;
 
+            if (reportSize == 0) {
+                htmlWriter.close();
+            }
         } catch (IOException e) {
+            errors.put(UUID.randomUUID().toString(), e.getMessage());
             printExceptionStackTrace(e);
         }
+    }
+
+    public Map<String, String> getErrors() {
+        return errors;
+    }
+
+    public boolean hasErrors() {
+        return !errors.isEmpty();
     }
 }
