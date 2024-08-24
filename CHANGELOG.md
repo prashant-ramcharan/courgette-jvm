@@ -1,3 +1,10 @@
+CHANGES IN VERSION 6.16.0
+=================================
+* [ENHANCEMENT] Include the number of scenarios in the results table of the Courgette html report.
+* [ENHANCEMENT] Support overriding mobile device type at runtime (`-Dcourgette.mobileDeviceType=REAL_DEVICE`)
+* [MAINTENANCE] Upgrade to Cucumber version 7.18.1
+
+
 CHANGES IN VERSION 6.15.0
 =================================
 * [IMPROVEMENT] Re-implement reporting processing to improve performance and reduce memory usage.
