@@ -43,6 +43,7 @@ public class HtmlReportBuilder {
     private static final String FEATURE_NAME = "feature_name";
     private static final String FEATURE_BADGE = "feature_badge";
     private static final String FEATURE_RESULT = "feature_result";
+    private static final String FEATURE_SCENARIO_COUNT = "feature_scenario_count";
     private static final String FEATURE_SCENARIOS = "feature_scenarios";
     private static final String SCENARIO_NAME = "scenario_name";
     private static final String SCENARIO_BADGE = "scenario_badge";
@@ -165,6 +166,7 @@ public class HtmlReportBuilder {
         featureData.put(FEATURE_NAME, featureName);
         featureData.put(FEATURE_BADGE, featureBadge);
         featureData.put(FEATURE_RESULT, featureResult);
+        featureData.put(FEATURE_SCENARIO_COUNT, scenarioRows.size());
         featureData.put(FEATURE_SCENARIOS, scenarioRows);
 
         return createFromTemplate(featureTemplate, featureData);

@@ -124,7 +124,7 @@ public class CourgetteRunOptions implements CourgetteOptions {
 
     @Override
     public MobileDeviceType mobileDeviceType() {
-        return courgetteOptions.mobileDeviceType();
+        return SystemPropertyUtils.getEnumProperty(CourgetteSystemProperty.MOBILE_DEVICE_TYPE, MobileDeviceType.class, courgetteOptions.mobileDeviceType());
     }
 
     @Override
