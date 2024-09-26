@@ -111,7 +111,7 @@ public final class FileUtils {
         if (file.exists() && file.isDirectory()) {
             return true;
         }
-        return file.mkdir();
+        return file.mkdirs();
     }
 
     public static boolean createFile(File file) {
@@ -119,7 +119,7 @@ public final class FileUtils {
             return true;
         }
         try {
-            file.getParentFile().mkdir();
+            createDirectory(file.getParentFile());
             file.createNewFile();
             return true;
         } catch (IOException e) {

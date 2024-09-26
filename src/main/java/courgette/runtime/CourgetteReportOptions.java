@@ -51,7 +51,11 @@ public class CourgetteReportOptions {
     }
 
     public String getFeatureId() {
-        return Arrays.stream(feature.getUri().getPath().split("/")).reduce((x, y) -> y)
+        String featureUri = feature.getUri().getPath() == null ?
+                feature.getUri().toString() :
+                feature.getUri().getPath();
+
+        return Arrays.stream(featureUri.split("/")).reduce((x, y) -> y)
                 .orElse("").replace(".feature", "")
                 .toLowerCase();
     }
