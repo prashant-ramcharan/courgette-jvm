@@ -1,3 +1,9 @@
+CHANGES IN VERSION 6.17.0
+=================================
+* [FIX] NullPointerException when resolving classpath feature URIs
+* [FIX] Unable to create parent directories that are needed for the Courgette Json reporter
+* [MAINTENANCE] Upgrade to Cucumber version 7.19.0
+
 CHANGES IN VERSION 6.16.0
 =================================
 * [ENHANCEMENT] Include the number of scenarios in the results table of the Courgette html report.
