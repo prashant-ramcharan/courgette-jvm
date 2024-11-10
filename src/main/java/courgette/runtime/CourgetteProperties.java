@@ -109,6 +109,10 @@ public class CourgetteProperties {
         return courgetteOptions.mobileDeviceType().equals(MobileDeviceType.SIMULATOR_AND_REAL_DEVICE);
     }
 
+    public boolean isRerunEnabled() {
+        return courgetteOptions.rerunFailedScenarios() && courgetteOptions.rerunAttempts() > 0;
+    }
+
     public CourgetteSlackOptions slackOptions() {
         return new CourgetteSlackOptions(courgetteOptions.slackWebhookUrl(),
                 Arrays.asList(courgetteOptions.slackChannel()),

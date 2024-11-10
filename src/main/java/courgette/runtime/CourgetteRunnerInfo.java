@@ -30,7 +30,7 @@ public class CourgetteRunnerInfo {
         this.courgetteReportOptions = new CourgetteReportOptions(feature, lineId, courgetteProperties);
         this.courgetteRuntimeOptions = new CourgetteRuntimeOptions(courgetteProperties, courgetteReportOptions, feature);
         this.courgetteRunLevel = courgetteProperties.getCourgetteOptions().runLevel();
-        this.rerun = courgetteProperties.getCourgetteOptions().rerunFailedScenarios() &&
+        this.rerun = courgetteProperties.isRerunEnabled() &&
                 checkRerunCondition(feature,
                         courgetteProperties.getCourgetteOptions().excludeFeatureFromRerun(),
                         courgetteProperties.getCourgetteOptions().excludeTagFromRerun());
