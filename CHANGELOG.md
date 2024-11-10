@@ -1,3 +1,8 @@
+CHANGES IN VERSION 6.18.0
+=================================
+* [FIX] Don't rerun failed tests when rerun attempts is set to 0
+* [MAINTENANCE] Upgrade to Cucumber version 7.20.1
+
 CHANGES IN VERSION 6.17.0
 =================================
 * [FIX] NullPointerException when resolving classpath feature URIs
