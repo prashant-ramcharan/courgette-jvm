@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Writer;
-import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -103,7 +103,7 @@ public class CourgetteHtmlReporter {
         reportData.put("passed", htmlReportBuilder.getPassed());
         reportData.put("failed", htmlReportBuilder.getFailed());
         reportData.put("rerun", htmlReportBuilder.getRerun());
-        reportData.put("timestamp", Instant.now().toString());
+        reportData.put("timestamp", ZonedDateTime.now().toLocalDateTime());
         reportData.put("duration", testStatistics.duration());
         reportData.put("threads", courgetteProperties.getMaxThreads());
         reportData.put("run_level", courgetteProperties.getCourgetteOptions().runLevel().toString());

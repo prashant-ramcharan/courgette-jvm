@@ -1,3 +1,10 @@
+CHANGES IN VERSION 6.18.1
+=================================
+* [FIX] Accept feature file names with spaces
+* [FIX] Exception thrown when creating the Cucumber html report when using a FAT jar
+* [ENHANCEMENT] Use a zoned date and time for the timestamp in the Courgette html report
+* [MAINTENANCE] Upgrade to Gson 2.11.0 to address security vulnerabilities
+
 CHANGES IN VERSION 6.18.0
 =================================
 * [FIX] Don't rerun failed tests when rerun attempts is set to 0

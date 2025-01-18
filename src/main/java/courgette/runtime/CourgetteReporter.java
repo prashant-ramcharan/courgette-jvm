@@ -57,7 +57,7 @@ class CourgetteReporter {
         CucumberNdJsonReporter cucumberNdJsonReporter = new CucumberNdJsonReporter(ndJsonFile, groupedReports.size());
 
         CucumberHtmlReporter cucumberHtmlReporter;
-        if (htmlReportFile.isPresent() && courgetteProperties.isCucumberHtmlReportEnabled()) {
+        if (htmlReportFile.isPresent() && courgetteProperties.isCucumberHtmlReportEnabled() && FileUtils.createFile(htmlReportFile.get())) {
             cucumberHtmlReporter = new CucumberHtmlReporter(htmlReportFile.get(), groupedReports.size());
         } else {
             cucumberHtmlReporter = null;
