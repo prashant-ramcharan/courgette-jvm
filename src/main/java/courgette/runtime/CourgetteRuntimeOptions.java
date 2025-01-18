@@ -221,6 +221,8 @@ class CourgetteRuntimeOptions {
     private String determineResourcePath(Feature feature) {
         return String.format("%s:%s",
                 feature.getUri().getScheme(),
-                feature.getUri().getSchemeSpecificPart().replace("//", "/"));
+                feature.getUri().getSchemeSpecificPart()
+                        .replace("//", "/")
+                        .replace(" ", "%20"));
     }
 }
