@@ -1,5 +1,7 @@
 package courgette.runtime;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -51,11 +53,11 @@ public class CourgetteTestStatistics {
         return passedAfterRerun;
     }
 
-    public int passedPercentage() {
+    public String passedPercentage() {
         return calculatePercentage(passed);
     }
 
-    public int failedPercentage() {
+    public String failedPercentage() {
         return calculatePercentage(failed);
     }
 
@@ -102,7 +104,8 @@ public class CourgetteTestStatistics {
         return (int) runResults.stream().filter(result -> Arrays.asList(status).contains(result.getStatus())).count();
     }
 
-    private int calculatePercentage(double value) {
-        return (int) Math.round(value / total * 100);
+    private String calculatePercentage(double value) {
+        NumberFormat percentageFormat = new DecimalFormat("##.##");
+        return percentageFormat.format(value / total * 100);
     }
 }

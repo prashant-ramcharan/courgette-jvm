@@ -1,3 +1,8 @@
+CHANGES IN VERSION 6.19.0
+=================================
+* [FIX] Percentage rounding in Courgette test statistics
+* [MAINTENANCE] Upgrade to Cucumber version 7.23.0
+
 CHANGES IN VERSION 6.18.1
 =================================
 * [FIX] Accept feature file names with spaces

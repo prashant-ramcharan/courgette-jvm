@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -90,8 +91,9 @@ public class CourgetteNdJsonCreator {
 
     private List<Envelope> mutateMessages(List<Envelope> envelopes) {
         if (envelopes != null && !envelopes.isEmpty()) {
-            Envelope testRunStarted = createTestRunStarted(envelopes);
-            Envelope testRunFinished = createTestRunFinished(envelopes);
+            String testRunStartedId = UUID.randomUUID().toString();
+            Envelope testRunStarted = createTestRunStarted(envelopes, testRunStartedId);
+            Envelope testRunFinished = createTestRunFinished(envelopes, testRunStartedId);
 
             envelopes.subList(1, envelopes.size()).removeIf(metaEnvelope);
             envelopes.removeIf(testRunStartedOrFinishedEnvelope);
@@ -189,24 +191,24 @@ public class CourgetteNdJsonCreator {
         return Optional.empty();
     }
 
-    private Envelope createTestRunStarted(List<Envelope> envelopes) {
+    private Envelope createTestRunStarted(List<Envelope> envelopes, String testId) {
         Timestamp timestamp = envelopes.stream()
                 .filter(envelope -> envelope.getTestRunStarted().isPresent())
                 .map(envelope -> envelope.getTestRunStarted().get().getTimestamp())
                 .min(comparingLong(Timestamp::getSeconds))
                 .get();
 
-        return Envelope.of(new TestRunStarted(timestamp));
+        return Envelope.of(new TestRunStarted(timestamp, testId));
     }
 
-    private Envelope createTestRunFinished(List<Envelope> envelopes) {
+    private Envelope createTestRunFinished(List<Envelope> envelopes, String testId) {
         Timestamp timestamp = envelopes.stream()
                 .filter(envelope -> envelope.getTestRunFinished().isPresent())
                 .map(envelope -> envelope.getTestRunFinished().get().getTimestamp())
                 .min(comparingLong(Timestamp::getSeconds))
                 .get();
 
-        return Envelope.of(new TestRunFinished(null, true, timestamp, null));
+        return Envelope.of(new TestRunFinished(null, true, timestamp, null, testId));
     }
 
     private final Predicate<Envelope> gherkinEnvelope = (envelope) -> envelope.getGherkinDocument().isPresent();
