@@ -106,6 +106,6 @@ public class CourgetteTestStatistics {
 
     private String calculatePercentage(double value) {
         NumberFormat percentageFormat = new DecimalFormat("##.##");
-        return percentageFormat.format (value / total * 100);
+        return percentageFormat.format(value / total * 100);
     }
 }
