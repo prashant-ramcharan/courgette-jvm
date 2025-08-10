@@ -19,11 +19,14 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -60,6 +63,9 @@ public class HtmlReportBuilder {
     private static final String STEP_RESULT = "step_result";
     private static final String STEP_DATATABLE = "step_datatable";
     private static final String DATATABLE = "datatable";
+    private static final String DATATABLE_COLUMN = "datatable_column";
+    private static final String DATATABLE_ROW = "datatable_row";
+    private static final String DATATABLE_CELL = "datatable_cell";
     private static final String STEP_EXCEPTION = "step_exception";
     private static final String EXCEPTION = "exception";
     private static final String STEP_OUTPUT_BEFORE = "step_output_before";
@@ -300,7 +306,7 @@ public class HtmlReportBuilder {
         stepData.put(STEP_RESULT, stepResult);
 
         if (step.getRowData() != null) {
-            addNestedMap(stepData, STEP_DATATABLE, DATATABLE, step.getRowData());
+            addStepDataTable(stepData, step.getRowData());
         }
 
         if (step.getResult().getErrorMessage() != null) {
@@ -443,6 +449,29 @@ public class HtmlReportBuilder {
         }
     }
 
+    private void addStepDataTable(LinkedHashMap<String, Object> stepData, List<String> rowData) {
+        if (!rowData.isEmpty() && rowData.size() >= 2) {
+            List<Map<String, Object>> stepDatatable = new ArrayList<>();
+            Map<String, Object> datatable = new HashMap<>();
+
+            List<String> columns = rowOutputSplitter.apply(rowData.get(0));
+
+            List<Map<String, Object>> datatableRows = new ArrayList<>();
+
+            rowData.stream().skip(1).forEach(row -> {
+                Map<String, Object> currentRow = new HashMap<>();
+                List<String> cells = rowOutputSplitter.apply(row);
+                currentRow.put(DATATABLE_CELL, cells);
+                datatableRows.add(currentRow);
+            });
+
+            datatable.put(DATATABLE_COLUMN, columns);
+            datatable.put(DATATABLE_ROW, datatableRows);
+            stepDatatable.add(Collections.singletonMap(DATATABLE, datatable));
+            stepData.put(STEP_DATATABLE, stepDatatable);
+        }
+    }
+
     private static String decodeTextEmbedding(Embedding embedding) {
         if (embedding.getMimeType().equals("text/xml")) {
             return formatXml(new String(Base64.getDecoder().decode(String.valueOf(embedding.getData()))));
@@ -475,4 +504,13 @@ public class HtmlReportBuilder {
 
     private final Predicate<Embedding> imageFilter = (e) -> e.getMimeType().startsWith("image");
     private final Predicate<Embedding> textFilter = (e) -> e.getMimeType().startsWith("text");
+
+    private final Function<String, List<String>> rowOutputSplitter = (source) -> Arrays.stream(source
+                    .replace("|", ",")
+                    .replace(" ,", ",")
+                    .trim()
+                    .split(","))
+            .filter(t -> !t.isEmpty())
+            .map(String::trim)
+            .collect(Collectors.toList());
 }

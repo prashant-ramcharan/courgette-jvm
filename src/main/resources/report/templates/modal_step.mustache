@@ -1,29 +1,29 @@
 <div class="row">
-  {{#step_output_before}}
+    {{#step_output_before}}
         <div class="mt-3 col-lg-12 text-info" style="overflow-wrap:break-word;">
             {{#output}}
-              <div>
-                {{{.}}}
-              </div>
+                <div>
+                    {{{.}}}
+                </div>
             {{/output}}
         </div>
     {{/step_output_before}}
 
-   {{#step_embedding_text_before}}
-      {{#text}}
-        <div class="mt-3 col-lg-12">
-            {{{.}}}
-        </div>
-      {{/text}}
-   {{/step_embedding_text_before}}
+    {{#step_embedding_text_before}}
+        {{#text}}
+            <div class="mt-3 col-lg-12">
+                {{{.}}}
+            </div>
+        {{/text}}
+    {{/step_embedding_text_before}}
 
-   {{#step_embedding_image_before}}
+    {{#step_embedding_image_before}}
         {{#img_id}}
             <div class="mt-3 col-lg-12">
                 <img id={{.}} src="" class="img-thumbnail">
             </div>
         {{/img_id}}
-   {{/step_embedding_image_before}}
+    {{/step_embedding_image_before}}
 
     <div class="col-lg-9" style="overflow-wrap:break-word;">
         {{step_keyword}} {{step_name}}
@@ -38,8 +38,25 @@
 
     {{#step_datatable}}
         {{#datatable}}
-            <div class="mt-3 col-lg-12 text-muted" style="overflow-wrap:break-word;">
-                {{{.}}}
+            <div class="mt-3 col-lg-12 table-responsive">
+                <table class="table table-bordered table-striped w-auto">
+                    <thead>
+                    <tr>
+                        {{#datatable_column}}
+                            <th>{{.}}</th>
+                        {{/datatable_column}}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {{#datatable_row}}
+                        <tr>
+                            {{#datatable_cell}}
+                                <td>{{.}}</td>
+                            {{/datatable_cell}}
+                        </tr>
+                    {{/datatable_row}}
+                    </tbody>
+                </table>
             </div>
         {{/datatable}}
     {{/step_datatable}}
@@ -53,19 +70,19 @@
     {{#step_output}}
         <div class="mt-3 col-lg-12 text-info" style="overflow-wrap:break-word;">
             {{#output}}
-              <div>
-                {{{.}}}
-              </div>
+                <div>
+                    {{{.}}}
+                </div>
             {{/output}}
         </div>
     {{/step_output}}
 
     {{#step_embedding_text}}
-      {{#text}}
-        <div class="mt-3 col-lg-12">
-            {{{.}}}
-        </div>
-      {{/text}}
+        {{#text}}
+            <div class="mt-3 col-lg-12">
+                {{{.}}}
+            </div>
+        {{/text}}
     {{/step_embedding_text}}
 
     {{#step_embedding_image}}
@@ -77,29 +94,29 @@
     {{/step_embedding_image}}
 
     {{#step_output_after}}
-          <div class="mt-3 col-lg-12 text-info" style="overflow-wrap:break-word;">
-              {{#output}}
+        <div class="mt-3 col-lg-12 text-info" style="overflow-wrap:break-word;">
+            {{#output}}
                 <div>
-                  {{{.}}}
+                    {{{.}}}
                 </div>
-              {{/output}}
-          </div>
-      {{/step_output_after}}
+            {{/output}}
+        </div>
+    {{/step_output_after}}
 
-      {{#step_embedding_text_after}}
+    {{#step_embedding_text_after}}
         {{#text}}
-          <div class="mt-3 col-lg-12">
-              {{{.}}}
-          </div>
+            <div class="mt-3 col-lg-12">
+                {{{.}}}
+            </div>
         {{/text}}
-      {{/step_embedding_text_after}}
+    {{/step_embedding_text_after}}
 
-      {{#step_embedding_image_after}}
-          {{#img_id}}
-              <div class="mt-3 col-lg-12">
-                  <img id={{.}} src="" class="img-thumbnail">
-              </div>
-          {{/img_id}}
-      {{/step_embedding_image_after}}
+    {{#step_embedding_image_after}}
+        {{#img_id}}
+            <div class="mt-3 col-lg-12">
+                <img id={{.}} src="" class="img-thumbnail">
+            </div>
+        {{/img_id}}
+    {{/step_embedding_image_after}}
 </div>
 <hr>

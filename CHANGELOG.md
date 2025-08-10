@@ -1,3 +1,8 @@
+CHANGES IN VERSION 6.20.0
+=================================
+* [ENHANCEMENT] Use html tables when displaying Cucumber data tables in the Courgette html report.
+* [MAINTENANCE] Upgrade to Cucumber version 7.27.0
+
 CHANGES IN VERSION 6.19.0
 =================================
 * [FIX] Percentage rounding in Courgette test statistics
