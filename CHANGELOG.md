@@ -1,3 +1,9 @@
+CHANGES IN VERSION 6.22.0
+=================================
+* [MAINTENANCE] Upgrade to Cucumber version 7.34.4
+* [UPDATE] Courgette Cucumber Report publisher to upload gzipped Cucumber messages and display the report URL returned by the latest Cucumber Reports publishing protocol.
+* [MAINTENANCE] Upgrade minimum Java version to 11
+
 CHANGES IN VERSION 6.21.0
 =================================
 * [MAINTENANCE] Upgrade to Cucumber version 7.31.0

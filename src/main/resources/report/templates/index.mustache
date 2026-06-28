@@ -149,8 +149,13 @@
                             <div class="col-sm-4">
                                 Cucumber Report:
                             </div>
-                            <div class="col-sm-8"><a target="_blank" href="{{cucumber_report}}">View published
-                                report</a>
+                            <div class="col-sm-8" style="overflow-wrap:break-word;">
+                                {{#has_cucumber_report}}
+                                <a target="_blank" href="{{cucumber_report}}">View published report</a>
+                                {{/has_cucumber_report}}
+                                {{^has_cucumber_report}}
+                                Not published
+                                {{/has_cucumber_report}}
                             </div>
                         </div>
                     </div>
@@ -184,13 +189,13 @@
                             <div class="col-sm-7">
                                 Cucumber Version:
                             </div>
-                            <div>7.31.0</div>
+                            <div>7.34.4</div>
                         </div>
                         <div class="row mt-4">
                             <div class="col-sm-7">
                                 Courgette Version:
                             </div>
-                            <div>6.21.0</div>
+                            <div>6.22.0</div>
                         </div>
                         <div class="row mt-4">
                             <div><a href class="col-sm-9" data-toggle="modal" data-target="#environment_info">Additional
