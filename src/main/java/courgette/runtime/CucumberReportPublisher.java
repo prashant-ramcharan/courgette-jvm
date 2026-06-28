@@ -4,23 +4,26 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.EntityBuilder;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.conn.ssl.TrustAllStrategy;
-import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 
 import javax.net.ssl.SSLContext;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.GZIPOutputStream;
 
 class CucumberReportPublisher {
 
@@ -28,9 +31,10 @@ class CucumberReportPublisher {
             "cucumber.publish.url",
             "https://messages.cucumber.io/api/reports");
 
-    private final String CUCUMBER_REPORT_URL = "https://reports.cucumber.io/reports";
-
     private final String CUCUMBER_PUBLISH_TOKEN = "CUCUMBER_PUBLISH_TOKEN";
+
+    private final Pattern CUCUMBER_REPORT_URL = Pattern.compile("https://reports\\.cucumber\\.io/reports/\\S+");
+    private final Pattern ANSI_ESCAPE = Pattern.compile("\u001B\\[[;\\d]*m");
 
     private File messageFile;
 
@@ -52,7 +56,7 @@ class CucumberReportPublisher {
         final String token = System.getProperty(CUCUMBER_PUBLISH_TOKEN, System.getenv(CUCUMBER_PUBLISH_TOKEN));
 
         if (httpClient != null && errors.isEmpty()) {
-            final String report = createReport(token);
+            final Report report = createReport(token);
             if (report != null) {
                 reportUrl = publishReport(report);
             }
@@ -64,7 +68,7 @@ class CucumberReportPublisher {
         return Optional.ofNullable(reportUrl);
     }
 
-    private String createReport(String token) {
+    private Report createReport(String token) {
         try {
             HttpGet resource = new HttpGet(CUCUMBER_PUBLISH_URL);
 
@@ -77,10 +81,16 @@ class CucumberReportPublisher {
                 if (response.getStatusLine().getStatusCode() == HttpStatus.SC_ACCEPTED) {
                     Header location = response.getFirstHeader("Location");
                     if (location != null && !location.getValue().isEmpty()) {
-                        return location.getValue();
+                        String reportUrl = extractReportUrl(readResponse(response));
+                        if (reportUrl.isEmpty()) {
+                            errors.add("No Cucumber Report URL received from server.");
+                            return null;
+                        }
+                        return new Report(location.getValue(), reportUrl);
                     }
+                    errors.add("No upload location received from server.");
                 } else {
-                    errors.add(EntityUtils.toString(response.getEntity(), "UTF-8"));
+                    errors.add(readResponse(response));
                 }
             } else {
                 errors.add("No response received from server.");
@@ -91,23 +101,18 @@ class CucumberReportPublisher {
         return null;
     }
 
-    private String publishReport(String resourceUrl) {
-        HttpEntity entity = EntityBuilder.create()
-                .setContentType(ContentType.APPLICATION_JSON)
-                .setFile(messageFile)
-                .build();
-
+    private String publishReport(Report report) {
         try {
-            HttpPut reportMessage = new HttpPut(resourceUrl);
+            HttpEntity entity = new ByteArrayEntity(gzip(messageFile));
+            HttpPut reportMessage = new HttpPut(report.uploadUrl);
+            reportMessage.addHeader("Content-Encoding", "gzip");
             reportMessage.setEntity(entity);
             HttpResponse response = httpClient.execute(reportMessage);
             if (response != null) {
                 if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-                    String reportPath = URI.create(resourceUrl).getPath();
-                    reportPath = reportPath.substring(reportPath.lastIndexOf("/"));
-                    return CUCUMBER_REPORT_URL + reportPath;
+                    return report.displayUrl;
                 } else {
-                    errors.add(EntityUtils.toString(response.getEntity(), "UTF-8"));
+                    errors.add(readResponse(response));
                 }
             } else {
                 errors.add("No response received from server.");
@@ -116,6 +121,33 @@ class CucumberReportPublisher {
             errors.add(e.getMessage());
         }
         return null;
+    }
+
+    private String readResponse(HttpResponse response) throws IOException {
+        return response.getEntity() == null ? "" : EntityUtils.toString(response.getEntity(), "UTF-8");
+    }
+
+    private String extractReportUrl(String response) {
+        Matcher matcher = CUCUMBER_REPORT_URL.matcher(ANSI_ESCAPE.matcher(response).replaceAll(""));
+        return matcher.find() ? matcher.group() : "";
+    }
+
+    private static class Report {
+        private final String uploadUrl;
+        private final String displayUrl;
+
+        private Report(String uploadUrl, String displayUrl) {
+            this.uploadUrl = uploadUrl;
+            this.displayUrl = displayUrl;
+        }
+    }
+
+    private byte[] gzip(File file) throws IOException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        try (GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream)) {
+            Files.copy(file.toPath(), gzipOutputStream);
+        }
+        return byteArrayOutputStream.toByteArray();
     }
 
     private HttpClient createHttpClient() {

@@ -108,6 +108,7 @@ public class CourgetteHtmlReporter {
         reportData.put("threads", courgetteProperties.getMaxThreads());
         reportData.put("run_level", courgetteProperties.getCourgetteOptions().runLevel().toString());
         reportData.put("cucumber_report", cucumberReportUrl);
+        reportData.put("has_cucumber_report", cucumberReportUrl != null && !cucumberReportUrl.equals("#"));
         reportData.put("os_name", System.getProperty("os.name"));
         reportData.put("os_arch", System.getProperty("os.arch"));
         reportData.put("java_version", System.getProperty("java.version"));
